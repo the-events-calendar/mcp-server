@@ -1,8 +1,8 @@
 {
   "mcpServers": {
     "tec-mcp": {
-      "command": "node",
-      "args": ["dist/index.js"],
+      "command": "bunx",
+      "args": ["@the-events-calendar/mcp-server"],
       "env": {
         "WP_URL": "https://your-wordpress-site.com",
         "WP_USERNAME": "your-username",

@@ -1,23 +1,42 @@
 {
-  "name": "@tec/mcp-server",
+  "name": "@the-events-calendar/mcp-server",
   "version": "1.0.0",
   "description": "MCP server for The Events Calendar and Event Tickets",
   "main": "dist/index.js",
   "type": "module",
+  "bin": {
+    "tec-mcp-server": "./dist/index.js"
+  },
   "scripts": {
     "dev": "tsx --watch src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "prepublishOnly": "npm run build"
   },
   "keywords": [
     "mcp",
     "events",
     "calendar",
-    "wordpress"
+    "wordpress",
+    "the-events-calendar",
+    "event-tickets"
   ],
-  "author": "",
+  "author": "The Events Calendar",
   "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/the-events-calendar/mcp-server.git"
+  },
+  "bugs": {
+    "url": "https://github.com/the-events-calendar/mcp-server/issues"
+  },
+  "homepage": "https://github.com/the-events-calendar/mcp-server#readme",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.15.1",
     "dotenv": "^17.2.0",

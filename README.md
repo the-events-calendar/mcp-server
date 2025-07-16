@@ -2,6 +2,13 @@
 
 An MCP (Model Context Protocol) server that provides unified CRUD operations for The Events Calendar and Event Tickets WordPress plugins.
 
+## Quick Start
+
+Run directly with bunx (no installation required):
+```bash
+bunx @the-events-calendar/mcp-server
+```
+
 ## Features
 
 - **Unified Tools**: Single tools for Create/Update, Read, Delete, and Search operations across all post types
@@ -49,8 +56,8 @@ Add to your Claude Desktop configuration (`~/Library/Application Support/Claude/
 {
   "mcpServers": {
     "tec-mcp": {
-      "command": "node",
-      "args": ["/path/to/mcp-server/dist/index.js"],
+      "command": "bunx",
+      "args": ["@the-events-calendar/mcp-server"],
       "env": {
         "WP_URL": "https://your-wordpress-site.com",
         "WP_USERNAME": "your-username",
