@@ -29,9 +29,9 @@ export function createServer(config: ServerConfig): McpServer {
       toolDef.name,
       {
         description: toolDef.description,
-        inputSchema: toolDef.inputSchema,
+        inputSchema: toolDef.inputSchema as any,
       },
-      handler
+      handler as any
     );
   }
 

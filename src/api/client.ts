@@ -44,7 +44,7 @@ export class ApiClient {
       throw ApiError.fromWPError(data as WPError, response.status);
     }
 
-    return data;
+    return data as T;
   }
 
   /**
