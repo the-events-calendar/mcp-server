@@ -7,17 +7,18 @@ This directory contains configuration examples for various AI-powered code edito
 ### Claude Desktop
 - `claude-desktop-config.json` - Uses environment variables for credentials
 - `claude-desktop-config-with-args.json` - Uses command-line arguments for credentials
-- `claude-desktop-config-local.json` - Uses local development build
+- `claude-desktop-config-local.json` - Local development with Node.js
 
 ### Cursor
 - `cursor-config.json` - Uses environment variables for credentials
 - `cursor-config-with-args.json` - Uses command-line arguments for credentials
-- `cursor-config-local.json` - Uses local development build
+- `cursor-config-local.json` - Local development with Node.js
+- `cursor-config-local-bun.json` - Local development with Bun
 
 ### Windsurf
 - `windsurf-config.json` - Uses environment variables for credentials
 - `windsurf-config-with-args.json` - Uses command-line arguments for credentials
-- `windsurf-config-local.json` - Uses local development build
+- `windsurf-config-local.json` - Local development with Node.js
 
 ### Local Development
 - `local-development.md` - Guide for using your local development version

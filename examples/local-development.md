@@ -53,15 +53,16 @@ You can also modify the configuration to pass arguments directly:
 2. Build the project: `npm run build`
 3. Restart your AI editor to reload the MCP server
 
-### Option 2: Using npm Scripts (Recommended)
-The local configuration examples use npm scripts which provide better control and debugging:
+### Option 2: Direct Execution (Recommended for MCP)
+The local configuration examples use direct execution to avoid npm output interference:
+
+#### Using Node.js (default)
 ```json
 {
   "mcpServers": {
     "events-mcp": {
-      "command": "npm",
-      "args": ["run", "start:bun"],
-      "cwd": "/path/to/your/project",
+      "command": "node",
+      "args": ["/path/to/your/project/dist/index.js"],
       "env": {
         "WP_URL": "https://your-wordpress-site.com",
         "WP_USERNAME": "your-username",
@@ -73,7 +74,25 @@ The local configuration examples use npm scripts which provide better control an
 }
 ```
 
-### Available Scripts
+#### Using Bun
+```json
+{
+  "mcpServers": {
+    "events-mcp": {
+      "command": "bun",
+      "args": ["run", "/path/to/your/project/dist/index.js"],
+      "env": {
+        "WP_URL": "https://your-wordpress-site.com",
+        "WP_USERNAME": "your-username",
+        "WP_APP_PASSWORD": "your-application-password",
+        "DEBUG": "true"
+      }
+    }
+  }
+}
+```
+
+### Available Scripts (for manual testing)
 - `npm run start` - Run with Node.js
 - `npm run start:bun` - Run with Bun
 - `npm run start:debug` - Run with Bun and save debug logs to `debug.log`
