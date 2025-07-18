@@ -53,24 +53,31 @@ You can also modify the configuration to pass arguments directly:
 2. Build the project: `npm run build`
 3. Restart your AI editor to reload the MCP server
 
-### Option 2: Watch Mode (Recommended)
-1. In one terminal, run: `npm run dev`
-2. In your configuration, change the command to use the TypeScript files directly:
+### Option 2: Using npm Scripts (Recommended)
+The local configuration examples use npm scripts which provide better control and debugging:
 ```json
 {
   "mcpServers": {
     "events-mcp": {
-      "command": "bun",
-      "args": ["/path/to/your/project/src/index.ts"],
+      "command": "npm",
+      "args": ["run", "start:bun"],
+      "cwd": "/path/to/your/project",
       "env": {
         "WP_URL": "https://your-wordpress-site.com",
         "WP_USERNAME": "your-username",
-        "WP_APP_PASSWORD": "your-application-password"
+        "WP_APP_PASSWORD": "your-application-password",
+        "DEBUG": "true"
       }
     }
   }
 }
 ```
+
+### Available Scripts
+- `npm run start` - Run with Node.js
+- `npm run start:bun` - Run with Bun
+- `npm run start:debug` - Run with Bun and save debug logs to `debug.log`
+- `npm run dev` - Watch mode with hot reload
 
 ## Troubleshooting
 
@@ -92,17 +99,32 @@ chmod +x dist/index.js
 ```
 
 ### Debugging
-To see debug output, you can run the server manually:
+
+#### Debug Mode
+All local configuration examples have `DEBUG: "true"` enabled, which provides detailed logging:
+- Process arguments
+- Configuration values (with sensitive data masked)
+- Server initialization steps
+- MCP communication readiness
+
+Debug logs are written to stderr, which appears in your AI editor's MCP logs.
+
+#### Manual Debugging
+To see debug output in terminal:
 ```bash
-bun dist/index.js
+DEBUG=true bun dist/index.js
 ```
 
-This will show any startup errors or missing environment variables.
-
-Or run the TypeScript file directly with Bun:
+Or use the debug script to save logs:
 ```bash
-bun src/index.ts
+npm run start:debug
+# Check debug.log for output
 ```
+
+#### Common Debug Points
+1. **Module Loading Issues**: The delay before transport initialization helps avoid Bun module output
+2. **Configuration Problems**: Debug mode shows what credentials are being used
+3. **Connection Issues**: Debug logs show each step of server initialization
 
 ## Updating Configuration Paths
 

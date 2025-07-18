@@ -12,8 +12,18 @@ dotenv.config();
  * Main entry point
  */
 async function main() {
+  // Enable debug logging if DEBUG env var is set
+  const debug = process.env.DEBUG;
+  if (debug) {
+    console.error('[DEBUG] Starting MCP server...');
+    console.error('[DEBUG] Process args:', process.argv);
+  }
+  
   // Parse command-line arguments
   const args = process.argv.slice(2);
+  if (debug) {
+    console.error('[DEBUG] Parsed args:', args);
+  }
   
   let wpUrl: string | undefined;
   let wpUsername: string | undefined;
@@ -38,6 +48,16 @@ async function main() {
   
   const serverName = process.env.MCP_SERVER_NAME || 'tec-mcp-server';
   const serverVersion = process.env.MCP_SERVER_VERSION || '1.0.0';
+
+  if (debug) {
+    console.error('[DEBUG] Configuration:', {
+      wpUrl: wpUrl ? `${wpUrl.substring(0, 20)}...` : undefined,
+      wpUsername,
+      hasPassword: !!wpAppPassword,
+      serverName,
+      serverVersion
+    });
+  }
 
   if (!wpUrl || !wpUsername || !wpAppPassword) {
     console.error('Missing required configuration.');
@@ -66,13 +86,25 @@ async function main() {
 
   // Create and connect transport
   // Add a small delay to ensure any module loading output has completed
+  if (debug) {
+    console.error('[DEBUG] Waiting for module loading to complete...');
+  }
   await new Promise(resolve => setTimeout(resolve, 100));
   
+  if (debug) {
+    console.error('[DEBUG] Creating stdio transport...');
+  }
   const transport = new StdioServerTransport();
   
+  if (debug) {
+    console.error('[DEBUG] Connecting server to transport...');
+  }
   await server.connect(transport);
   
   console.error(`${serverName} v${serverVersion} started successfully`);
+  if (debug) {
+    console.error('[DEBUG] Server is ready for MCP communication');
+  }
 }
 
 // Run the server
