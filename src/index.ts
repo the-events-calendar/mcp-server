@@ -29,22 +29,28 @@ async function main() {
   let wpUrl: string | undefined;
   let wpUsername: string | undefined;
   let wpAppPassword: string | undefined;
+  let wpIgnoreSslErrors: boolean = false;
   
   // Check if command-line arguments are provided
   if (args.length >= 3) {
     wpUrl = args[0];
     wpUsername = args[1];
     wpAppPassword = args[2];
+    // Optional 4th argument for ignoring SSL errors
+    if (args[3] === '--ignore-ssl-errors') {
+      wpIgnoreSslErrors = true;
+    }
   } else if (args.length > 0 && args.length < 3) {
     console.error('Error: Incomplete command-line arguments.');
-    console.error('Usage: npx @the-events-calendar/mcp-server <url> <username> <application-password>');
-    console.error('Or set environment variables: WP_URL, WP_USERNAME, WP_APP_PASSWORD');
+    console.error('Usage: npx @the-events-calendar/mcp-server <url> <username> <application-password> [--ignore-ssl-errors]');
+    console.error('Or set environment variables: WP_URL, WP_USERNAME, WP_APP_PASSWORD, WP_IGNORE_SSL_ERRORS');
     process.exit(1);
   } else {
     // Fall back to environment variables
     wpUrl = process.env.WP_URL;
     wpUsername = process.env.WP_USERNAME;
     wpAppPassword = process.env.WP_APP_PASSWORD;
+    wpIgnoreSslErrors = process.env.WP_IGNORE_SSL_ERRORS === 'true';
   }
   
   const serverName = process.env.MCP_SERVER_NAME || 'tec-mcp-server';
@@ -55,6 +61,7 @@ async function main() {
       wpUrl: wpUrl ? `${wpUrl.substring(0, 20)}...` : undefined,
       wpUsername,
       hasPassword: !!wpAppPassword,
+      ignoreSslErrors: wpIgnoreSslErrors,
       serverName,
       serverVersion
     });
@@ -63,11 +70,12 @@ async function main() {
   if (!wpUrl || !wpUsername || !wpAppPassword) {
     console.error('Missing required configuration.');
     console.error('\nOption 1: Use command-line arguments:');
-    console.error('  npx @the-events-calendar/mcp-server <url> <username> <application-password>');
+    console.error('  npx @the-events-calendar/mcp-server <url> <username> <application-password> [--ignore-ssl-errors]');
     console.error('\nOption 2: Set environment variables:');
     console.error('  - WP_URL: WordPress site URL');
     console.error('  - WP_USERNAME: WordPress username');
     console.error('  - WP_APP_PASSWORD: WordPress application password');
+    console.error('  - WP_IGNORE_SSL_ERRORS: Set to "true" to ignore SSL errors (optional)');
     process.exit(1);
   }
 
@@ -76,7 +84,12 @@ async function main() {
     baseUrl: wpUrl,
     username: wpUsername,
     appPassword: wpAppPassword,
+    ignoreSslErrors: wpIgnoreSslErrors,
   });
+  
+  if (wpIgnoreSslErrors) {
+    console.error('WARNING: SSL certificate verification is disabled. This should only be used for local development.');
+  }
 
   // Create MCP server
   const server = createServer({

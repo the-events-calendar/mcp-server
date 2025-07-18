@@ -61,7 +61,12 @@ Edit `.env` with your WordPress credentials:
 WP_URL=https://your-wordpress-site.com
 WP_USERNAME=your-username
 WP_APP_PASSWORD=your-application-password
+
+# Optional: For local development with self-signed certificates
+WP_IGNORE_SSL_ERRORS=true
 ```
+
+> **⚠️ Security Warning**: Only set `WP_IGNORE_SSL_ERRORS=true` for local development. Never use this in production as it disables SSL certificate verification.
 
 ### Option 2: MCP Configuration File (for Claude Desktop)
 
@@ -88,12 +93,17 @@ Add to your Claude Desktop configuration (`~/Library/Application Support/Claude/
 
 You can pass WordPress credentials directly as command-line arguments:
 ```bash
-npx @the-events-calendar/mcp-server <wordpress-url> <username> <application-password>
+npx @the-events-calendar/mcp-server <wordpress-url> <username> <application-password> [--ignore-ssl-errors]
 ```
 
 Example:
 ```bash
 npx @the-events-calendar/mcp-server https://example.com admin x1y2z3a4b5c6
+```
+
+Example for local development with self-signed certificate:
+```bash
+npx @the-events-calendar/mcp-server https://mysite.local admin mypassword --ignore-ssl-errors
 ```
 
 ### Development Mode

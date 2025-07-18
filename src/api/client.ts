@@ -1,11 +1,13 @@
 import { PostType, PostTypeMap, ApiFilters, WPError } from '../types/index.js';
 import { ApiError } from '../utils/error-handling.js';
 import { buildEndpoint } from './endpoints.js';
+import { fetch, Agent } from 'undici';
 
 export interface ApiClientConfig {
   baseUrl: string;
   username: string;
   appPassword: string;
+  ignoreSslErrors?: boolean;
 }
 
 /**
@@ -13,11 +15,21 @@ export interface ApiClientConfig {
  */
 export class ApiClient {
   private authHeader: string;
+  private dispatcher?: Agent;
 
   constructor(private config: ApiClientConfig) {
     // Create Basic Auth header
     const credentials = Buffer.from(`${config.username}:${config.appPassword}`).toString('base64');
     this.authHeader = `Basic ${credentials}`;
+    
+    // Create dispatcher if SSL errors should be ignored
+    if (config.ignoreSslErrors) {
+      this.dispatcher = new Agent({
+        connect: {
+          rejectUnauthorized: false
+        }
+      });
+    }
   }
 
   /**
@@ -29,14 +41,22 @@ export class ApiClient {
   ): Promise<T> {
     const url = `${this.config.baseUrl}${path}`;
     
-    const response = await fetch(url, {
+    // Build fetch options
+    const fetchOptions: any = {
       ...options,
       headers: {
         'Authorization': this.authHeader,
         'Content-Type': 'application/json',
         ...options.headers,
       },
-    });
+    };
+    
+    // Add dispatcher if configured
+    if (this.dispatcher) {
+      fetchOptions.dispatcher = this.dispatcher;
+    }
+    
+    const response = await fetch(url, fetchOptions);
 
     const data = await response.json();
 

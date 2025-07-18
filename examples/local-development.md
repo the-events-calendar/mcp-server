@@ -26,7 +26,12 @@ Make sure you have a `.env` file in your project root with:
 WP_URL=https://your-wordpress-site.com
 WP_USERNAME=your-username
 WP_APP_PASSWORD=your-application-password
+
+# Optional: For local sites with self-signed certificates
+WP_IGNORE_SSL_ERRORS=true
 ```
+
+> **Note**: Only use `WP_IGNORE_SSL_ERRORS=true` for local development with self-signed certificates.
 
 ### Using Command-Line Arguments
 You can also modify the configuration to pass arguments directly:
@@ -40,6 +45,24 @@ You can also modify the configuration to pass arguments directly:
         "https://your-wordpress-site.com",
         "your-username",
         "your-application-password"
+      ]
+    }
+  }
+}
+```
+
+For local sites with SSL certificate issues, add the flag:
+```json
+{
+  "mcpServers": {
+    "events-mcp": {
+      "command": "bun",
+      "args": [
+        "/path/to/your/project/dist/index.js",
+        "https://your-site.local",
+        "your-username",
+        "your-application-password",
+        "--ignore-ssl-errors"
       ]
     }
   }
