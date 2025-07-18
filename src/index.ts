@@ -65,6 +65,9 @@ async function main() {
   });
 
   // Create and connect transport
+  // Add a small delay to ensure any module loading output has completed
+  await new Promise(resolve => setTimeout(resolve, 100));
+  
   const transport = new StdioServerTransport();
   
   await server.connect(transport);
