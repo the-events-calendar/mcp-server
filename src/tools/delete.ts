@@ -8,9 +8,9 @@ import { PostType } from '../types/index.js';
  * Schema for delete tool input
  */
 export const DeleteSchema = z.object({
-  postType: PostTypeSchema,
-  id: z.number(),
-  force: z.boolean().optional().default(false),
+  postType: PostTypeSchema.describe('The type of post to delete (event, venue, organizer, or ticket)'),
+  id: z.number().describe('Post ID to delete'),
+  force: z.boolean().optional().default(false).describe('true for permanent delete, false for trash (default: false)'),
 });
 
 /**

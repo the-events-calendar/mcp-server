@@ -8,9 +8,9 @@ import { PostType } from '../types/index.js';
  * Schema for create/update tool input
  */
 export const CreateUpdateSchema = z.object({
-  postType: PostTypeSchema,
-  id: z.number().optional(),
-  data: z.record(z.string(), z.any()),
+  postType: PostTypeSchema.describe('The type of post to create or update (event, venue, organizer, or ticket)'),
+  id: z.number().optional().describe('Post ID (required for updates, omit for creation)'),
+  data: z.record(z.string(), z.any()).describe('The post data. Required fields depend on postType: Event (title, start_date, end_date), Venue (venue, address, city, country), Organizer (organizer), Ticket (name, price)'),
 });
 
 /**
