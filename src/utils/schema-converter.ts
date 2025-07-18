@@ -62,9 +62,10 @@ function convertZodType(schema: z.ZodTypeAny): any {
   // Handle default values
   if (schema instanceof z.ZodDefault) {
     const inner = convertZodType((schema._def as any).innerType);
+    const defaultValue = (schema._def as any).defaultValue;
     return {
       ...inner,
-      default: (schema._def as any).defaultValue()
+      default: typeof defaultValue === 'function' ? defaultValue() : defaultValue
     };
   }
   
