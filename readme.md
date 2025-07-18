@@ -68,6 +68,8 @@ WP_IGNORE_SSL_ERRORS=true
 
 > **⚠️ Security Warning**: Only set `WP_IGNORE_SSL_ERRORS=true` for local development. Never use this in production as it disables SSL certificate verification.
 
+> **Note**: When `WP_IGNORE_SSL_ERRORS=true` is set, the server internally sets `NODE_TLS_REJECT_UNAUTHORIZED=0` to bypass Node.js TLS certificate validation. This ensures compatibility with self-signed certificates in local WordPress installations.
+
 ### Option 2: MCP Configuration File (for Claude Desktop)
 
 Add to your Claude Desktop configuration (`~/Library/Application Support/Claude/claude_desktop_config.json`):
@@ -237,8 +239,10 @@ This server requires WordPress Application Passwords for authentication. To crea
 - `WP_URL`: Your WordPress site URL
 - `WP_USERNAME`: WordPress username
 - `WP_APP_PASSWORD`: Application password
+- `WP_IGNORE_SSL_ERRORS`: (optional) Set to "true" to ignore SSL certificate errors for local development
 - `MCP_SERVER_NAME`: (optional) Server name, defaults to "tec-mcp-server"
 - `MCP_SERVER_VERSION`: (optional) Server version, defaults to "1.0.0"
+- `DEBUG`: (optional) Set to "1" to enable debug logging
 
 ## Development
 
@@ -273,6 +277,52 @@ The server provides detailed error messages for:
 - API errors from WordPress
 
 All errors are formatted consistently and include status codes when available.
+
+## Troubleshooting
+
+### SSL Certificate Errors
+
+If you encounter "unable to verify the first certificate" errors when connecting to a local WordPress site with a self-signed certificate:
+
+1. **Using environment variables:**
+   ```bash
+   WP_IGNORE_SSL_ERRORS=true npm start
+   ```
+
+2. **Using command-line arguments:**
+   ```bash
+   npx @the-events-calendar/mcp-server https://site.local user pass --ignore-ssl-errors
+   ```
+
+3. **In your MCP configuration file:**
+   ```json
+   {
+     "env": {
+       "WP_IGNORE_SSL_ERRORS": "true"
+     }
+   }
+   ```
+
+**How it works:** When `WP_IGNORE_SSL_ERRORS` is set to `true`, the server:
+- Sets `NODE_TLS_REJECT_UNAUTHORIZED=0` to disable Node.js TLS certificate validation
+- Configures the HTTP client to use a custom agent that bypasses certificate verification
+- Uses the `undici` library's fetch implementation for consistent SSL handling
+
+**Security Note:** Only use this option for local development. In production, always use valid SSL certificates.
+
+### Debug Mode
+
+To enable detailed logging for troubleshooting:
+
+```bash
+DEBUG=1 npm start
+```
+
+This will show:
+- Tool registration details
+- API request URLs and responses
+- SSL verification status
+- MCP protocol messages (when using DebugTransport)
 
 ## License
 

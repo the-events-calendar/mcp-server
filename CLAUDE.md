@@ -79,6 +79,16 @@ Currently, the project has basic build verification. When making changes:
 - Test with a real WordPress instance using `npm run dev`
 - Verify all supported post types work with your changes
 
+### SSL Certificate Handling
+
+For local development with self-signed certificates:
+
+- Use `WP_IGNORE_SSL_ERRORS=true` environment variable or `--ignore-ssl-errors` CLI flag
+- The server sets `NODE_TLS_REJECT_UNAUTHORIZED=0` internally when SSL errors are ignored
+- Uses `undici` library's fetch with a custom Agent configured to bypass certificate checks
+- Always show warnings when SSL verification is disabled
+- This feature should only be used for local development, never in production
+
 ### MCP Tools Usage
 
 When using or testing the MCP tools:

@@ -31,7 +31,7 @@ WP_APP_PASSWORD=your-application-password
 WP_IGNORE_SSL_ERRORS=true
 ```
 
-> **Note**: Only use `WP_IGNORE_SSL_ERRORS=true` for local development with self-signed certificates.
+> **Note**: Only use `WP_IGNORE_SSL_ERRORS=true` for local development with self-signed certificates. This internally sets `NODE_TLS_REJECT_UNAUTHORIZED=0` to bypass Node.js TLS validation.
 
 ### Using Command-Line Arguments
 You can also modify the configuration to pass arguments directly:
@@ -139,6 +139,37 @@ If you get permission errors, make sure the built file is executable:
 ```bash
 chmod +x dist/index.js
 ```
+
+### SSL Certificate Errors
+
+For local WordPress sites with self-signed certificates, you'll see "unable to verify the first certificate" errors. To fix this:
+
+1. Add `WP_IGNORE_SSL_ERRORS` to your environment:
+   ```json
+   {
+     "env": {
+       "WP_URL": "https://mysite.local",
+       "WP_USERNAME": "admin",
+       "WP_APP_PASSWORD": "password",
+       "WP_IGNORE_SSL_ERRORS": "true"
+     }
+   }
+   ```
+
+2. Or use command-line arguments:
+   ```json
+   {
+     "args": [
+       "/path/to/dist/index.js",
+       "https://mysite.local",
+       "admin",
+       "password",
+       "--ignore-ssl-errors"
+     ]
+   }
+   ```
+
+**Technical Details:** The server sets `NODE_TLS_REJECT_UNAUTHORIZED=0` when SSL errors are ignored, which tells Node.js to skip certificate validation. This is combined with a custom HTTP agent configured to bypass certificate checks.
 
 ### Debugging
 
