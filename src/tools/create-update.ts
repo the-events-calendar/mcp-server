@@ -78,24 +78,5 @@ Example for creating an event:
     "venue": 123
   }
 }`,
-  inputSchema: {
-    type: 'object',
-    properties: {
-      postType: {
-        type: 'string',
-        enum: ['event', 'venue', 'organizer', 'ticket'],
-        description: 'The type of post to create or update'
-      },
-      id: {
-        type: 'number',
-        description: 'Post ID (required for updates, omit for creation)'
-      },
-      data: {
-        type: 'object',
-        description: 'The post data. Required fields depend on postType:\n- Event: title, start_date, end_date\n- Venue: venue, address, city, country\n- Organizer: organizer\n- Ticket: name, price',
-        additionalProperties: true
-      }
-    },
-    required: ['postType', 'data']
-  },
+  inputSchema: CreateUpdateSchema,
 };
