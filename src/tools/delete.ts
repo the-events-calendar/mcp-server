@@ -14,6 +14,15 @@ export const DeleteSchema = z.object({
 });
 
 /**
+ * Input shape for MCP SDK
+ */
+export const DeleteInputSchema = {
+  postType: PostTypeSchema.describe('The type of post to delete (event, venue, organizer, or ticket)'),
+  id: z.number().describe('Post ID to delete'),
+  force: z.boolean().optional().default(false).describe('true for permanent delete, false for trash (default: false)'),
+};
+
+/**
  * Delete a post
  */
 export async function deletePost(
@@ -58,5 +67,5 @@ By default moves to trash. Set force=true for permanent deletion.
 
 Example:
 {"postType": "event", "id": 123, "force": false}`,
-  inputSchema: DeleteSchema,
+  inputSchema: DeleteInputSchema,
 };

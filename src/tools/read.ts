@@ -30,6 +30,30 @@ export const ReadSchema = z.object({
 });
 
 /**
+ * Input shape for MCP SDK
+ */
+export const ReadInputSchema = {
+  postType: PostTypeSchema.describe('The type of post to read (event, venue, organizer, or ticket)'),
+  id: z.number().optional().describe('Post ID for single post retrieval'),
+  query: z.string().optional().describe('Search query string'),
+  filters: z.object({
+    page: z.number().optional().describe('Page number'),
+    per_page: z.number().optional().describe('Items per page'),
+    search: z.string().optional().describe('Search term (deprecated - use top-level query instead)'),
+    order: z.enum(['asc', 'desc']).optional().describe('Sort order'),
+    orderby: z.string().optional().describe('Field to order by'),
+    status: z.union([z.string(), z.array(z.string())]).optional().describe('Post status filter'),
+    include: z.array(z.number()).optional().describe('Include specific IDs'),
+    exclude: z.array(z.number()).optional().describe('Exclude specific IDs'),
+    // Event-specific filters
+    start_date: z.string().optional().describe('Event start date filter (YYYY-MM-DD)'),
+    end_date: z.string().optional().describe('Event end date filter (YYYY-MM-DD)'),
+    venue: z.number().optional().describe('Filter by venue ID'),
+    organizer: z.number().optional().describe('Filter by organizer ID'),
+  }).optional().describe('Optional filters for listing and searching'),
+};
+
+/**
  * Read posts - supports reading by ID, listing, and searching
  */
 export async function readPost(
@@ -111,5 +135,5 @@ Examples:
 
 // Search events
 {"postType": "event", "query": "conference", "filters": {"start_date": "2024-12-01"}}`,
-  inputSchema: ReadSchema,
+  inputSchema: ReadInputSchema,
 };

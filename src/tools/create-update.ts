@@ -14,6 +14,15 @@ export const CreateUpdateSchema = z.object({
 });
 
 /**
+ * Input shape for MCP SDK
+ */
+export const CreateUpdateInputSchema = {
+  postType: PostTypeSchema.describe('The type of post to create or update (event, venue, organizer, or ticket)'),
+  id: z.number().optional().describe('Post ID (required for updates, omit for creation)'),
+  data: z.record(z.string(), z.any()).describe('The post data. Required fields depend on postType: Event (title, start_date, end_date), Venue (venue, address, city, country), Organizer (organizer), Ticket (name, price)'),
+};
+
+/**
  * Create or update a post
  */
 export async function createUpdatePost(
@@ -78,5 +87,5 @@ Example for creating an event:
     "venue": 123
   }
 }`,
-  inputSchema: CreateUpdateSchema,
+  inputSchema: CreateUpdateInputSchema,
 };
