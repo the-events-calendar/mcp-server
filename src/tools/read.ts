@@ -94,6 +94,64 @@ export async function readPost(
  */
 export const readTool = {
   name: 'calendar_read',
-  description: 'Read a single post by ID, list posts, or search posts by query. Supports all post types (event, venue, organizer, ticket)',
-  inputSchema: ReadSchema,
+  description: `Read, list, or search calendar posts.
+
+Use cases:
+1. Get single post: provide postType and id
+2. List all posts: provide postType only
+3. Search posts: provide postType and query
+
+Examples:
+
+// Get single event
+{"postType": "event", "id": 123}
+
+// List all venues
+{"postType": "venue", "filters": {"per_page": 10}}
+
+// Search events
+{"postType": "event", "query": "conference", "filters": {"start_date": "2024-12-01"}}`,
+  inputSchema: {
+    type: 'object',
+    properties: {
+      postType: {
+        type: 'string',
+        enum: ['event', 'venue', 'organizer', 'ticket'],
+        description: 'The type of post to read'
+      },
+      id: {
+        type: 'number',
+        description: 'Post ID for single post retrieval'
+      },
+      query: {
+        type: 'string',
+        description: 'Search query string'
+      },
+      filters: {
+        type: 'object',
+        description: 'Optional filters',
+        properties: {
+          page: { type: 'number', description: 'Page number' },
+          per_page: { type: 'number', description: 'Items per page' },
+          search: { type: 'string', description: 'Search term (deprecated, use query)' },
+          status: { 
+            oneOf: [
+              { type: 'string' },
+              { type: 'array', items: { type: 'string' } }
+            ],
+            description: 'Post status filter'
+          },
+          order: { type: 'string', enum: ['asc', 'desc'], description: 'Sort order' },
+          orderby: { type: 'string', description: 'Field to order by' },
+          include: { type: 'array', items: { type: 'number' }, description: 'Include specific IDs' },
+          exclude: { type: 'array', items: { type: 'number' }, description: 'Exclude specific IDs' },
+          start_date: { type: 'string', description: 'Event start date filter (YYYY-MM-DD)' },
+          end_date: { type: 'string', description: 'Event end date filter (YYYY-MM-DD)' },
+          venue: { type: 'number', description: 'Filter by venue ID' },
+          organizer: { type: 'number', description: 'Filter by organizer ID' }
+        }
+      }
+    },
+    required: ['postType']
+  },
 };

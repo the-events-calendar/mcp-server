@@ -60,6 +60,42 @@ export async function createUpdatePost(
  */
 export const createUpdateTool = {
   name: 'calendar_create_update',
-  description: 'Create or update a post (Event, Venue, Organizer, or Ticket)',
-  inputSchema: CreateUpdateSchema,
+  description: `Create or update a calendar post (Event, Venue, Organizer, or Ticket).
+
+For creating: provide postType and data.
+For updating: provide postType, id, and data.
+
+Date format for events: "YYYY-MM-DD HH:MM:SS" (e.g., "2024-12-25 15:00:00")
+
+Example for creating an event:
+{
+  "postType": "event",
+  "data": {
+    "title": "My Event",
+    "start_date": "2024-12-25 15:00:00",
+    "end_date": "2024-12-25 17:00:00",
+    "description": "Event description",
+    "venue": 123
+  }
+}`,
+  inputSchema: {
+    type: 'object',
+    properties: {
+      postType: {
+        type: 'string',
+        enum: ['event', 'venue', 'organizer', 'ticket'],
+        description: 'The type of post to create or update'
+      },
+      id: {
+        type: 'number',
+        description: 'Post ID (required for updates, omit for creation)'
+      },
+      data: {
+        type: 'object',
+        description: 'The post data. Required fields depend on postType:\n- Event: title, start_date, end_date\n- Venue: venue, address, city, country\n- Organizer: organizer\n- Ticket: name, price',
+        additionalProperties: true
+      }
+    },
+    required: ['postType', 'data']
+  },
 };

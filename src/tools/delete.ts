@@ -52,6 +52,30 @@ export async function deletePost(
  */
 export const deleteTool = {
   name: 'calendar_delete',
-  description: 'Delete a post (move to trash or permanently delete)',
-  inputSchema: DeleteSchema,
+  description: `Delete a calendar post (Event, Venue, Organizer, or Ticket).
+
+By default moves to trash. Set force=true for permanent deletion.
+
+Example:
+{"postType": "event", "id": 123, "force": false}`,
+  inputSchema: {
+    type: 'object',
+    properties: {
+      postType: {
+        type: 'string',
+        enum: ['event', 'venue', 'organizer', 'ticket'],
+        description: 'The type of post to delete'
+      },
+      id: {
+        type: 'number',
+        description: 'Post ID to delete'
+      },
+      force: {
+        type: 'boolean',
+        description: 'true for permanent delete, false for trash (default: false)',
+        default: false
+      }
+    },
+    required: ['postType', 'id']
+  },
 };

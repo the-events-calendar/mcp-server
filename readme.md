@@ -113,6 +113,8 @@ npm start
 
 ## Available Tools
 
+> **📚 Comprehensive Guide**: For detailed examples and best practices, see the [Tools Guide](./TOOLS_GUIDE.md)
+
 ### 1. `calendar_create_update`
 
 Create or update a post. If an ID is provided, it updates; otherwise, it creates.
