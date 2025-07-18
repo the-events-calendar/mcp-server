@@ -1,7 +1,7 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { z } from 'zod';
 import { ApiClient } from './api/client.js';
 import { getToolHandlers, getToolDefinitions } from './tools/index.js';
-import { zodToJsonSchema } from './utils/schema-converter.js';
 
 export interface ServerConfig {
   name: string;
@@ -26,14 +26,14 @@ export function createServer(config: ServerConfig): McpServer {
   for (const toolDef of toolDefinitions) {
     const handler = toolHandlers[toolDef.name as keyof typeof toolHandlers];
     
-    // Convert Zod schema to JSON Schema for MCP
-    const jsonSchema = zodToJsonSchema(toolDef.inputSchema);
+    // MCP SDK expects the shape of the Zod object, not the whole schema or JSON Schema
+    const inputSchema = (toolDef.inputSchema as z.ZodObject<any>).shape;
     
     server.registerTool(
       toolDef.name,
       {
         description: toolDef.description,
-        inputSchema: jsonSchema,
+        inputSchema: inputSchema,
       },
       handler as any
     );
