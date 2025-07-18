@@ -114,6 +114,55 @@ export async function readPost(
 }
 
 /**
+ * JSON Schema for read tool
+ */
+export const ReadJsonSchema = {
+  type: 'object' as const,
+  properties: {
+    postType: {
+      type: 'string' as const,
+      enum: ['event', 'venue', 'organizer', 'ticket'],
+      description: 'The type of post to read'
+    },
+    id: {
+      type: 'number' as const,
+      description: 'Post ID for single post retrieval'
+    },
+    query: {
+      type: 'string' as const,
+      description: 'Search query string'
+    },
+    filters: {
+      type: 'object' as const,
+      description: 'Optional filters for listing and searching',
+      properties: {
+        page: { type: 'number' as const, description: 'Page number' },
+        per_page: { type: 'number' as const, description: 'Items per page' },
+        search: { type: 'string' as const, description: 'Search term (deprecated - use top-level query instead)' },
+        order: { type: 'string' as const, enum: ['asc', 'desc'], description: 'Sort order' },
+        orderby: { type: 'string' as const, description: 'Field to order by' },
+        status: {
+          oneOf: [
+            { type: 'string' as const },
+            { type: 'array' as const, items: { type: 'string' as const } }
+          ],
+          description: 'Post status filter'
+        },
+        include: { type: 'array' as const, items: { type: 'number' as const }, description: 'Include specific IDs' },
+        exclude: { type: 'array' as const, items: { type: 'number' as const }, description: 'Exclude specific IDs' },
+        start_date: { type: 'string' as const, description: 'Event start date filter (YYYY-MM-DD)' },
+        end_date: { type: 'string' as const, description: 'Event end date filter (YYYY-MM-DD)' },
+        venue: { type: 'number' as const, description: 'Filter by venue ID' },
+        organizer: { type: 'number' as const, description: 'Filter by organizer ID' }
+      },
+      additionalProperties: false
+    }
+  },
+  required: ['postType'] as const,
+  additionalProperties: false
+};
+
+/**
  * Tool definition for read
  */
 export const readTool = {
@@ -136,4 +185,5 @@ Examples:
 // Search events
 {"postType": "event", "query": "conference", "filters": {"start_date": "2024-12-01"}}`,
   inputSchema: ReadInputSchema,
+  jsonSchema: ReadJsonSchema,
 };

@@ -1,4 +1,6 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { Server } from '@modelcontextprotocol/sdk/server/index.js';
+import { ListToolsRequestSchema, CallToolRequestSchema } from '@modelcontextprotocol/sdk/types.js';
 import { ApiClient } from './api/client.js';
 import { getToolHandlers, getToolDefinitions } from './tools/index.js';
 
@@ -17,6 +19,10 @@ export function createServer(config: ServerConfig): McpServer {
   const server = new McpServer({
     name: config.name,
     version: config.version,
+  }, {
+    capabilities: {
+      tools: {}
+    }
   });
 
   // Get tool handlers and definitions
@@ -27,35 +33,60 @@ export function createServer(config: ServerConfig): McpServer {
     console.error('[DEBUG] Tool definitions:', toolDefinitions.map(t => ({
       name: t.name,
       hasInputSchema: !!t.inputSchema,
+      hasJsonSchema: !!(t as any).jsonSchema,
       inputSchemaKeys: t.inputSchema ? Object.keys(t.inputSchema) : []
     })));
   }
 
-  // Register each tool
-  for (const toolDef of toolDefinitions) {
-    const handler = toolHandlers[toolDef.name as keyof typeof toolHandlers];
-    
+  // Use the underlying server to set up tools with JSON Schema
+  const underlyingServer = (server as any).server as Server;
+  
+  // Set up tools/list handler
+  underlyingServer.setRequestHandler(ListToolsRequestSchema, async () => {
     if (debug) {
-      console.error(`[DEBUG] Registering tool: ${toolDef.name}`);
-      console.error('[DEBUG] Tool config:', {
-        name: toolDef.name,
-        description: toolDef.description?.substring(0, 100) + '...',
-        inputSchema: toolDef.inputSchema,
-      });
+      console.error('[DEBUG] Handling tools/list request');
     }
     
-    server.registerTool(
-      toolDef.name,
-      {
-        description: toolDef.description,
-        inputSchema: toolDef.inputSchema as any,
-      },
-      handler as any
-    );
+    return {
+      tools: toolDefinitions.map(toolDef => {
+        const toolInfo = {
+          name: toolDef.name,
+          description: toolDef.description,
+          inputSchema: (toolDef as any).jsonSchema || {
+            type: 'object',
+            properties: {},
+            additionalProperties: false
+          }
+        };
+        
+        if (debug) {
+          console.error('[DEBUG] Returning tool:', toolInfo);
+        }
+        
+        return toolInfo;
+      })
+    };
+  });
+  
+  // Set up tools/call handler
+  underlyingServer.setRequestHandler(CallToolRequestSchema, async (request, extra) => {
+    const { name, arguments: args } = request.params;
     
     if (debug) {
-      console.error(`[DEBUG] Tool ${toolDef.name} registered successfully`);
+      console.error(`[DEBUG] Handling tool call: ${name}`, args);
     }
+    
+    const handler = toolHandlers[name as keyof typeof toolHandlers];
+    if (!handler) {
+      throw new Error(`Tool not found: ${name}`);
+    }
+    
+    // Call the handler with the arguments
+    return await handler(args as any, extra as any);
+  });
+  
+  if (debug) {
+    console.error('[DEBUG] Tools registered successfully');
   }
 
   // Add server information resource

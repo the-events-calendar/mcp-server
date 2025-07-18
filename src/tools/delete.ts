@@ -57,6 +57,31 @@ export async function deletePost(
 }
 
 /**
+ * JSON Schema for delete tool
+ */
+export const DeleteJsonSchema = {
+  type: 'object' as const,
+  properties: {
+    postType: {
+      type: 'string' as const,
+      enum: ['event', 'venue', 'organizer', 'ticket'],
+      description: 'The type of post to delete'
+    },
+    id: {
+      type: 'number' as const,
+      description: 'Post ID to delete'
+    },
+    force: {
+      type: 'boolean' as const,
+      description: 'true for permanent delete, false for trash (default: false)',
+      default: false
+    }
+  },
+  required: ['postType', 'id'] as const,
+  additionalProperties: false
+};
+
+/**
  * Tool definition for delete
  */
 export const deleteTool = {
@@ -68,4 +93,5 @@ By default moves to trash. Set force=true for permanent deletion.
 Example:
 {"postType": "event", "id": 123, "force": false}`,
   inputSchema: DeleteInputSchema,
+  jsonSchema: DeleteJsonSchema,
 };

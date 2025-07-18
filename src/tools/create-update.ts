@@ -65,6 +65,31 @@ export async function createUpdatePost(
 }
 
 /**
+ * JSON Schema for create/update tool
+ */
+export const CreateUpdateJsonSchema = {
+  type: 'object' as const,
+  properties: {
+    postType: {
+      type: 'string' as const,
+      enum: ['event', 'venue', 'organizer', 'ticket'],
+      description: 'The type of post to create or update'
+    },
+    id: {
+      type: 'number' as const,
+      description: 'Post ID (required for updates, omit for creation)'
+    },
+    data: {
+      type: 'object' as const,
+      description: 'The post data. Required fields depend on postType: Event (title, start_date, end_date), Venue (venue, address, city, country), Organizer (organizer), Ticket (name, price)',
+      additionalProperties: true
+    }
+  },
+  required: ['postType', 'data'] as const,
+  additionalProperties: false
+};
+
+/**
  * Tool definition for create/update
  */
 export const createUpdateTool = {
@@ -88,4 +113,5 @@ Example for creating an event:
   }
 }`,
   inputSchema: CreateUpdateInputSchema,
+  jsonSchema: CreateUpdateJsonSchema,
 };
