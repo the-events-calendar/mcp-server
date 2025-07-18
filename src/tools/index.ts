@@ -2,13 +2,11 @@ import { ApiClient } from '../api/client.js';
 import { createUpdatePost, createUpdateTool } from './create-update.js';
 import { readPost, readTool } from './read.js';
 import { deletePost, deleteTool } from './delete.js';
-import { searchPosts, searchTool } from './search.js';
 
 export interface ToolHandlers {
-  create_update_post: typeof createUpdatePost;
-  read_post: typeof readPost;
-  delete_post: typeof deletePost;
-  search_posts: typeof searchPosts;
+  calendar_create_update: typeof createUpdatePost;
+  calendar_read: typeof readPost;
+  calendar_delete: typeof deletePost;
 }
 
 /**
@@ -16,10 +14,9 @@ export interface ToolHandlers {
  */
 export function getToolHandlers(apiClient: ApiClient): ToolHandlers {
   return {
-    create_update_post: (input) => createUpdatePost(input, apiClient),
-    read_post: (input) => readPost(input, apiClient),
-    delete_post: (input) => deletePost(input, apiClient),
-    search_posts: (input) => searchPosts(input, apiClient),
+    calendar_create_update: (input) => createUpdatePost(input, apiClient),
+    calendar_read: (input) => readPost(input, apiClient),
+    calendar_delete: (input) => deletePost(input, apiClient),
   };
 }
 
@@ -31,6 +28,5 @@ export function getToolDefinitions() {
     createUpdateTool,
     readTool,
     deleteTool,
-    searchTool,
   ];
 }

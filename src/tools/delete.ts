@@ -51,7 +51,7 @@ export async function deletePost(
  * Tool definition for delete
  */
 export const deleteTool = {
-  name: 'delete_post',
+  name: 'calendar_delete',
   description: 'Delete a post (move to trash or permanently delete)',
   inputSchema: DeleteSchema,
 };

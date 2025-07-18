@@ -10,7 +10,7 @@ import { PostType } from '../types/index.js';
 export const CreateUpdateSchema = z.object({
   postType: PostTypeSchema,
   id: z.number().optional(),
-  data: z.record(z.any()),
+  data: z.record(z.string(), z.any()),
 });
 
 /**
@@ -59,7 +59,7 @@ export async function createUpdatePost(
  * Tool definition for create/update
  */
 export const createUpdateTool = {
-  name: 'create_update_post',
+  name: 'calendar_create_update',
   description: 'Create or update a post (Event, Venue, Organizer, or Ticket)',
   inputSchema: CreateUpdateSchema,
 };
