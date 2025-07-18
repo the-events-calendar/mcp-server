@@ -3,6 +3,7 @@
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { ApiClient } from './api/client.js';
 import { createServer } from './server.js';
+import { DebugTransport } from './debug-transport.js';
 import dotenv from 'dotenv';
 
 // Load environment variables
@@ -94,7 +95,8 @@ async function main() {
   if (debug) {
     console.error('[DEBUG] Creating stdio transport...');
   }
-  const transport = new StdioServerTransport();
+  const stdioTransport = new StdioServerTransport();
+  const transport = debug ? new DebugTransport(stdioTransport) : stdioTransport;
   
   if (debug) {
     console.error('[DEBUG] Connecting server to transport...');

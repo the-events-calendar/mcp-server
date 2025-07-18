@@ -12,6 +12,8 @@ export interface ServerConfig {
  * Create and configure the MCP server
  */
 export function createServer(config: ServerConfig): McpServer {
+  const debug = process.env.DEBUG;
+  
   const server = new McpServer({
     name: config.name,
     version: config.version,
@@ -20,10 +22,27 @@ export function createServer(config: ServerConfig): McpServer {
   // Get tool handlers and definitions
   const toolHandlers = getToolHandlers(config.apiClient);
   const toolDefinitions = getToolDefinitions();
+  
+  if (debug) {
+    console.error('[DEBUG] Tool definitions:', toolDefinitions.map(t => ({
+      name: t.name,
+      hasInputSchema: !!t.inputSchema,
+      inputSchemaKeys: t.inputSchema ? Object.keys(t.inputSchema) : []
+    })));
+  }
 
   // Register each tool
   for (const toolDef of toolDefinitions) {
     const handler = toolHandlers[toolDef.name as keyof typeof toolHandlers];
+    
+    if (debug) {
+      console.error(`[DEBUG] Registering tool: ${toolDef.name}`);
+      console.error('[DEBUG] Tool config:', {
+        name: toolDef.name,
+        description: toolDef.description?.substring(0, 100) + '...',
+        inputSchema: toolDef.inputSchema,
+      });
+    }
     
     server.registerTool(
       toolDef.name,
@@ -33,6 +52,10 @@ export function createServer(config: ServerConfig): McpServer {
       },
       handler as any
     );
+    
+    if (debug) {
+      console.error(`[DEBUG] Tool ${toolDef.name} registered successfully`);
+    }
   }
 
   // Add server information resource
