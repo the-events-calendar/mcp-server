@@ -30,7 +30,7 @@ export const TicketSchema = BasePostSchema.extend({
   availability: TicketAvailabilitySchema.optional()
     .describe('Current availability information'),
   sku: z.string().optional().describe('Stock keeping unit for inventory tracking'),
-  provider: z.string().optional().describe('Ticketing provider (e.g., RSVP, WooCommerce)'),
+  provider: z.string().optional().describe('Ticketing provider (e.g., RSVP, Ticket Commerce, WooCommerce)'),
   rsvp: z.boolean().optional().describe('Whether this is a free RSVP ticket'),
 }).meta({
   title: 'Ticket',
