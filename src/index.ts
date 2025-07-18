@@ -9,6 +9,11 @@ import dotenv from 'dotenv';
 // Load environment variables
 dotenv.config();
 
+// Check for SSL ignore early
+if (process.env.WP_IGNORE_SSL_ERRORS === 'true' || process.argv.includes('--ignore-ssl-errors')) {
+  process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+}
+
 /**
  * Main entry point
  */

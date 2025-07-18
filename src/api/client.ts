@@ -1,7 +1,10 @@
 import { PostType, PostTypeMap, ApiFilters, WPError } from '../types/index.js';
 import { ApiError } from '../utils/error-handling.js';
 import { buildEndpoint } from './endpoints.js';
-import { fetch, Agent } from 'undici';
+import { fetch as undiciFetch, Agent } from 'undici';
+
+// Always use undici's fetch for consistent SSL handling
+const fetch = undiciFetch;
 
 export interface ApiClientConfig {
   baseUrl: string;
@@ -26,7 +29,11 @@ export class ApiClient {
     if (config.ignoreSslErrors) {
       this.dispatcher = new Agent({
         connect: {
-          rejectUnauthorized: false
+          rejectUnauthorized: false,
+          ca: undefined,
+          cert: undefined,
+          key: undefined,
+          checkServerIdentity: () => undefined
         }
       });
     }
@@ -41,6 +48,12 @@ export class ApiClient {
   ): Promise<T> {
     const url = `${this.config.baseUrl}${path}`;
     
+    const debug = process.env.DEBUG;
+    if (debug) {
+      console.error(`[DEBUG] API Request to: ${url}`);
+      console.error(`[DEBUG] SSL verification: ${this.config.ignoreSslErrors ? 'DISABLED' : 'enabled'}`);
+    }
+    
     // Build fetch options
     const fetchOptions: any = {
       ...options,
@@ -54,17 +67,42 @@ export class ApiClient {
     // Add dispatcher if configured
     if (this.dispatcher) {
       fetchOptions.dispatcher = this.dispatcher;
+      if (debug) {
+        console.error('[DEBUG] Using custom dispatcher with SSL ignore');
+      }
     }
     
-    const response = await fetch(url, fetchOptions);
+    try {
+      const response = await fetch(url, fetchOptions);
+      if (debug) {
+        console.error(`[DEBUG] Response status: ${response.status}`);
+      }
 
-    const data = await response.json();
+      const data = await response.json();
 
-    if (!response.ok) {
-      throw ApiError.fromWPError(data as WPError, response.status);
+      if (!response.ok) {
+        throw ApiError.fromWPError(data as WPError, response.status);
+      }
+
+      return data as T;
+    } catch (error: any) {
+      if (debug) {
+        console.error('[DEBUG] Request error:', error.message);
+        if (error.cause) {
+          console.error('[DEBUG] Error cause:', error.cause);
+        }
+      }
+      
+      // Re-throw with more context for SSL errors
+      if (error.message.includes('certificate') || error.message.includes('self-signed')) {
+        throw new Error(
+          `SSL Certificate Error: ${error.message}. ` +
+          `${this.config.ignoreSslErrors ? 'SSL ignore is enabled but error still occurred.' : 'To ignore SSL errors for local development, set WP_IGNORE_SSL_ERRORS=true'}`
+        );
+      }
+      
+      throw error;
     }
-
-    return data as T;
   }
 
   /**
