@@ -5,7 +5,7 @@ export interface BasePost {
   id: number;
   title: string;
   slug: string;
-  status: 'publish' | 'draft' | 'pending' | 'private' | 'trash';
+  status: 'publish' | 'draft' | 'pending' | 'private' | 'trash' | 'future';
   date: string;
   date_gmt: string;
   modified: string;
