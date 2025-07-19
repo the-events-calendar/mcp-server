@@ -240,6 +240,7 @@ This server requires WordPress Application Passwords for authentication. To crea
 - `WP_USERNAME`: WordPress username
 - `WP_APP_PASSWORD`: Application password
 - `WP_IGNORE_SSL_ERRORS`: (optional) Set to "true" to ignore SSL certificate errors for local development
+- `WP_ENFORCE_PER_PAGE_LIMIT`: (optional) Set to "false" to disable the 100 item per_page limit (defaults to "true")
 - `MCP_SERVER_NAME`: (optional) Server name, defaults to "tec-mcp-server"
 - `MCP_SERVER_VERSION`: (optional) Server version, defaults to "1.0.0"
 - `DEBUG`: (optional) Set to "1" to enable debug logging
@@ -279,6 +280,20 @@ The server provides detailed error messages for:
 All errors are formatted consistently and include status codes when available.
 
 ## Troubleshooting
+
+### Per Page Limit
+
+By default, the server limits the `per_page` parameter to 100 items to prevent performance issues and follow WordPress REST API best practices. This limit can be disabled if needed:
+
+```bash
+# Disable the per_page limit
+WP_ENFORCE_PER_PAGE_LIMIT=false npm start
+```
+
+When the limit is enforced (default behavior):
+- Requests with `per_page` > 100 will be automatically limited to 100
+- A warning will be logged when the limit is applied
+- This helps prevent timeout errors and excessive memory usage
 
 ### SSL Certificate Errors
 

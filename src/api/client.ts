@@ -11,6 +11,7 @@ export interface ApiClientConfig {
   username: string;
   appPassword: string;
   ignoreSslErrors?: boolean;
+  enforcePerPageLimit?: boolean; // Defaults to true, limits per_page to max 100
 }
 
 /**
@@ -126,8 +127,17 @@ export class ApiClient {
     const endpoint = buildEndpoint(postType);
     const params = new URLSearchParams();
 
+    // Apply per_page limit if enforced (default: true)
+    const enforceLimit = this.config.enforcePerPageLimit !== false;
+    const processedFilters = { ...filters };
+    
+    if (enforceLimit && processedFilters.per_page && processedFilters.per_page > 100) {
+      console.warn(`[ApiClient] per_page value ${processedFilters.per_page} exceeds maximum allowed (100). Limiting to 100.`);
+      processedFilters.per_page = 100;
+    }
+
     // Add filters as query parameters
-    Object.entries(filters).forEach(([key, value]) => {
+    Object.entries(processedFilters).forEach(([key, value]) => {
       if (value !== undefined) {
         if (Array.isArray(value)) {
           params.append(key, value.join(','));

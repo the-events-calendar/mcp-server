@@ -48,7 +48,7 @@ async function main() {
   } else if (args.length > 0 && args.length < 3) {
     console.error('Error: Incomplete command-line arguments.');
     console.error('Usage: npx @the-events-calendar/mcp-server <url> <username> <application-password> [--ignore-ssl-errors]');
-    console.error('Or set environment variables: WP_URL, WP_USERNAME, WP_APP_PASSWORD, WP_IGNORE_SSL_ERRORS');
+    console.error('Or set environment variables: WP_URL, WP_USERNAME, WP_APP_PASSWORD, WP_IGNORE_SSL_ERRORS, WP_ENFORCE_PER_PAGE_LIMIT');
     process.exit(1);
   } else {
     // Fall back to environment variables
@@ -90,6 +90,7 @@ async function main() {
     username: wpUsername,
     appPassword: wpAppPassword,
     ignoreSslErrors: wpIgnoreSslErrors,
+    enforcePerPageLimit: process.env.WP_ENFORCE_PER_PAGE_LIMIT !== 'false', // Defaults to true
   });
   
   if (wpIgnoreSslErrors) {
