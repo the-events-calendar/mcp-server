@@ -1,4 +1,4 @@
-import { PostType, PostTypeMap, ApiFilters, WPError, ListResponse } from '../types/index.js';
+import { PostType, PostTypeMap, FilterTypeMap, WPError, ListResponse } from '../types/index.js';
 import { ApiError } from '../utils/error-handling.js';
 import { buildEndpoint, ENDPOINTS } from './endpoints.js';
 import { fetch as undiciFetch, Agent } from 'undici';
@@ -122,7 +122,7 @@ export class ApiClient {
    */
   async listPosts<T extends PostType>(
     postType: T,
-    filters: ApiFilters = {}
+    filters: FilterTypeMap[T] = {} as FilterTypeMap[T]
   ): Promise<PostTypeMap[T][]> {
     const endpoint = buildEndpoint(postType);
     const params = new URLSearchParams();
@@ -210,11 +210,11 @@ export class ApiClient {
   async searchPosts<T extends PostType>(
     postType: T,
     query: string,
-    filters: ApiFilters = {}
+    filters: FilterTypeMap[T] = {} as FilterTypeMap[T]
   ): Promise<PostTypeMap[T][]> {
     return this.listPosts(postType, {
       ...filters,
       search: query,
-    });
+    } as FilterTypeMap[T]);
   }
 }
