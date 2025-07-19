@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "events-mcp": {
+      "command": "npx",
+      "args": [
+        "@the-events-calendar/mcp-server",
+        "https://your-wordpress-site.com",
+        "your-username",
+        "your-application-password"
+      ]
+    }
+  }
+}
