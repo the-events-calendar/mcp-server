@@ -516,4 +516,41 @@ You can also mix existing IDs with new data to create:
 }
 ```
 
-This guide should help you use The Events Calendar MCP tools effectively. Remember to check the responses for any errors and adjust your requests accordingly.
+## Available Resources
+
+In addition to tools, this MCP server provides resources that can be accessed for information:
+
+### Time Resources
+
+#### 1. Local Time (`time://local`)
+Provides the current time on the machine running the MCP server, including timezone information.
+
+**Use Case**: When you need to know the current local time or timezone of the system.
+
+#### 2. Server Time (`time://server`)
+Provides the current time according to the WordPress server's timezone settings.
+
+**Use Case**: When scheduling events or working with time-sensitive data, you need to know the WordPress site's configured timezone.
+
+**Example Response**:
+```json
+{
+  "datetime": "2024-12-19 14:30:45",
+  "timestamp": 1734620445,
+  "timezone": "America/New_York",
+  "timezone_offset": "-05:00",
+  "date": "2024-12-19",
+  "time": "14:30:45",
+  "iso8601": "2024-12-19T19:30:45.000Z",
+  "utc_datetime": "2024-12-19 19:30:45",
+  "utc_offset_seconds": 18000
+}
+```
+
+### Server Information (`info://server`)
+
+Provides metadata about the MCP server itself, including supported post types and available tools.
+
+**Use Case**: When you need to verify what capabilities the server supports or which version is running.
+
+This guide should help you use The Events Calendar MCP tools and resources effectively. Remember to check the responses for any errors and adjust your requests accordingly.
