@@ -125,13 +125,11 @@ This versatile tool can read single posts, list multiple posts, or search posts.
 ```json
 {
   "postType": "venue",
-  "filters": {
-    "per_page": 20,
-    "page": 1,
-    "status": "publish",
-    "order": "desc",
-    "orderby": "date"
-  }
+  "per_page": 20,
+  "page": 1,
+  "status": "publish",
+  "order": "desc",
+  "orderby": "date"
 }
 ```
 
@@ -141,10 +139,8 @@ This versatile tool can read single posts, list multiple posts, or search posts.
 {
   "postType": "event",
   "query": "music festival",
-  "filters": {
-    "per_page": 10,
-    "status": "publish"
-  }
+  "per_page": 10,
+  "status": "publish"
 }
 ```
 
@@ -153,11 +149,11 @@ This versatile tool can read single posts, list multiple posts, or search posts.
 ```json
 {
   "postType": "event",
-  "filters": {
+  "eventFilters": {
     "start_date": "2024-07-01",
-    "end_date": "2024-07-31",
-    "status": "publish"
-  }
+    "end_date": "2024-07-31"
+  },
+  "status": "publish"
 }
 ```
 
@@ -166,10 +162,35 @@ This versatile tool can read single posts, list multiple posts, or search posts.
 ```json
 {
   "postType": "event",
-  "filters": {
+  "eventFilters": {
     "venue": 42,
-    "organizer": 15,
-    "per_page": 50
+    "organizer": 15
+  },
+  "per_page": 50
+}
+```
+
+#### Filter Venues by Location
+
+```json
+{
+  "postType": "venue",
+  "venueFilters": {
+    "city": "San Francisco",
+    "state": "CA"
+  }
+}
+```
+
+#### Filter Tickets by Event
+
+```json
+{
+  "postType": "ticket",
+  "ticketFilters": {
+    "event": 123,
+    "available": true,
+    "type": "paid"
   }
 }
 ```
@@ -274,6 +295,50 @@ To create multiple events, call the tool multiple times:
 ```
 
 ## Field Reference
+
+### Common Filter Fields
+These filters are available for all post types at the top level:
+- `page` - Page number for pagination
+- `per_page` - Number of items per page
+- `order` - Sort order ("asc" or "desc")
+- `orderby` - Field to order by
+- `status` - Post status (e.g., "publish", "draft")
+- `include` - Array of IDs to include
+- `exclude` - Array of IDs to exclude
+- `query` - Search query string
+
+### Post-Type Specific Filters
+
+#### eventFilters (for events only)
+- `start_date` - Filter by start date (YYYY-MM-DD)
+- `end_date` - Filter by end date (YYYY-MM-DD)
+- `venue` - Filter by venue ID
+- `organizer` - Filter by organizer ID
+- `featured` - Filter featured events (boolean)
+- `categories` - Filter by category IDs
+- `tags` - Filter by tag IDs
+
+#### venueFilters (for venues only)
+- `city` - Filter by city
+- `state` - Filter by state/province
+- `country` - Filter by country
+- `zip` - Filter by postal code
+- `geo_lat` - Filter by latitude (with geo_lng)
+- `geo_lng` - Filter by longitude (with geo_lat)
+- `radius` - Filter by radius in km (with geo_lat/geo_lng)
+
+#### organizerFilters (for organizers only)
+- `email` - Filter by email
+- `website` - Filter by website
+- `phone` - Filter by phone
+
+#### ticketFilters (for tickets only)
+- `event` - Filter by event ID
+- `provider` - Filter by provider (RSVP, Ticket Commerce, WooCommerce)
+- `type` - Filter by ticket type ("rsvp" or "paid")
+- `available` - Filter by availability (boolean)
+- `min_price` - Filter by minimum price
+- `max_price` - Filter by maximum price
 
 ### Event Fields
 - `title` (required) - Event name
