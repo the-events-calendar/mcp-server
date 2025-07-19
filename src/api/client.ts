@@ -1,6 +1,6 @@
-import { PostType, PostTypeMap, ApiFilters, WPError } from '../types/index.js';
+import { PostType, PostTypeMap, ApiFilters, WPError, ListResponse } from '../types/index.js';
 import { ApiError } from '../utils/error-handling.js';
-import { buildEndpoint } from './endpoints.js';
+import { buildEndpoint, ENDPOINTS } from './endpoints.js';
 import { fetch as undiciFetch, Agent } from 'undici';
 
 // Always use undici's fetch for consistent SSL handling
@@ -150,7 +150,14 @@ export class ApiClient {
     const queryString = params.toString();
     const url = queryString ? `${endpoint}?${queryString}` : endpoint;
 
-    return this.request<PostTypeMap[T][]>(url);
+    // The API returns a wrapper object with the data under a key matching the resource type
+    const response = await this.request<ListResponse<PostTypeMap[T]>>(url);
+    
+    // Extract the array from the response based on the resource type
+    const resourceKey = ENDPOINTS[postType].resource as keyof ListResponse<PostTypeMap[T]>;
+    const data = response[resourceKey] as PostTypeMap[T][] | undefined;
+    
+    return data || [];
   }
 
   /**

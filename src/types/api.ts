@@ -13,16 +13,20 @@ export interface WPError {
 }
 
 export interface ListResponse<T> {
-  items: T[];
+  events?: T[];     // For events endpoint
+  venues?: T[];     // For venues endpoint
+  organizers?: T[]; // For organizers endpoint
+  tickets?: T[];    // For tickets endpoint
+  rest_url: string;
   total: number;
-  pages: number;
-  page: number;
-  per_page: number;
+  total_pages: number;
+  next_rest_url?: string;
+  previous_rest_url?: string;
 }
 
-export interface SingleResponse<T> {
-  item: T;
-}
+// Single items are returned directly without wrapper
+// The Events Calendar API returns single items as the direct response
+// without any wrapping object, so we don't need a SingleResponse interface
 
 export interface DeleteResponse {
   deleted: boolean;
