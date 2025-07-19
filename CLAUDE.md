@@ -9,7 +9,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Development with hot reload**: `npm run dev`
 - **Build TypeScript**: `npm run build`
 - **Run compiled server**: `npm start`
-- **Quick start**: `bunx @the-events-calendar/mcp-server`
+- **Quick start**: `npx @the-events-calendar/mcp-server`
 
 ### Environment Setup
 

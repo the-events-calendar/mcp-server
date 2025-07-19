@@ -5,20 +5,20 @@ An MCP (Model Context Protocol) server that provides unified CRUD operations for
 ## Quick Start
 
 ### Option 1: Using Command-Line Arguments
-Run directly with bunx and provide credentials as arguments:
+Run directly with npx and provide credentials as arguments:
 ```bash
-bunx @the-events-calendar/mcp-server <wordpress-url> <username> <application-password>
+npx @the-events-calendar/mcp-server <wordpress-url> <username> <application-password>
 ```
 
 Example:
 ```bash
-bunx @the-events-calendar/mcp-server https://mysite.com myuser myapp-pass-word
+npx @the-events-calendar/mcp-server https://mysite.com myuser myapp-pass-word
 ```
 
 ### Option 2: Using Environment Variables
 Set up environment variables and run without arguments:
 ```bash
-bunx @the-events-calendar/mcp-server
+npx @the-events-calendar/mcp-server
 ```
 
 ## Features
@@ -77,7 +77,7 @@ Add to your Claude Desktop configuration (`~/Library/Application Support/Claude/
 {
   "mcpServers": {
     "events-mcp": {
-      "command": "bunx",
+      "command": "npx",
       "args": ["@the-events-calendar/mcp-server"],
       "env": {
         "WP_URL": "https://your-wordpress-site.com",

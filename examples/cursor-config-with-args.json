@@ -1,7 +1,7 @@
 {
   "mcpServers": {
     "events-mcp": {
-      "command": "bunx",
+      "command": "npx",
       "args": [
         "@the-events-calendar/mcp-server",
         "https://your-wordpress-site.com",
