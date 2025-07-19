@@ -31,6 +31,7 @@ npx @the-events-calendar/mcp-server
   - Tickets (`ticket`)
 - **Full CRUD Operations**: Create, Read, Update, Delete with proper error handling
 - **Search Functionality**: Integrated into read tool, supports all post types
+- **Nested Creation**: Create venues and organizers inline when creating events
 - **Type Safety**: Full TypeScript support with proper type definitions
 
 ## Installation

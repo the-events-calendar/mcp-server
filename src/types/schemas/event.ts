@@ -1,5 +1,7 @@
 import { z } from 'zod';
 import { BasePostSchema } from './base.js';
+import { VenueSchema } from './venue.js';
+import { OrganizerSchema } from './organizer.js';
 
 /**
  * Date details schema for events
@@ -52,8 +54,16 @@ export const EventSchema = BasePostSchema.extend({
   end_date_details: DateDetailsSchema.describe('Breakdown of the end date'),
   all_day: z.boolean().describe('Whether this is an all-day event'),
   timezone: z.string().describe('Timezone identifier (e.g., America/New_York)'),
-  venue: z.number().optional().describe('ID of the associated venue post'),
-  organizers: z.array(z.number()).optional().describe('Array of organizer post IDs'),
+  venue: z.union([
+    z.number().describe('ID of an existing venue post'),
+    VenueSchema.omit({ id: true, type: true }).describe('New venue data to create')
+  ]).optional().describe('Venue - either an existing venue ID or new venue data to create'),
+  organizers: z.array(
+    z.union([
+      z.number().describe('ID of an existing organizer post'),
+      OrganizerSchema.omit({ id: true, type: true }).describe('New organizer data to create')
+    ])
+  ).optional().describe('Array of organizers - either existing organizer IDs or new organizer data to create'),
   cost: z.string().optional().describe('Event cost - accepts numeric values (e.g., "25", "19.99"), currency formatted strings (e.g., "$25", "€19.99"), ranges (e.g., "$10-$50"), or the word "Free" for free events'),
   cost_details: CostDetailsSchema.optional().describe('Detailed cost breakdown'),
   website: z.string().optional().describe('External event website URL'),

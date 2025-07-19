@@ -381,4 +381,74 @@ Here's a complete example of creating an event with a new venue:
 }
 ```
 
+## Nested Creation (New Feature)
+
+You can now create venues and organizers directly when creating an event, without needing separate API calls:
+
+### Creating Event with New Venue and Organizers
+
+```json
+{
+  "postType": "event",
+  "data": {
+    "title": "Developer Summit 2024",
+    "start_date": "2024-09-10 09:00:00",
+    "end_date": "2024-09-10 18:00:00",
+    "description": "Annual developer conference",
+    "venue": {
+      "venue": "Tech Hub Center",
+      "address": "456 Innovation Blvd",
+      "city": "Seattle",
+      "state": "WA",
+      "country": "United States",
+      "zip": "98101",
+      "phone": "(206) 555-0123",
+      "website": "https://techhub.center",
+      "status": "publish"
+    },
+    "organizers": [
+      {
+        "organizer": "DevCon Organization",
+        "email": "info@devcon.org",
+        "phone": "(206) 555-0456",
+        "website": "https://devcon.org",
+        "status": "publish"
+      },
+      {
+        "organizer": "Tech Community Seattle",
+        "email": "hello@techseattle.com",
+        "status": "publish"
+      }
+    ],
+    "cost": "$199",
+    "status": "publish"
+  }
+}
+```
+
+### Mixing IDs and New Data
+
+You can also mix existing IDs with new data to create:
+
+```json
+{
+  "postType": "event",
+  "data": {
+    "title": "Workshop Series",
+    "start_date": "2024-10-01 14:00:00",
+    "end_date": "2024-10-01 17:00:00",
+    "venue": 42,  // Use existing venue ID
+    "organizers": [
+      15,  // Use existing organizer ID
+      {
+        "organizer": "New Workshop Leader",
+        "email": "workshops@example.com",
+        "status": "publish"
+      }
+    ],
+    "status": "publish"
+  }
+}
+```
+
 This guide should help you use The Events Calendar MCP tools effectively. Remember to check the responses for any errors and adjust your requests accordingly.
