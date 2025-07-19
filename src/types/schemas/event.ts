@@ -54,7 +54,7 @@ export const EventSchema = BasePostSchema.extend({
   timezone: z.string().describe('Timezone identifier (e.g., America/New_York)'),
   venue: z.number().optional().describe('ID of the associated venue post'),
   organizers: z.array(z.number()).optional().describe('Array of organizer post IDs'),
-  cost: z.string().optional().describe('Cost description or amount'),
+  cost: z.string().optional().describe('Event cost - accepts numeric values (e.g., "25", "19.99"), currency formatted strings (e.g., "$25", "€19.99"), ranges (e.g., "$10-$50"), or the word "Free" for free events'),
   cost_details: CostDetailsSchema.optional().describe('Detailed cost breakdown'),
   website: z.string().optional().describe('External event website URL'),
   description: z.string().optional().describe('Full HTML description of the event'),

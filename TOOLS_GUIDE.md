@@ -34,6 +34,7 @@ This tool creates new posts or updates existing ones. If you provide an `id`, it
     "venue": 42,
     "organizer": 15,
     "url": "https://example.com/summer-fest",
+    "cost": "$45",
     "all_day": false,
     "status": "publish"
   }
@@ -215,6 +216,7 @@ const eventData = {
     "start_date": nextMonday.toISOString().slice(0, 19).replace('T', ' '),
     "end_date": new Date(nextMonday.getTime() + 2 * 60 * 60 * 1000).toISOString().slice(0, 19).replace('T', ' '),
     "description": "Regular weekly team sync",
+    "cost": "Free",
     "status": "publish"
   }
 };
@@ -282,7 +284,7 @@ To create multiple events, call the tool multiple times:
 - `organizer` - Organizer ID (number)
 - `all_day` - Boolean for all-day events
 - `url` - Event website
-- `cost` - Ticket price or cost description
+- `cost` - Event cost (e.g., "Free", "$25", "€19.99", "$10-$50")
 - `cost_details` - Additional cost information
 - `status` - "publish", "draft", "pending", etc.
 
