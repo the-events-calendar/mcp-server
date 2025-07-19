@@ -5,9 +5,9 @@ This guide provides comprehensive examples and best practices for using The Even
 ## Overview
 
 The MCP server provides three main tools:
-- `calendar_create_update` - Create new posts or update existing ones
-- `calendar_read` - Read, list, or search posts
-- `calendar_delete` - Delete posts (trash or permanent)
+- `calendar_create_update_entity` - Create new posts or update existing ones
+- `calendar_read_entity` - Read, list, or search posts
+- `calendar_delete_entity` - Delete posts (trash or permanent)
 
 All tools support four post types:
 - `event` - Calendar events
@@ -17,7 +17,7 @@ All tools support four post types:
 
 ## Tool Usage Examples
 
-### 1. calendar_create_update
+### 1. calendar_create_update_entity
 
 This tool creates new posts or updates existing ones. If you provide an `id`, it updates; otherwise, it creates.
 
@@ -106,7 +106,7 @@ To update, include the `id` field:
 }
 ```
 
-### 2. calendar_read
+### 2. calendar_read_entity
 
 This versatile tool can read single posts, list multiple posts, or search posts.
 
@@ -173,7 +173,7 @@ This versatile tool can read single posts, list multiple posts, or search posts.
 }
 ```
 
-### 3. calendar_delete
+### 3. calendar_delete_entity
 
 Delete posts either to trash (soft delete) or permanently.
 
@@ -328,7 +328,7 @@ Common errors and solutions:
 
 4. **Referenced ID Not Found**
    - When setting venue or organizer, ensure the ID exists
-   - Use calendar_read to find valid IDs first
+   - Use calendar_read_entity to find valid IDs first
 
 ## Tips for AI Assistants
 

@@ -96,9 +96,9 @@ When using or testing the MCP tools:
 1. **Refer to TOOLS_GUIDE.md** for comprehensive examples and patterns
 2. **Date formats are strict**: Events require "YYYY-MM-DD HH:MM:SS" format
 3. **All tools use JSON Schema** for input validation (not Zod schemas directly)
-4. **Tool names use calendar_ prefix**: calendar_create_update, calendar_read, calendar_delete
+4. **Tool names use calendar_*_entity pattern**: calendar_create_update_entity, calendar_read_entity, calendar_delete_entity
 
 Common tool usage patterns:
 - Always check if venues/organizers exist before referencing them in events
-- Use calendar_read to list available posts before creating relationships
-- The unified calendar_read tool handles single reads, listing, and searching
+- Use calendar_read_entity to list available posts before creating relationships
+- The unified calendar_read_entity tool handles single reads, listing, and searching

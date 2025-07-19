@@ -93,7 +93,7 @@ export const CreateUpdateJsonSchema = {
  * Tool definition for create/update
  */
 export const createUpdateTool = {
-  name: 'calendar_create_update',
+  name: 'calendar_create_update_entity',
   description: `Create or update a calendar post (Event, Venue, Organizer, or Ticket).
 
 For creating: provide postType and data.

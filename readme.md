@@ -127,7 +127,7 @@ npm start
 
 > **📚 Comprehensive Guide**: For detailed examples and best practices, see the [Tools Guide](./TOOLS_GUIDE.md)
 
-### 1. `calendar_create_update`
+### 1. `calendar_create_update_entity`
 
 Create or update a post. If an ID is provided, it updates; otherwise, it creates.
 
@@ -149,7 +149,7 @@ Create or update a post. If an ID is provided, it updates; otherwise, it creates
 }
 ```
 
-### 2. `calendar_read`
+### 2. `calendar_read_entity`
 
 Read a single post by ID, list posts, or search posts by query. Supports all post types.
 
@@ -205,7 +205,7 @@ Search posts:
 }
 ```
 
-### 3. `calendar_delete`
+### 3. `calendar_delete_entity`
 
 Delete a post (soft delete to trash or permanent delete).
 

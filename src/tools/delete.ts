@@ -85,7 +85,7 @@ export const DeleteJsonSchema = {
  * Tool definition for delete
  */
 export const deleteTool = {
-  name: 'calendar_delete',
+  name: 'calendar_delete_entity',
   description: `Delete a calendar post (Event, Venue, Organizer, or Ticket).
 
 By default moves to trash. Set force=true for permanent deletion.

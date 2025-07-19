@@ -166,7 +166,7 @@ export const ReadJsonSchema = {
  * Tool definition for read
  */
 export const readTool = {
-  name: 'calendar_read',
+  name: 'calendar_read_entity',
   description: `Read, list, or search calendar posts.
 
 Use cases:

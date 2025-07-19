@@ -4,9 +4,9 @@ import { readPost, readTool } from './read.js';
 import { deletePost, deleteTool } from './delete.js';
 
 export interface ToolHandlers {
-  calendar_create_update: typeof createUpdatePost;
-  calendar_read: typeof readPost;
-  calendar_delete: typeof deletePost;
+  calendar_create_update_entity: typeof createUpdatePost;
+  calendar_read_entity: typeof readPost;
+  calendar_delete_entity: typeof deletePost;
 }
 
 /**
@@ -14,9 +14,9 @@ export interface ToolHandlers {
  */
 export function getToolHandlers(apiClient: ApiClient): ToolHandlers {
   return {
-    calendar_create_update: (input) => createUpdatePost(input, apiClient),
-    calendar_read: (input) => readPost(input, apiClient),
-    calendar_delete: (input) => deletePost(input, apiClient),
+    calendar_create_update_entity: (input) => createUpdatePost(input, apiClient),
+    calendar_read_entity: (input) => readPost(input, apiClient),
+    calendar_delete_entity: (input) => deletePost(input, apiClient),
   };
 }
 
