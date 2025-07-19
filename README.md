@@ -4,8 +4,10 @@ An MCP (Model Context Protocol) server that provides unified CRUD operations for
 
 ## Quick Start
 
-Run directly with bunx (no installation required):
+Run directly with npx or bunx (no installation required):
 ```bash
+npx @the-events-calendar/mcp-server
+# or
 bunx @the-events-calendar/mcp-server
 ```
 
@@ -13,12 +15,13 @@ bunx @the-events-calendar/mcp-server
 
 - **Unified Tools**: Single tools for Create/Update, Read, Delete, and Search operations across all post types
 - **Supported Post Types**:
-  - Events (`event`)
-  - Venues (`venue`)
-  - Organizers (`organizer`)
-  - Tickets (`ticket`)
+  - Events (`tribe_events`)
+  - Venues (`tribe_venue`)
+  - Organizers (`tribe_organizer`)
+  - Tickets (`tribe_rsvp_tickets` or `tec_tc_ticket`)
 - **Full CRUD Operations**: Create, Read, Update, Delete with proper error handling
-- **Search Functionality**: Currently supports event search, extensible to other types
+- **Search Functionality**: Integrated search via the read tool with query parameter
+- **Nested Creation**: Create venues and organizers inline when creating events
 - **Type Safety**: Full TypeScript support with proper type definitions
 
 ## Installation
@@ -49,14 +52,16 @@ WP_USERNAME=your-username
 WP_APP_PASSWORD=your-application-password
 ```
 
-### Option 2: MCP Configuration File (for Claude Desktop)
+### Option 2: MCP Configuration File
 
-Add to your Claude Desktop configuration (`~/Library/Application Support/Claude/claude_desktop_config.json`):
+For different MCP clients, add to your configuration file:
+
+**Claude Desktop** (`~/Library/Application Support/Claude/claude_desktop_config.json`):
 ```json
 {
   "mcpServers": {
     "tec-mcp": {
-      "command": "bunx",
+      "command": "npx",
       "args": ["@the-events-calendar/mcp-server"],
       "env": {
         "WP_URL": "https://your-wordpress-site.com",
@@ -67,6 +72,25 @@ Add to your Claude Desktop configuration (`~/Library/Application Support/Claude/
   }
 }
 ```
+
+**For local development with SSL issues**, add:
+```json
+{
+  "mcpServers": {
+    "tec-mcp": {
+      "command": "npx",
+      "args": ["@the-events-calendar/mcp-server", "--ignore-ssl-errors"],
+      "env": {
+        "WP_URL": "https://your-local-site.test",
+        "WP_USERNAME": "your-username",
+        "WP_APP_PASSWORD": "your-application-password"
+      }
+    }
+  }
+}
+```
+
+See the `examples/` directory for configuration examples for Cursor, Windsurf, and other MCP clients.
 
 ## Usage
 
@@ -85,21 +109,49 @@ npm run build
 npm start
 ```
 
+### Alternative Runtimes
+
+Run with Bun:
+```bash
+npm run start:bun
+```
+
+Run with debug output:
+```bash
+npm run start:debug
+```
+
+### Local Development with Self-Signed Certificates
+
+For local WordPress sites using self-signed SSL certificates:
+
+1. Use the `--ignore-ssl-errors` CLI flag:
+```bash
+npx @the-events-calendar/mcp-server --ignore-ssl-errors
+```
+
+2. Or set the environment variable:
+```bash
+WP_IGNORE_SSL_ERRORS=true npx @the-events-calendar/mcp-server
+```
+
+**⚠️ Warning**: Only use SSL bypass for local development. Never disable SSL verification in production.
+
 ## Available Tools
 
-### 1. `create_update_post`
+### 1. `calendar_create_update_entity`
 
 Create or update a post. If an ID is provided, it updates; otherwise, it creates.
 
 **Parameters:**
-- `postType`: "event" | "venue" | "organizer" | "ticket"
+- `postType`: "tribe_events" | "tribe_venue" | "tribe_organizer" | "tribe_rsvp_tickets" | "tec_tc_ticket"
 - `id`: (optional) Post ID for updates
 - `data`: Post data object (fields depend on post type)
 
-**Example:**
+**Example - Create Event:**
 ```json
 {
-  "postType": "event",
+  "postType": "tribe_events",
   "data": {
     "title": "My Event",
     "start_date": "2024-12-25 10:00:00",
@@ -109,65 +161,98 @@ Create or update a post. If an ID is provided, it updates; otherwise, it creates
 }
 ```
 
-### 2. `read_post`
-
-Read a single post by ID or list posts with filters.
-
-**Parameters:**
-- `postType`: "event" | "venue" | "organizer" | "ticket"
-- `id`: (optional) Post ID for single post
-- `filters`: (optional) Filtering options
-  - `page`: Page number
-  - `per_page`: Items per page
-  - `search`: Search term
-  - `status`: Post status
-  - `order`: "asc" | "desc"
-  - `orderby`: Field to order by
-
-**Example:**
+**Example - Create Event with Nested Venue:**
 ```json
 {
-  "postType": "event",
-  "filters": {
-    "per_page": 10,
-    "status": "publish"
+  "postType": "tribe_events",
+  "data": {
+    "title": "Conference 2024",
+    "start_date": "2024-12-25 10:00:00",
+    "end_date": "2024-12-25 18:00:00",
+    "venue": {
+      "venue": "Convention Center",
+      "address": "123 Main St",
+      "city": "New York",
+      "state_province": "NY",
+      "zip": "10001",
+      "country": "US"
+    }
   }
 }
 ```
 
-### 3. `delete_post`
+### 2. `calendar_read_entity`
+
+Read a single post by ID or list posts with filters.
+
+**Parameters:**
+- `postType`: "tribe_events" | "tribe_venue" | "tribe_organizer" | "tribe_rsvp_tickets" | "tec_tc_ticket"
+- `id`: (optional) Post ID for single post
+- `query`: (optional) Search term
+- Common filters (all post types):
+  - `page`: Page number
+  - `per_page`: Items per page (max 100 by default)
+  - `status`: Post status
+  - `order`: "asc" | "desc"
+  - `orderby`: Field to order by
+  - `include`: Array of specific IDs to include
+  - `exclude`: Array of specific IDs to exclude
+- `eventFilters`: (optional) Event-specific filters
+  - `start_date`: Events starting after this date
+  - `end_date`: Events ending before this date
+  - `venue`: Filter by venue ID
+  - `organizer`: Filter by organizer ID
+
+**Example - List Events:**
+```json
+{
+  "postType": "tribe_events",
+  "per_page": 10,
+  "status": "publish",
+  "eventFilters": {
+    "start_date": "2024-12-01",
+    "end_date": "2024-12-31"
+  }
+}
+```
+
+**Example - Search Events:**
+```json
+{
+  "postType": "tribe_events",
+  "query": "conference",
+  "per_page": 20
+}
+```
+
+### 3. `calendar_delete_entity`
 
 Delete a post (soft delete to trash or permanent delete).
 
 **Parameters:**
-- `postType`: "event" | "venue" | "organizer" | "ticket"
+- `postType`: "tribe_events" | "tribe_venue" | "tribe_organizer" | "tribe_rsvp_tickets" | "tec_tc_ticket"
 - `id`: Post ID to delete
 - `force`: (optional) true for permanent delete, false for trash
 
 **Example:**
 ```json
 {
-  "postType": "event",
+  "postType": "tribe_events",
   "id": 123,
   "force": false
 }
 ```
 
-### 4. `search_posts`
+### 4. Search Functionality
 
-Search for posts by keyword. Currently supports events only.
-
-**Parameters:**
-- `postType`: "event" (will be extended)
-- `query`: Search string
-- `filters`: (optional) Additional filters
+Search is integrated into the `calendar_read_entity` tool using the `query` parameter.
 
 **Example:**
 ```json
 {
-  "postType": "event",
+  "postType": "tribe_events",
   "query": "conference",
-  "filters": {
+  "eventFilters": {
     "start_date": "2024-12-01",
     "end_date": "2024-12-31"
   }
@@ -189,6 +274,8 @@ This server requires WordPress Application Passwords for authentication. To crea
 - `WP_URL`: Your WordPress site URL
 - `WP_USERNAME`: WordPress username
 - `WP_APP_PASSWORD`: Application password
+- `WP_IGNORE_SSL_ERRORS`: (optional) Set to "true" for local development with self-signed certificates
+- `WP_ENFORCE_PER_PAGE_LIMIT`: (optional) Set to "false" to disable the 100 item per_page limit
 - `MCP_SERVER_NAME`: (optional) Server name, defaults to "tec-mcp-server"
 - `MCP_SERVER_VERSION`: (optional) Server version, defaults to "1.0.0"
 
@@ -201,13 +288,18 @@ This server requires WordPress Application Passwords for authentication. To crea
 │   ├── api/          # WordPress REST API client
 │   ├── tools/        # MCP tool implementations
 │   ├── types/        # TypeScript type definitions
+│   │   └── schemas/  # Zod validation schemas
 │   ├── utils/        # Utility functions
 │   ├── server.ts     # MCP server setup
 │   └── index.ts      # Entry point
+├── examples/         # Configuration examples for various MCP clients
 ├── dist/             # Compiled JavaScript (generated)
+├── TOOLS_GUIDE.md    # Detailed tool documentation
 ├── package.json
 └── tsconfig.json
 ```
+
+This project uses ES modules (`"type": "module"` in package.json).
 
 ### Adding New Post Types
 
@@ -223,8 +315,33 @@ The server provides detailed error messages for:
 - Invalid post types
 - Missing required fields
 - API errors from WordPress
+- Date format errors (must be "YYYY-MM-DD HH:MM:SS")
+- SSL certificate errors (with helpful guidance)
 
 All errors are formatted consistently and include status codes when available.
+
+## Important Notes
+
+### Date Format
+All date fields must use the format: `"YYYY-MM-DD HH:MM:SS"` (e.g., "2024-12-25 10:00:00")
+
+### Per-Page Limits
+By default, the API limits results to 100 items per page. To disable this limit:
+- Set `WP_ENFORCE_PER_PAGE_LIMIT=false` in your environment
+- Or use smaller `per_page` values in your requests
+
+### Post Type Names
+Use the full WordPress post type names:
+- Events: `tribe_events`
+- Venues: `tribe_venue`
+- Organizers: `tribe_organizer`
+- Tickets: `tribe_rsvp_tickets` or `tec_tc_ticket`
+
+## Additional Resources
+
+- [TOOLS_GUIDE.md](./TOOLS_GUIDE.md) - Comprehensive guide with examples for all tools
+- [examples/](./examples/) - Configuration examples for various MCP clients
+- [GitHub Issues](https://github.com/the-events-calendar/mcp-server/issues) - Report bugs or request features
 
 ## License
 
