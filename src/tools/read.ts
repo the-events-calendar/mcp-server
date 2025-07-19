@@ -280,6 +280,8 @@ export const readTool = {
   name: 'calendar_read_entity',
   description: `Read, list, or search calendar posts.
 
+IMPORTANT: When working with date filters or interpreting event times, use the time://local resource to understand the current time context and timezone. This ensures accurate date comparisons and filtering.
+
 Use cases:
 1. Get single post: provide postType and id
 2. List all posts: provide postType only

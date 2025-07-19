@@ -81,7 +81,7 @@ export const CreateUpdateJsonSchema = {
     },
     data: {
       type: 'object' as const,
-      description: 'The post data. Required fields depend on postType: Event (title, start_date, end_date), Venue (venue, address, city, country), Organizer (organizer), Ticket (name, price)',
+      description: 'The post data. Required fields depend on postType: Event (title, start_date, end_date), Venue (venue, address, city, country), Organizer (organizer), Ticket (name, price). For date/time fields, consult time://local resource for current time context.',
       additionalProperties: true
     }
   },
@@ -98,6 +98,8 @@ export const createUpdateTool = {
 
 For creating: provide postType and data.
 For updating: provide postType, id, and data.
+
+IMPORTANT: When working with dates and times, use the time://local resource to get the current local time and timezone information. This ensures accurate scheduling based on the user's context.
 
 Date format for events: "YYYY-MM-DD HH:MM:SS" (e.g., "2024-12-25 15:00:00")
 
