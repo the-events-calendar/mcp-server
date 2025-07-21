@@ -9,8 +9,8 @@ import { PostType } from '../types/index.js';
  * Event-specific filters
  */
 const EventFiltersSchema = z.object({
-  start_date: z.string().optional().describe('Event start date filter (YYYY-MM-DD)'),
-  end_date: z.string().optional().describe('Event end date filter (YYYY-MM-DD)'),
+  start_date: z.string().optional().describe('Event start date filter (YYYY-MM-DD). ⚠️ Read time://local FIRST to get current date.'),
+  end_date: z.string().optional().describe('Event end date filter (YYYY-MM-DD). ⚠️ Read time://local FIRST to get current date.'),
   venue: z.number().optional().describe('Filter by venue ID'),
   organizer: z.number().optional().describe('Filter by organizer ID'),
   featured: z.boolean().optional().describe('Filter featured events'),
@@ -221,8 +221,8 @@ export const ReadJsonSchema = {
       type: 'object' as const,
       description: 'Event-specific filters (only used when postType is "event")',
       properties: {
-        start_date: { type: 'string' as const, description: 'Event start date filter (YYYY-MM-DD)' },
-        end_date: { type: 'string' as const, description: 'Event end date filter (YYYY-MM-DD)' },
+        start_date: { type: 'string' as const, description: 'Event start date filter (YYYY-MM-DD). ⚠️ Read time://local FIRST to get current date.' },
+        end_date: { type: 'string' as const, description: 'Event end date filter (YYYY-MM-DD). ⚠️ Read time://local FIRST to get current date.' },
         venue: { type: 'number' as const, description: 'Filter by venue ID' },
         organizer: { type: 'number' as const, description: 'Filter by organizer ID' },
         featured: { type: 'boolean' as const, description: 'Filter featured events' },
@@ -280,12 +280,13 @@ export const readTool = {
   name: 'calendar_read_entity',
   description: `Read, list, or search calendar posts.
 
-IMPORTANT: When working with date filters or interpreting event times, use the time://local resource to understand the current time context and timezone. This ensures accurate date comparisons and filtering.
+⚠️ IMPORTANT: When filtering events by date (e.g., "events this week", "upcoming events"), ALWAYS read the time://local resource FIRST to get the current date and calculate the appropriate date filters. Never assume or hardcode dates.
 
 Use cases:
 1. Get single post: provide postType and id
 2. List all posts: provide postType only
 3. Search posts: provide postType and query
+4. Filter by dates: FIRST read time://local, THEN apply filters
 
 Examples:
 
@@ -295,14 +296,16 @@ Examples:
 // List all venues with pagination
 {"postType": "venue", "per_page": 10}
 
-// Search events with date filter
+// Search events with date filter (after reading time://local)
 {"postType": "event", "query": "conference", "eventFilters": {"start_date": "2024-12-01"}}
 
 // Filter venues by location
 {"postType": "venue", "venueFilters": {"city": "San Francisco", "state": "CA"}}
 
 // List available tickets for an event
-{"postType": "ticket", "ticketFilters": {"event": 123, "available": true}}`,
+{"postType": "ticket", "ticketFilters": {"event": 123, "available": true}}
+
+Note: Use time://server resource if you need WordPress server time instead of local time.`,
   inputSchema: ReadInputSchema,
   jsonSchema: ReadJsonSchema,
 };

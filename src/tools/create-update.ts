@@ -81,7 +81,7 @@ export const CreateUpdateJsonSchema = {
     },
     data: {
       type: 'object' as const,
-      description: 'The post data. Required fields depend on postType: Event (title, start_date, end_date), Venue (venue, address, city, country), Organizer (organizer), Ticket (name, price). For date/time fields, consult time://local resource for current time context.',
+      description: 'The post data. Required fields depend on postType: Event (title, start_date, end_date), Venue (venue, address, city, country), Organizer (organizer), Ticket (name, price). ⚠️ ALWAYS read time://local resource FIRST before setting any date/time fields to ensure correct relative dates.',
       additionalProperties: true
     }
   },
@@ -99,9 +99,13 @@ export const createUpdateTool = {
 For creating: provide postType and data.
 For updating: provide postType, id, and data.
 
-IMPORTANT: When working with dates and times, use the time://local resource to get the current local time and timezone information. This ensures accurate scheduling based on the user's context.
+⚠️ IMPORTANT: Before creating events with dates/times, ALWAYS read the time://local resource first to get the current date, time, and timezone context. This ensures you create events with accurate dates relative to "today" or "tomorrow".
 
 Date format for events: "YYYY-MM-DD HH:MM:SS" (e.g., "2024-12-25 15:00:00")
+
+Workflow example:
+1. First: Read time://local to get current date/time
+2. Then: Create event with calculated dates
 
 Example for creating an event:
 {
@@ -113,7 +117,9 @@ Example for creating an event:
     "description": "Event description",
     "venue": 123
   }
-}`,
+}
+
+Note: The time://server resource provides WordPress server time if needed.`,
   inputSchema: CreateUpdateInputSchema,
   jsonSchema: CreateUpdateJsonSchema,
 };
