@@ -28,50 +28,13 @@ function generatePhpFile(): string {
  * @subpackage MCP
  */
 
-// Prevent direct access
+// Prevent direct access.
 if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-/**
- * Get MCP tool definitions for The Events Calendar
- * 
- * @return array Tool definitions in MCP format
- */
-function tec_get_mcp_tool_definitions() {
-    return json_decode( '${toolDefinitionsJson}', true );
-}
-
-/**
- * Get a specific tool definition by name
- * 
- * @param string $tool_name The name of the tool
- * @return array|null Tool definition or null if not found
- */
-function tec_get_mcp_tool_definition( $tool_name ) {
-    $tools = tec_get_mcp_tool_definitions();
-    
-    foreach ( $tools as $tool ) {
-        if ( $tool['name'] === $tool_name ) {
-            return $tool;
-        }
-    }
-    
-    return null;
-}
-
-/**
- * Get all tool names
- * 
- * @return array List of tool names
- */
-function tec_get_mcp_tool_names() {
-    $tools = tec_get_mcp_tool_definitions();
-    return array_column( $tools, 'name' );
-}
-
-// For direct inclusion, return the tool definitions
-return tec_get_mcp_tool_definitions();
+// For direct inclusion, return the tool definitions.
+return json_decode( '${toolDefinitionsJson}', true );
 `;
 }
 
