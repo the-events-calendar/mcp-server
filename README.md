@@ -266,7 +266,43 @@ Delete a post (soft delete to trash or permanent delete).
 }
 ```
 
-### 4. Search Functionality
+### 4. `tec-calendar-current-datetime`
+
+Get current date and time information for both local and WordPress server timezones. Essential for creating events with proper relative dates.
+
+**Parameters:** None
+
+**Example:**
+```json
+{}
+```
+
+**Response:**
+```json
+{
+  "local": {
+    "datetime": "2024-12-19 14:30:45",
+    "timezone": "America/New_York",
+    "date": "2024-12-19",
+    "time": "14:30:45"
+  },
+  "server": {
+    "datetime": "2024-12-19 19:30:45",
+    "timezone": "UTC",
+    "date": "2024-12-19",
+    "time": "19:30:45"
+  },
+  "usage_hints": {
+    "date_format": "YYYY-MM-DD HH:MM:SS",
+    "example_event_dates": {
+      "today_3pm": "2024-12-19 15:00:00",
+      "tomorrow_10am": "2024-12-20 10:00:00"
+    }
+  }
+}
+```
+
+### 5. Search Functionality
 
 Search is integrated into the `tec-calendar-read-entities` tool using the `query` parameter.
 

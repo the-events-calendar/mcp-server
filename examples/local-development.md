@@ -29,6 +29,10 @@ WP_APP_PASSWORD=your-application-password
 
 # Optional: For local sites with self-signed certificates
 WP_IGNORE_SSL_ERRORS=true
+
+# Optional: Logging configuration
+LOG_LEVEL=info  # Options: error, warn, info, http, verbose, debug, silly
+LOG_FILE=/path/to/logfile.log  # Optional: write logs to file
 ```
 
 > **Note**: Only use `WP_IGNORE_SSL_ERRORS=true` for local development with self-signed certificates. This internally sets `NODE_TLS_REJECT_UNAUTHORIZED=0` to bypass Node.js TLS validation.
@@ -62,7 +66,9 @@ For local sites with SSL certificate issues, add the flag:
         "https://your-site.local",
         "your-username",
         "your-application-password",
-        "--ignore-ssl-errors"
+        "--ignore-ssl-errors",
+        "--log-level", "debug",
+        "--log-file", "/path/to/logfile.log"
       ]
     }
   }
@@ -90,7 +96,8 @@ The local configuration examples use direct execution to avoid npm output interf
         "WP_URL": "https://your-wordpress-site.com",
         "WP_USERNAME": "your-username",
         "WP_APP_PASSWORD": "your-application-password",
-        "DEBUG": "true"
+        "DEBUG": "true",
+        "LOG_LEVEL": "debug"
       }
     }
   }
@@ -108,7 +115,8 @@ The local configuration examples use direct execution to avoid npm output interf
         "WP_URL": "https://your-wordpress-site.com",
         "WP_USERNAME": "your-username",
         "WP_APP_PASSWORD": "your-application-password",
-        "DEBUG": "true"
+        "DEBUG": "true",
+        "LOG_LEVEL": "debug"
       }
     }
   }
