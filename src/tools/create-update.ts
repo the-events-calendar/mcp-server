@@ -33,19 +33,31 @@ export async function createUpdatePost(
     // Validate input
     const { postType, id, data } = CreateUpdateSchema.parse(input);
     
-    // Transform data for venue and organizer if title is provided
+    console.error('[DEBUG] Original data:', JSON.stringify(data, null, 2));
+    
+    // Transform data for venue and organizer
     const transformedData = { ...data };
-    if ((postType === 'venue' || postType === 'organizer') && transformedData.title) {
-      // Convert 'title' to 'venue' or 'organizer' field
-      transformedData[postType] = transformedData.title;
-      delete transformedData.title;
+    if (postType === 'venue' || postType === 'organizer') {
+      // If title is provided, also set it as venue/organizer field
+      if (transformedData.title) {
+        transformedData[postType] = transformedData.title;
+      }
+      // If venue/organizer field is provided but not title, set title from it
+      else if (transformedData[postType] && !transformedData.title) {
+        transformedData.title = transformedData[postType];
+      }
+      // If neither is provided, that's an error we'll catch in validation
     }
+    
+    console.error('[DEBUG] Transformed data:', JSON.stringify(transformedData, null, 2));
     
     // Get the appropriate schema for the post type
     const dataSchema = getSchemaForPostType(postType as PostType);
     
     // Validate the data against the schema
     const validatedData = dataSchema.parse(transformedData);
+    
+    console.error('[DEBUG] Validated data:', JSON.stringify(validatedData, null, 2));
 
     // Perform create or update
     const result = id
