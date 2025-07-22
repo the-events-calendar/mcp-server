@@ -3,6 +3,7 @@ import { PostTypeSchema } from '../utils/validation.js';
 import { formatError } from '../utils/error-handling.js';
 import { ApiClient } from '../api/client.js';
 import { PostType } from '../types/index.js';
+import { getLogger } from '../utils/logger.js';
 
 
 /**
@@ -104,19 +105,25 @@ export async function readPost(
   input: z.infer<typeof ReadSchema>,
   apiClient: ApiClient
 ) {
+  const logger = getLogger();
+  
   try {
     // Validate input
     const parsedInput = ReadSchema.parse(input);
     const { postType, id, query, page, per_page, order, orderby, status, include, exclude,
             eventFilters, venueFilters, organizerFilters, ticketFilters } = parsedInput;
+    
+    logger.verbose(`Reading ${postType}`, { id, query, hasFilters: !!(eventFilters || venueFilters || organizerFilters || ticketFilters) });
 
     let result;
     let resultDescription: string;
 
     if (id) {
       // Get single post by ID
+      logger.info(`Getting single ${postType} with ID: ${id}`);
       result = await apiClient.getPost(postType as PostType, id);
       resultDescription = `Retrieved ${postType} with ID ${id}`;
+      logger.debug(`Found ${postType}:`, { id: result.id, title: result.title });
     } else {
       // Prepare filters based on post type
       let typeSpecificFilters = {};
@@ -148,12 +155,21 @@ export async function readPost(
         search: query,
         ...typeSpecificFilters,
       };
+      
+      logger.debug('Applied filters:', searchFilters);
 
       // List or search posts
+      if (query) {
+        logger.info(`Searching ${postType} with query: "${query}"`);
+      } else {
+        logger.info(`Listing ${postType}s`, { filters: Object.keys(typeSpecificFilters) });
+      }
+      
       result = await apiClient.listPosts(postType as PostType, searchFilters || {});
       
       const posts = Array.isArray(result) ? result : [result];
       const count = posts.length;
+      logger.debug(`Found ${count} ${postType}(s)`);
       
       if (query) {
         const searchTerm = query;
@@ -176,6 +192,7 @@ export async function readPost(
       ],
     };
   } catch (error) {
+    logger.error(`Failed to read ${input.postType}:`, error);
     return {
       content: [formatError(error)],
       isError: true,

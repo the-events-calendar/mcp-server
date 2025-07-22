@@ -3,6 +3,7 @@ import { PostTypeSchema, getSchemaForPostType } from '../utils/validation.js';
 import { formatError } from '../utils/error-handling.js';
 import { ApiClient } from '../api/client.js';
 import { PostType } from '../types/index.js';
+import { getLogger } from '../utils/logger.js';
 
 /**
  * Schema for create/update tool input
@@ -29,9 +30,12 @@ export async function createUpdatePost(
   input: z.infer<typeof CreateUpdateSchema>,
   apiClient: ApiClient
 ) {
+  const logger = getLogger();
+  
   try {
     // Validate input
     const { postType, id, data } = CreateUpdateSchema.parse(input);
+    logger.verbose(`${id ? 'Updating' : 'Creating'} ${postType}`, { id, dataKeys: Object.keys(data) });
     
     // Transform data for venue and organizer
     const transformedData = { ...data };
@@ -39,24 +43,31 @@ export async function createUpdatePost(
       // If title is provided, also set it as venue/organizer field
       if (transformedData.title) {
         transformedData[postType] = transformedData.title;
+        logger.debug(`Transformed title to ${postType} field:`, transformedData.title);
       }
       // If venue/organizer field is provided but not title, set title from it
       else if (transformedData[postType] && !transformedData.title) {
         transformedData.title = transformedData[postType];
+        logger.debug(`Set title from ${postType} field:`, transformedData[postType]);
       }
       // If neither is provided, that's an error we'll catch in validation
     }
     
     // Get the appropriate schema for the post type
     const dataSchema = getSchemaForPostType(postType as PostType);
+    logger.silly('Using schema for validation:', postType);
     
     // Validate the data against the schema
     const validatedData = dataSchema.parse(transformedData);
+    logger.debug('Validated data:', validatedData);
 
     // Perform create or update
+    logger.info(`${id ? 'Updating' : 'Creating'} ${postType}${id ? ` with ID ${id}` : ''}`);
     const result = id
       ? await apiClient.updatePost(postType as PostType, id, validatedData)
       : await apiClient.createPost(postType as PostType, validatedData);
+    
+    logger.info(`Successfully ${id ? 'updated' : 'created'} ${postType} with ID: ${result.id}`);
 
     return {
       content: [
@@ -71,6 +82,7 @@ export async function createUpdatePost(
       ],
     };
   } catch (error) {
+    logger.error(`Failed to ${input.id ? 'update' : 'create'} post:`, error);
     return {
       content: [formatError(error)],
       isError: true,

@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { ApiClient } from '../api/client.js';
 import { formatError } from '../utils/error-handling.js';
+import { getLogger } from '../utils/logger.js';
 
 interface TimeInfo {
   datetime: string;
@@ -119,7 +120,7 @@ async function getServerTime(apiClient: ApiClient): Promise<TimeInfo> {
     };
   } catch (error) {
     // Fallback to local time if we can't determine server time
-    console.error('Failed to get server time:', error);
+    getLogger().warn('Failed to get server time, using local time as fallback:', error);
     const localTime = getLocalTime();
     return {
       ...localTime,
@@ -145,10 +146,16 @@ export async function getCurrentDateTime(
   _input: z.infer<typeof DateTimeSchema>,
   apiClient: ApiClient
 ) {
+  const logger = getLogger();
+  logger.verbose('Getting current date/time information');
+  
   try {
     // Get both local and server time
     const localTime = getLocalTime();
+    logger.debug('Local time:', localTime);
+    
     const serverTime = await getServerTime(apiClient);
+    logger.debug('Server time:', serverTime);
 
     const result = {
       local: localTime,

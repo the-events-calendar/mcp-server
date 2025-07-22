@@ -51,6 +51,10 @@ Edit `.env` with your WordPress credentials:
 WP_URL=https://your-wordpress-site.com
 WP_USERNAME=your-username
 WP_APP_PASSWORD=your-application-password
+
+# Optional logging configuration
+LOG_LEVEL=info  # Options: error, warn, info, http, verbose, debug, silly
+LOG_FILE=/path/to/logfile.log  # Optional: write logs to file
 ```
 
 ### Option 2: MCP Configuration File
@@ -137,6 +141,24 @@ WP_IGNORE_SSL_ERRORS=true npx @the-events-calendar/mcp-server
 ```
 
 **⚠️ Warning**: Only use SSL bypass for local development. Never disable SSL verification in production.
+
+## Command Line Options
+
+When running the server via command line, you can use these options:
+
+```bash
+npx @the-events-calendar/mcp-server <url> <username> <app-password> [options]
+```
+
+**Options:**
+- `--ignore-ssl-errors` - Ignore SSL certificate errors (for local development)
+- `--log-level <level>` - Set logging level (error, warn, info, http, verbose, debug, silly)
+- `--log-file <path>` - Write logs to a file in addition to console
+
+**Example:**
+```bash
+npx @the-events-calendar/mcp-server https://mysite.local admin "xxxx xxxx xxxx xxxx xxxx xxxx" --log-level debug --log-file ./mcp.log
+```
 
 ## Available Tools
 

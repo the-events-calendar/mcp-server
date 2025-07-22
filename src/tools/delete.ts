@@ -3,6 +3,7 @@ import { PostTypeSchema } from '../utils/validation.js';
 import { formatError } from '../utils/error-handling.js';
 import { ApiClient } from '../api/client.js';
 import { PostType } from '../types/index.js';
+import { getLogger } from '../utils/logger.js';
 
 /**
  * Schema for delete tool input
@@ -29,12 +30,17 @@ export async function deletePost(
   input: z.infer<typeof DeleteSchema>,
   apiClient: ApiClient
 ) {
+  const logger = getLogger();
+  
   try {
     // Validate input
     const { postType, id, force } = DeleteSchema.parse(input);
+    logger.verbose(`Deleting ${postType} with ID: ${id}`, { force });
 
     // Delete the post
+    logger.info(`${force ? 'Permanently deleting' : 'Moving to trash'} ${postType} with ID: ${id}`);
     const result = await apiClient.deletePost(postType as PostType, id, force);
+    logger.info(`Successfully deleted ${postType} with ID: ${id}`);
 
     return {
       content: [
@@ -49,6 +55,7 @@ export async function deletePost(
       ],
     };
   } catch (error) {
+    logger.error(`Failed to delete ${input.postType} with ID ${input.id}:`, error);
     return {
       content: [formatError(error)],
       isError: true,

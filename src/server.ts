@@ -3,6 +3,7 @@ import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { ListToolsRequestSchema, CallToolRequestSchema } from '@modelcontextprotocol/sdk/types.js';
 import { ApiClient } from './api/client.js';
 import { getToolHandlers, getToolDefinitions } from './tools/index.js';
+import { getLogger } from './utils/logger.js';
 
 export interface ServerConfig {
   name: string;
@@ -14,7 +15,7 @@ export interface ServerConfig {
  * Create and configure the MCP server
  */
 export function createServer(config: ServerConfig): McpServer {
-  const debug = process.env.DEBUG;
+  const logger = getLogger();
   
   const server = new McpServer({
     name: config.name,
@@ -29,23 +30,19 @@ export function createServer(config: ServerConfig): McpServer {
   const toolHandlers = getToolHandlers(config.apiClient);
   const toolDefinitions = getToolDefinitions();
   
-  if (debug) {
-    console.error('[DEBUG] Tool definitions:', toolDefinitions.map(t => ({
-      name: t.name,
-      hasInputSchema: !!t.inputSchema,
-      hasJsonSchema: !!(t as any).jsonSchema,
-      inputSchemaKeys: t.inputSchema ? Object.keys(t.inputSchema) : []
-    })));
-  }
+  logger.debug('Tool definitions:', toolDefinitions.map(t => ({
+    name: t.name,
+    hasInputSchema: !!t.inputSchema,
+    hasJsonSchema: !!(t as any).jsonSchema,
+    inputSchemaKeys: t.inputSchema ? Object.keys(t.inputSchema) : []
+  })));
 
   // Use the underlying server to set up tools with JSON Schema
   const underlyingServer = (server as any).server as Server;
   
   // Set up tools/list handler
   underlyingServer.setRequestHandler(ListToolsRequestSchema, async () => {
-    if (debug) {
-      console.error('[DEBUG] Handling tools/list request');
-    }
+    logger.verbose('Handling tools/list request');
     
     return {
       tools: toolDefinitions.map(toolDef => {
@@ -59,9 +56,7 @@ export function createServer(config: ServerConfig): McpServer {
           }
         };
         
-        if (debug) {
-          console.error('[DEBUG] Returning tool:', toolInfo);
-        }
+        logger.silly('Returning tool:', toolInfo);
         
         return toolInfo;
       })
@@ -72,9 +67,7 @@ export function createServer(config: ServerConfig): McpServer {
   underlyingServer.setRequestHandler(CallToolRequestSchema, async (request, extra) => {
     const { name, arguments: args } = request.params;
     
-    if (debug) {
-      console.error(`[DEBUG] Handling tool call: ${name}`, args);
-    }
+    logger.verbose(`Handling tool call: ${name}`, args);
     
     const handler = toolHandlers[name as keyof typeof toolHandlers];
     if (!handler) {
@@ -85,9 +78,7 @@ export function createServer(config: ServerConfig): McpServer {
     return await handler(args as any, extra as any);
   });
   
-  if (debug) {
-    console.error('[DEBUG] Tools registered successfully');
-  }
+  logger.info('Tools registered successfully');
 
 
   return server;

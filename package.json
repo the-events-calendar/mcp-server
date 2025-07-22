@@ -44,6 +44,7 @@
     "@modelcontextprotocol/sdk": "^1.15.1",
     "dotenv": "^17.2.0",
     "undici": "^7.11.0",
+    "winston": "^3.17.0",
     "zod": "^4.0.5"
   },
   "devDependencies": {
