@@ -77,7 +77,7 @@ export const DateTimeJsonSchema = {
  * Tool definition for datetime
  */
 export const dateTimeTool = {
-  name: 'current_datetime',
+  name: 'calendar_current_datetime',
   description: `Get current date and time information for both local and WordPress server timezones.
 
 ⚠️ CRITICAL: You MUST call this tool BEFORE:

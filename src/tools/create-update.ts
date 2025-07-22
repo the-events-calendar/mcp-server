@@ -33,8 +33,6 @@ export async function createUpdatePost(
     // Validate input
     const { postType, id, data } = CreateUpdateSchema.parse(input);
     
-    console.error('[DEBUG] Original data:', JSON.stringify(data, null, 2));
-    
     // Transform data for venue and organizer
     const transformedData = { ...data };
     if (postType === 'venue' || postType === 'organizer') {
@@ -49,15 +47,11 @@ export async function createUpdatePost(
       // If neither is provided, that's an error we'll catch in validation
     }
     
-    console.error('[DEBUG] Transformed data:', JSON.stringify(transformedData, null, 2));
-    
     // Get the appropriate schema for the post type
     const dataSchema = getSchemaForPostType(postType as PostType);
     
     // Validate the data against the schema
     const validatedData = dataSchema.parse(transformedData);
-    
-    console.error('[DEBUG] Validated data:', JSON.stringify(validatedData, null, 2));
 
     // Perform create or update
     const result = id
@@ -101,7 +95,7 @@ export const CreateUpdateJsonSchema = {
     },
     data: {
       type: 'object' as const,
-      description: 'The post data. Required fields depend on postType: Event (title, start_date, end_date), Venue (title or venue, address, city, country), Organizer (title or organizer), Ticket (name, price). Note: For Venue and Organizer, you can use "title" which will be converted to the appropriate field. ⚠️ ALWAYS call current_datetime tool FIRST before setting any date/time fields to ensure correct relative dates.',
+      description: 'The post data. Required fields depend on postType: Event (title, start_date, end_date), Venue (title or venue, address, city, country), Organizer (title or organizer), Ticket (name, price). Note: For Venue and Organizer, you can use "title" which will be converted to the appropriate field. ⚠️ ALWAYS call calendar_current_datetime tool FIRST before setting any date/time fields to ensure correct relative dates.',
       additionalProperties: true
     }
   },
@@ -119,12 +113,12 @@ export const createUpdateTool = {
 For creating: provide postType and data.
 For updating: provide postType, id, and data.
 
-⚠️ IMPORTANT: Before creating events with dates/times, ALWAYS call the current_datetime tool first to get the current date, time, and timezone context. This ensures you create events with accurate dates relative to "today" or "tomorrow".
+⚠️ IMPORTANT: Before creating events with dates/times, ALWAYS call the calendar_current_datetime tool first to get the current date, time, and timezone context. This ensures you create events with accurate dates relative to "today" or "tomorrow".
 
 Date format for events: "YYYY-MM-DD HH:MM:SS" (e.g., "2024-12-25 15:00:00")
 
 Workflow example:
-1. First: Call current_datetime tool to get current date/time
+1. First: Call calendar_current_datetime tool to get current date/time
 2. Then: Create event with calculated dates based on the response
 
 Examples:

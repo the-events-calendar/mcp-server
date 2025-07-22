@@ -8,7 +8,7 @@ export interface ToolHandlers {
   calendar_create_update_entity: typeof createUpdatePost;
   calendar_read_entity: typeof readPost;
   calendar_delete_entity: typeof deletePost;
-  current_datetime: typeof getCurrentDateTime;
+  calendar_current_datetime: typeof getCurrentDateTime;
 }
 
 /**
@@ -19,7 +19,7 @@ export function getToolHandlers(apiClient: ApiClient): ToolHandlers {
     calendar_create_update_entity: (input) => createUpdatePost(input, apiClient),
     calendar_read_entity: (input) => readPost(input, apiClient),
     calendar_delete_entity: (input) => deletePost(input, apiClient),
-    current_datetime: (input) => getCurrentDateTime(input, apiClient),
+    calendar_current_datetime: (input) => getCurrentDateTime(input, apiClient),
   };
 }
 
