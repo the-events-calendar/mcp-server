@@ -23,8 +23,7 @@ bunx @the-events-calendar/mcp-server
 - **Search Functionality**: Integrated search via the read tool with query parameter
 - **Nested Creation**: Create venues and organizers inline when creating events
 - **Type Safety**: Full TypeScript support with proper type definitions
-- **Time Resources**: Access local and server time with timezone information
-- **MCP Resources**: Provides server info and time data through resource URIs
+- **DateTime Tool**: Get current local and server time with timezone information
 
 ## Installation
 
@@ -52,6 +51,10 @@ Edit `.env` with your WordPress credentials:
 WP_URL=https://your-wordpress-site.com
 WP_USERNAME=your-username
 WP_APP_PASSWORD=your-application-password
+
+# Optional logging configuration
+LOG_LEVEL=info  # Options: error, warn, info, http, verbose, debug, silly
+LOG_FILE=/path/to/logfile.log  # Optional: write logs to file
 ```
 
 ### Option 2: MCP Configuration File
@@ -139,9 +142,27 @@ WP_IGNORE_SSL_ERRORS=true npx @the-events-calendar/mcp-server
 
 **⚠️ Warning**: Only use SSL bypass for local development. Never disable SSL verification in production.
 
+## Command Line Options
+
+When running the server via command line, you can use these options:
+
+```bash
+npx @the-events-calendar/mcp-server <url> <username> <app-password> [options]
+```
+
+**Options:**
+- `--ignore-ssl-errors` - Ignore SSL certificate errors (for local development)
+- `--log-level <level>` - Set logging level (error, warn, info, http, verbose, debug, silly)
+- `--log-file <path>` - Write logs to a file in addition to console
+
+**Example:**
+```bash
+npx @the-events-calendar/mcp-server https://mysite.local admin "xxxx xxxx xxxx xxxx xxxx xxxx" --log-level debug --log-file ./mcp.log
+```
+
 ## Available Tools
 
-### 1. `calendar_create_update_entity`
+### 1. `tec-calendar-create-update-entities`
 
 Create or update a post. If an ID is provided, it updates; otherwise, it creates.
 
@@ -183,7 +204,7 @@ Create or update a post. If an ID is provided, it updates; otherwise, it creates
 }
 ```
 
-### 2. `calendar_read_entity`
+### 2. `tec-calendar-read-entities`
 
 Read a single post by ID or list posts with filters.
 
@@ -227,7 +248,7 @@ Read a single post by ID or list posts with filters.
 }
 ```
 
-### 3. `calendar_delete_entity`
+### 3. `tec-calendar-delete-entities`
 
 Delete a post (soft delete to trash or permanent delete).
 
@@ -245,9 +266,45 @@ Delete a post (soft delete to trash or permanent delete).
 }
 ```
 
-### 4. Search Functionality
+### 4. `tec-calendar-current-datetime`
 
-Search is integrated into the `calendar_read_entity` tool using the `query` parameter.
+Get current date and time information for both local and WordPress server timezones. Essential for creating events with proper relative dates.
+
+**Parameters:** None
+
+**Example:**
+```json
+{}
+```
+
+**Response:**
+```json
+{
+  "local": {
+    "datetime": "2024-12-19 14:30:45",
+    "timezone": "America/New_York",
+    "date": "2024-12-19",
+    "time": "14:30:45"
+  },
+  "server": {
+    "datetime": "2024-12-19 19:30:45",
+    "timezone": "UTC",
+    "date": "2024-12-19",
+    "time": "19:30:45"
+  },
+  "usage_hints": {
+    "date_format": "YYYY-MM-DD HH:MM:SS",
+    "example_event_dates": {
+      "today_3pm": "2024-12-19 15:00:00",
+      "tomorrow_10am": "2024-12-20 10:00:00"
+    }
+  }
+}
+```
+
+### 5. Search Functionality
+
+Search is integrated into the `tec-calendar-read-entities` tool using the `query` parameter.
 
 **Example:**
 ```json
@@ -261,81 +318,6 @@ Search is integrated into the `calendar_read_entity` tool using the `query` para
 }
 ```
 
-## Available Resources
-
-### 1. `time://local`
-
-Provides current local time with timezone information.
-
-**Returns:**
-```json
-{
-  "datetime": "2024-12-19 14:30:45",
-  "timestamp": 1734620445,
-  "timezone": "America/New_York",
-  "timezone_offset": "-05:00",
-  "date": "2024-12-19",
-  "time": "14:30:45",
-  "iso8601": "2024-12-19T19:30:45.000Z",
-  "utc_datetime": "2024-12-19 19:30:45",
-  "utc_offset_seconds": 18000
-}
-```
-
-### 2. `time://server`
-
-Provides current WordPress server time with timezone information.
-
-**Returns:**
-```json
-{
-  "datetime": "2024-12-19 19:30:45",
-  "timestamp": 1734620445,
-  "timezone": "UTC",
-  "timezone_offset": "+00:00",
-  "date": "2024-12-19",
-  "time": "19:30:45",
-  "iso8601": "2024-12-19T19:30:45.000Z",
-  "utc_datetime": "2024-12-19 19:30:45",
-  "utc_offset_seconds": 0
-}
-```
-
-**Note:** Server timezone is determined from WordPress settings. If settings are not accessible, falls back to local time.
-
-### 3. `info://server`
-
-Provides information about the MCP server itself.
-
-**Returns:**
-```json
-{
-  "name": "tec-mcp-server",
-  "version": "1.0.0",
-  "description": "MCP server for The Events Calendar and Event Tickets",
-  "supportedPostTypes": [
-    "tribe_events",
-    "tribe_venue",
-    "tribe_organizer",
-    "tribe_rsvp_tickets",
-    "tec_tc_ticket"
-  ],
-  "tools": [
-    {
-      "name": "calendar_create_update_entity",
-      "description": "Create or update calendar entities"
-    },
-    {
-      "name": "calendar_read_entity",
-      "description": "Read calendar entities"
-    },
-    {
-      "name": "calendar_delete_entity",
-      "description": "Delete calendar entities"
-    }
-  ]
-}
-```
 
 ## Authentication
 

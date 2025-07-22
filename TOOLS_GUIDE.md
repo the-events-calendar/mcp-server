@@ -5,9 +5,10 @@ This guide provides comprehensive examples and best practices for using The Even
 ## Overview
 
 The MCP server provides three main tools:
-- `calendar_create_update_entity` - Create new posts or update existing ones
-- `calendar_read_entity` - Read, list, or search posts
-- `calendar_delete_entity` - Delete posts (trash or permanent)
+- `tec-calendar-create-update-entities` - Create new posts or update existing ones
+- `tec-calendar-read-entities` - Read, list, or search posts
+- `tec-calendar-delete-entities` - Delete posts (trash or permanent)
+- `tec-calendar-current-datetime` - Get current date and time information
 
 All tools support four post types:
 - `event` - Calendar events
@@ -17,7 +18,7 @@ All tools support four post types:
 
 ## Tool Usage Examples
 
-### 1. calendar_create_update_entity
+### 1. tec-calendar-create-update-entities
 
 This tool creates new posts or updates existing ones. If you provide an `id`, it updates; otherwise, it creates.
 
@@ -107,7 +108,7 @@ To update, include the `id` field:
 }
 ```
 
-### 2. calendar_read_entity
+### 2. tec-calendar-read-entities
 
 This versatile tool can read single posts, list multiple posts, or search posts.
 
@@ -195,7 +196,55 @@ This versatile tool can read single posts, list multiple posts, or search posts.
 }
 ```
 
-### 3. calendar_delete_entity
+### 3. tec-calendar-current-datetime
+
+Get current date and time information for both local and WordPress server timezones. This tool is essential for creating events with proper relative dates.
+
+#### Get Current DateTime
+
+```json
+{
+  "tool": "tec-calendar-current-datetime"
+}
+```
+
+**Response**:
+```json
+{
+  "local": {
+    "datetime": "2024-12-19 14:30:45",
+    "timestamp": 1734620445,
+    "timezone": "America/New_York",
+    "timezone_offset": "-05:00",
+    "date": "2024-12-19",
+    "time": "14:30:45",
+    "iso8601": "2024-12-19T19:30:45.000Z",
+    "utc_datetime": "2024-12-19 19:30:45",
+    "utc_offset_seconds": 18000
+  },
+  "server": {
+    "datetime": "2024-12-19 19:30:45",
+    "timestamp": 1734620445,
+    "timezone": "UTC",
+    "timezone_offset": "+00:00",
+    "date": "2024-12-19",
+    "time": "19:30:45",
+    "iso8601": "2024-12-19T19:30:45.000Z",
+    "utc_datetime": "2024-12-19 19:30:45",
+    "utc_offset_seconds": 0
+  },
+  "usage_hints": {
+    "date_format": "YYYY-MM-DD HH:MM:SS",
+    "example_event_dates": {
+      "today_3pm": "2024-12-19 15:00:00",
+      "tomorrow_10am": "2024-12-20 10:00:00",
+      "next_week": "2024-12-26"
+    }
+  }
+}
+```
+
+### 4. tec-calendar-delete-entities
 
 Delete posts either to trash (soft delete) or permanently.
 
@@ -395,7 +444,7 @@ Common errors and solutions:
 
 4. **Referenced ID Not Found**
    - When setting venue or organizer, ensure the ID exists
-   - Use calendar_read_entity to find valid IDs first
+   - Use tec-calendar-read-entities to find valid IDs first
 
 ## Tips for AI Assistants
 
@@ -411,7 +460,13 @@ Common errors and solutions:
 Here's a complete example of creating an event with a new venue:
 
 ```json
-// 1. First, create the venue
+// 1. First, get the current date/time for proper scheduling
+{
+  "tool": "tec-calendar-current-datetime"
+}
+// Returns current date/time info for calculating event dates
+
+// 2. Create the venue
 {
   "postType": "venue",
   "data": {
@@ -425,7 +480,7 @@ Here's a complete example of creating an event with a new venue:
 }
 // Returns: { "id": 150, ... }
 
-// 2. Then create the event using the venue ID
+// 3. Then create the event using the venue ID
 {
   "postType": "event",
   "data": {
@@ -439,7 +494,7 @@ Here's a complete example of creating an event with a new venue:
 }
 // Returns: { "id": 325, ... }
 
-// 3. Verify the event was created
+// 4. Verify the event was created
 {
   "postType": "event",
   "id": 325
@@ -516,41 +571,4 @@ You can also mix existing IDs with new data to create:
 }
 ```
 
-## Available Resources
-
-In addition to tools, this MCP server provides resources that can be accessed for information:
-
-### Time Resources
-
-#### 1. Local Time (`time://local`)
-Provides the current time on the machine running the MCP server, including timezone information.
-
-**Use Case**: When you need to know the current local time or timezone of the system.
-
-#### 2. Server Time (`time://server`)
-Provides the current time according to the WordPress server's timezone settings.
-
-**Use Case**: When scheduling events or working with time-sensitive data, you need to know the WordPress site's configured timezone.
-
-**Example Response**:
-```json
-{
-  "datetime": "2024-12-19 14:30:45",
-  "timestamp": 1734620445,
-  "timezone": "America/New_York",
-  "timezone_offset": "-05:00",
-  "date": "2024-12-19",
-  "time": "14:30:45",
-  "iso8601": "2024-12-19T19:30:45.000Z",
-  "utc_datetime": "2024-12-19 19:30:45",
-  "utc_offset_seconds": 18000
-}
-```
-
-### Server Information (`info://server`)
-
-Provides metadata about the MCP server itself, including supported post types and available tools.
-
-**Use Case**: When you need to verify what capabilities the server supports or which version is running.
-
-This guide should help you use The Events Calendar MCP tools and resources effectively. Remember to check the responses for any errors and adjust your requests accordingly.
+This guide should help you use The Events Calendar MCP tools effectively. Remember to check the responses for any errors and adjust your requests accordingly.

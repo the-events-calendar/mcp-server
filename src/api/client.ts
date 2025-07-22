@@ -2,6 +2,7 @@ import { PostType, PostTypeMap, FilterTypeMap, WPError, ListResponse } from '../
 import { ApiError } from '../utils/error-handling.js';
 import { buildEndpoint, ENDPOINTS } from './endpoints.js';
 import { fetch as undiciFetch, Agent } from 'undici';
+import { getLogger } from '../utils/logger.js';
 
 // Always use undici's fetch for consistent SSL handling
 const fetch = undiciFetch;
@@ -20,6 +21,7 @@ export interface ApiClientConfig {
 export class ApiClient {
   private authHeader: string;
   private dispatcher?: Agent;
+  private logger = getLogger();
 
   constructor(private config: ApiClientConfig) {
     // Create Basic Auth header
@@ -49,12 +51,6 @@ export class ApiClient {
   ): Promise<T> {
     const url = `${this.config.baseUrl}${path}`;
     
-    const debug = process.env.DEBUG;
-    if (debug) {
-      console.error(`[DEBUG] API Request to: ${url}`);
-      console.error(`[DEBUG] SSL verification: ${this.config.ignoreSslErrors ? 'DISABLED' : 'enabled'}`);
-    }
-    
     // Build fetch options
     const fetchOptions: any = {
       ...options,
@@ -65,33 +61,44 @@ export class ApiClient {
       },
     };
     
+    this.logger.http(`API Request: ${options.method || 'GET'} ${url}`);
+    this.logger.debug('Request headers:', {
+      ...fetchOptions.headers,
+      Authorization: '[REDACTED]'
+    });
+    if (options.body) {
+      this.logger.debug('Request body:', options.body);
+    }
+    this.logger.silly(`SSL verification: ${this.config.ignoreSslErrors ? 'DISABLED' : 'enabled'}`);
+    
     // Add dispatcher if configured
     if (this.dispatcher) {
       fetchOptions.dispatcher = this.dispatcher;
-      if (debug) {
-        console.error('[DEBUG] Using custom dispatcher with SSL ignore');
-      }
+      this.logger.silly('Using custom dispatcher with SSL ignore');
     }
     
     try {
+      const startTime = Date.now();
       const response = await fetch(url, fetchOptions);
-      if (debug) {
-        console.error(`[DEBUG] Response status: ${response.status}`);
-      }
+      const duration = Date.now() - startTime;
+      
+      this.logger.http(`API Response: ${response.status} ${response.statusText} (${duration}ms)`);
+      this.logger.debug('Response headers:', Object.fromEntries(response.headers.entries()));
 
       const data = await response.json();
-
-      if (!response.ok) {
+      
+      if (response.ok) {
+        this.logger.silly('Response body:', data);
+      } else {
+        this.logger.error('Error response:', data);
         throw ApiError.fromWPError(data as WPError, response.status);
       }
 
       return data as T;
     } catch (error: any) {
-      if (debug) {
-        console.error('[DEBUG] Request error:', error.message);
-        if (error.cause) {
-          console.error('[DEBUG] Error cause:', error.cause);
-        }
+      this.logger.error('Request error:', error.message);
+      if (error.cause) {
+        this.logger.error('Error cause:', error.cause);
       }
       
       // Re-throw with more context for SSL errors
@@ -132,7 +139,7 @@ export class ApiClient {
     const processedFilters = { ...filters };
     
     if (enforceLimit && processedFilters.per_page && processedFilters.per_page > 100) {
-      console.warn(`[ApiClient] per_page value ${processedFilters.per_page} exceeds maximum allowed (100). Limiting to 100.`);
+      this.logger.warn(`per_page value ${processedFilters.per_page} exceeds maximum allowed (100). Limiting to 100.`);
       processedFilters.per_page = 100;
     }
 

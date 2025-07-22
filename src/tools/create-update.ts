@@ -3,6 +3,7 @@ import { PostTypeSchema, getSchemaForPostType } from '../utils/validation.js';
 import { formatError } from '../utils/error-handling.js';
 import { ApiClient } from '../api/client.js';
 import { PostType } from '../types/index.js';
+import { getLogger } from '../utils/logger.js';
 
 /**
  * Schema for create/update tool input
@@ -29,9 +30,12 @@ export async function createUpdatePost(
   input: z.infer<typeof CreateUpdateSchema>,
   apiClient: ApiClient
 ) {
+  const logger = getLogger();
+  
   try {
     // Validate input
     const { postType, id, data } = CreateUpdateSchema.parse(input);
+    logger.verbose(`${id ? 'Updating' : 'Creating'} ${postType}`, { id, dataKeys: Object.keys(data) });
     
     // Transform data for venue and organizer
     const transformedData = { ...data };
@@ -39,24 +43,31 @@ export async function createUpdatePost(
       // If title is provided, also set it as venue/organizer field
       if (transformedData.title) {
         transformedData[postType] = transformedData.title;
+        logger.debug(`Transformed title to ${postType} field:`, transformedData.title);
       }
       // If venue/organizer field is provided but not title, set title from it
       else if (transformedData[postType] && !transformedData.title) {
         transformedData.title = transformedData[postType];
+        logger.debug(`Set title from ${postType} field:`, transformedData[postType]);
       }
       // If neither is provided, that's an error we'll catch in validation
     }
     
     // Get the appropriate schema for the post type
     const dataSchema = getSchemaForPostType(postType as PostType);
+    logger.silly('Using schema for validation:', postType);
     
     // Validate the data against the schema
     const validatedData = dataSchema.parse(transformedData);
+    logger.debug('Validated data:', validatedData);
 
     // Perform create or update
+    logger.info(`${id ? 'Updating' : 'Creating'} ${postType}${id ? ` with ID ${id}` : ''}`);
     const result = id
       ? await apiClient.updatePost(postType as PostType, id, validatedData)
       : await apiClient.createPost(postType as PostType, validatedData);
+    
+    logger.info(`Successfully ${id ? 'updated' : 'created'} ${postType} with ID: ${result.id}`);
 
     return {
       content: [
@@ -71,6 +82,7 @@ export async function createUpdatePost(
       ],
     };
   } catch (error) {
+    logger.error(`Failed to ${input.id ? 'update' : 'create'} post:`, error);
     return {
       content: [formatError(error)],
       isError: true,
@@ -95,7 +107,7 @@ export const CreateUpdateJsonSchema = {
     },
     data: {
       type: 'object' as const,
-      description: 'The post data. Required fields depend on postType: Event (title, start_date, end_date), Venue (title or venue, address, city, country), Organizer (title or organizer), Ticket (name, price). Note: For Venue and Organizer, you can use "title" which will be converted to the appropriate field. ⚠️ ALWAYS call calendar_current_datetime tool FIRST before setting any date/time fields to ensure correct relative dates.',
+      description: 'The post data. Required fields depend on postType: Event (title, start_date, end_date), Venue (title or venue, address, city, country), Organizer (title or organizer), Ticket (name, price). Note: For Venue and Organizer, you can use "title" which will be converted to the appropriate field. ⚠️ ALWAYS call tec-calendar-current-datetime tool FIRST before setting any date/time fields to ensure correct relative dates.',
       additionalProperties: true
     }
   },
@@ -107,18 +119,18 @@ export const CreateUpdateJsonSchema = {
  * Tool definition for create/update
  */
 export const createUpdateTool = {
-  name: 'calendar_create_update_entity',
+  name: 'tec-calendar-create-update-entities',
   description: `Create or update a calendar post (Event, Venue, Organizer, or Ticket).
 
 For creating: provide postType and data.
 For updating: provide postType, id, and data.
 
-⚠️ IMPORTANT: Before creating events with dates/times, ALWAYS call the calendar_current_datetime tool first to get the current date, time, and timezone context. This ensures you create events with accurate dates relative to "today" or "tomorrow".
+⚠️ IMPORTANT: Before creating events with dates/times, ALWAYS call the tec-calendar-current-datetime tool first to get the current date, time, and timezone context. This ensures you create events with accurate dates relative to "today" or "tomorrow".
 
 Date format for events: "YYYY-MM-DD HH:MM:SS" (e.g., "2024-12-25 15:00:00")
 
 Workflow example:
-1. First: Call calendar_current_datetime tool to get current date/time
+1. First: Call tec-calendar-current-datetime tool to get current date/time
 2. Then: Create event with calculated dates based on the response
 
 Examples:
