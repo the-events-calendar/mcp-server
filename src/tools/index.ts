@@ -5,10 +5,10 @@ import { deletePost, deleteTool } from './delete.js';
 import { getCurrentDateTime, dateTimeTool } from './datetime.js';
 
 export interface ToolHandlers {
-  calendar_create_update_entity: typeof createUpdatePost;
-  calendar_read_entity: typeof readPost;
-  calendar_delete_entity: typeof deletePost;
-  calendar_current_datetime: typeof getCurrentDateTime;
+  'tec-calendar-create-update-entities': typeof createUpdatePost;
+  'tec-calendar-read-entities': typeof readPost;
+  'tec-calendar-delete-entities': typeof deletePost;
+  'tec-calendar-current-datetime': typeof getCurrentDateTime;
 }
 
 /**
@@ -16,10 +16,10 @@ export interface ToolHandlers {
  */
 export function getToolHandlers(apiClient: ApiClient): ToolHandlers {
   return {
-    calendar_create_update_entity: (input) => createUpdatePost(input, apiClient),
-    calendar_read_entity: (input) => readPost(input, apiClient),
-    calendar_delete_entity: (input) => deletePost(input, apiClient),
-    calendar_current_datetime: (input) => getCurrentDateTime(input, apiClient),
+    'tec-calendar-create-update-entities': (input) => createUpdatePost(input, apiClient),
+    'tec-calendar-read-entities': (input) => readPost(input, apiClient),
+    'tec-calendar-delete-entities': (input) => deletePost(input, apiClient),
+    'tec-calendar-current-datetime': (input) => getCurrentDateTime(input, apiClient),
   };
 }
 

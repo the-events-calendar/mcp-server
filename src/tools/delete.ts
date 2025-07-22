@@ -85,12 +85,12 @@ export const DeleteJsonSchema = {
  * Tool definition for delete
  */
 export const deleteTool = {
-  name: 'calendar_delete_entity',
+  name: 'tec-calendar-delete-entities',
   description: `Delete a calendar post (Event, Venue, Organizer, or Ticket).
 
 By default moves to trash. Set force=true for permanent deletion.
 
-NOTE: When deleting time-sensitive content like events, consider using the current_datetime tool to verify the current date/time context before deletion.
+NOTE: When deleting time-sensitive content like events, consider using the tec-calendar-current-datetime tool to verify the current date/time context before deletion.
 
 Example:
 {"postType": "event", "id": 123, "force": false}`,
