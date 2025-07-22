@@ -10,7 +10,7 @@ import { PostType } from '../types/index.js';
 export const CreateUpdateSchema = z.object({
   postType: PostTypeSchema.describe('The type of post to create or update (event, venue, organizer, or ticket)'),
   id: z.number().optional().describe('Post ID (required for updates, omit for creation)'),
-  data: z.record(z.string(), z.any()).describe('The post data. Required fields depend on postType: Event (title, start_date, end_date), Venue (venue, address, city, country), Organizer (organizer), Ticket (name, price)'),
+  data: z.record(z.string(), z.any()).describe('The post data. Required fields depend on postType: Event (title, start_date, end_date), Venue (title or venue, address, city, country), Organizer (title or organizer), Ticket (name, price). Note: For Venue and Organizer, you can use "title" which will be converted to the appropriate field.'),
 });
 
 /**
@@ -19,7 +19,7 @@ export const CreateUpdateSchema = z.object({
 export const CreateUpdateInputSchema = {
   postType: PostTypeSchema.describe('The type of post to create or update (event, venue, organizer, or ticket)'),
   id: z.number().optional().describe('Post ID (required for updates, omit for creation)'),
-  data: z.record(z.string(), z.any()).describe('The post data. Required fields depend on postType: Event (title, start_date, end_date), Venue (venue, address, city, country), Organizer (organizer), Ticket (name, price)'),
+  data: z.record(z.string(), z.any()).describe('The post data. Required fields depend on postType: Event (title, start_date, end_date), Venue (title or venue, address, city, country), Organizer (title or organizer), Ticket (name, price). Note: For Venue and Organizer, you can use "title" which will be converted to the appropriate field.'),
 };
 
 /**
@@ -33,11 +33,25 @@ export async function createUpdatePost(
     // Validate input
     const { postType, id, data } = CreateUpdateSchema.parse(input);
     
+    // Transform data for venue and organizer
+    const transformedData = { ...data };
+    if (postType === 'venue' || postType === 'organizer') {
+      // If title is provided, also set it as venue/organizer field
+      if (transformedData.title) {
+        transformedData[postType] = transformedData.title;
+      }
+      // If venue/organizer field is provided but not title, set title from it
+      else if (transformedData[postType] && !transformedData.title) {
+        transformedData.title = transformedData[postType];
+      }
+      // If neither is provided, that's an error we'll catch in validation
+    }
+    
     // Get the appropriate schema for the post type
     const dataSchema = getSchemaForPostType(postType as PostType);
     
     // Validate the data against the schema
-    const validatedData = dataSchema.parse(data);
+    const validatedData = dataSchema.parse(transformedData);
 
     // Perform create or update
     const result = id
@@ -81,7 +95,7 @@ export const CreateUpdateJsonSchema = {
     },
     data: {
       type: 'object' as const,
-      description: 'The post data. Required fields depend on postType: Event (title, start_date, end_date), Venue (venue, address, city, country), Organizer (organizer), Ticket (name, price)',
+      description: 'The post data. Required fields depend on postType: Event (title, start_date, end_date), Venue (title or venue, address, city, country), Organizer (title or organizer), Ticket (name, price). Note: For Venue and Organizer, you can use "title" which will be converted to the appropriate field. ⚠️ ALWAYS call calendar_current_datetime tool FIRST before setting any date/time fields to ensure correct relative dates.',
       additionalProperties: true
     }
   },
@@ -99,9 +113,17 @@ export const createUpdateTool = {
 For creating: provide postType and data.
 For updating: provide postType, id, and data.
 
+⚠️ IMPORTANT: Before creating events with dates/times, ALWAYS call the calendar_current_datetime tool first to get the current date, time, and timezone context. This ensures you create events with accurate dates relative to "today" or "tomorrow".
+
 Date format for events: "YYYY-MM-DD HH:MM:SS" (e.g., "2024-12-25 15:00:00")
 
-Example for creating an event:
+Workflow example:
+1. First: Call calendar_current_datetime tool to get current date/time
+2. Then: Create event with calculated dates based on the response
+
+Examples:
+
+// Creating an event
 {
   "postType": "event",
   "data": {
@@ -110,6 +132,27 @@ Example for creating an event:
     "end_date": "2024-12-25 17:00:00",
     "description": "Event description",
     "venue": 123
+  }
+}
+
+// Creating a venue (using title)
+{
+  "postType": "venue",
+  "data": {
+    "title": "Conference Center",
+    "address": "123 Main St",
+    "city": "San Francisco",
+    "country": "United States"
+  }
+}
+
+// Creating an organizer (using title)
+{
+  "postType": "organizer",
+  "data": {
+    "title": "John Doe",
+    "email": "john@example.com",
+    "phone": "555-1234"
   }
 }`,
   inputSchema: CreateUpdateInputSchema,

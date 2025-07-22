@@ -217,4 +217,29 @@ export class ApiClient {
       search: query,
     } as FilterTypeMap[T]);
   }
+  
+  /**
+   * Get site information
+   */
+  async getSiteInfo(): Promise<any> {
+    try {
+      // Try to get site settings (requires admin permissions)
+      return await this.request<any>('/wp/v2/settings');
+    } catch (error) {
+      // Fallback to basic site info from root endpoint
+      try {
+        const rootInfo = await this.request<any>('/wp/v2/');
+        return {
+          name: rootInfo.name,
+          description: rootInfo.description,
+          url: rootInfo.url,
+          gmt_offset: rootInfo.gmt_offset,
+          timezone_string: rootInfo.timezone_string
+        };
+      } catch (fallbackError) {
+        // Return null if both attempts fail
+        return null;
+      }
+    }
+  }
 }

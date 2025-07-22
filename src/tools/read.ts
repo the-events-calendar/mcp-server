@@ -9,8 +9,8 @@ import { PostType } from '../types/index.js';
  * Event-specific filters
  */
 const EventFiltersSchema = z.object({
-  start_date: z.string().optional().describe('Event start date filter (YYYY-MM-DD)'),
-  end_date: z.string().optional().describe('Event end date filter (YYYY-MM-DD)'),
+  start_date: z.string().optional().describe('Event start date filter (YYYY-MM-DD). ⚠️ Call current_datetime tool FIRST to get current date.'),
+  end_date: z.string().optional().describe('Event end date filter (YYYY-MM-DD). ⚠️ Call current_datetime tool FIRST to get current date.'),
   venue: z.number().optional().describe('Filter by venue ID'),
   organizer: z.number().optional().describe('Filter by organizer ID'),
   featured: z.boolean().optional().describe('Filter featured events'),
@@ -221,8 +221,8 @@ export const ReadJsonSchema = {
       type: 'object' as const,
       description: 'Event-specific filters (only used when postType is "event")',
       properties: {
-        start_date: { type: 'string' as const, description: 'Event start date filter (YYYY-MM-DD)' },
-        end_date: { type: 'string' as const, description: 'Event end date filter (YYYY-MM-DD)' },
+        start_date: { type: 'string' as const, description: 'Event start date filter (YYYY-MM-DD). ⚠️ Call current_datetime tool FIRST to get current date.' },
+        end_date: { type: 'string' as const, description: 'Event end date filter (YYYY-MM-DD). ⚠️ Call current_datetime tool FIRST to get current date.' },
         venue: { type: 'number' as const, description: 'Filter by venue ID' },
         organizer: { type: 'number' as const, description: 'Filter by organizer ID' },
         featured: { type: 'boolean' as const, description: 'Filter featured events' },
@@ -280,10 +280,13 @@ export const readTool = {
   name: 'calendar_read_entity',
   description: `Read, list, or search calendar posts.
 
+⚠️ IMPORTANT: When filtering events by date (e.g., "events this week", "upcoming events"), ALWAYS call the current_datetime tool FIRST to get the current date and calculate the appropriate date filters. Never assume or hardcode dates.
+
 Use cases:
 1. Get single post: provide postType and id
 2. List all posts: provide postType only
 3. Search posts: provide postType and query
+4. Filter by dates: FIRST call current_datetime tool, THEN apply filters
 
 Examples:
 
@@ -293,7 +296,7 @@ Examples:
 // List all venues with pagination
 {"postType": "venue", "per_page": 10}
 
-// Search events with date filter
+// Search events with date filter (after calling current_datetime)
 {"postType": "event", "query": "conference", "eventFilters": {"start_date": "2024-12-01"}}
 
 // Filter venues by location

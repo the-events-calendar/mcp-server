@@ -90,6 +90,8 @@ export const deleteTool = {
 
 By default moves to trash. Set force=true for permanent deletion.
 
+NOTE: When deleting time-sensitive content like events, consider using the current_datetime tool to verify the current date/time context before deletion.
+
 Example:
 {"postType": "event", "id": 123, "force": false}`,
   inputSchema: DeleteInputSchema,

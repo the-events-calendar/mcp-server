@@ -8,7 +8,7 @@ export { PostTypeSchema };
  * Base fields that can be updated on all post types
  */
 export const BasePostUpdateSchema = z.object({
-  title: z.string().describe('The title of the post'),
+  title: z.string().optional().describe('The title of the post'),
   status: z.enum(['publish', 'draft', 'pending', 'private'])
     .default('publish')
     .describe('Publication status of the post'),

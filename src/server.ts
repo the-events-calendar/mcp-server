@@ -1,8 +1,9 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
-import { ListToolsRequestSchema, CallToolRequestSchema } from '@modelcontextprotocol/sdk/types.js';
+import { ListToolsRequestSchema, CallToolRequestSchema, ListResourcesRequestSchema, ReadResourceRequestSchema } from '@modelcontextprotocol/sdk/types.js';
 import { ApiClient } from './api/client.js';
 import { getToolHandlers, getToolDefinitions } from './tools/index.js';
+import { getLocalTime, getServerTime } from './resources/time.js';
 
 export interface ServerConfig {
   name: string;
@@ -21,7 +22,8 @@ export function createServer(config: ServerConfig): McpServer {
     version: config.version,
   }, {
     capabilities: {
-      tools: {}
+      tools: {},
+      resources: {}
     }
   });
 
@@ -89,33 +91,100 @@ export function createServer(config: ServerConfig): McpServer {
     console.error('[DEBUG] Tools registered successfully');
   }
 
-  // Add server information resource
-  server.registerResource(
-    'server-info',
-    'info://server',
-    {
-      title: 'Server Information',
-      description: 'Information about this MCP server',
-      mimeType: 'application/json',
-    },
-    async () => ({
-      contents: [
+  // Set up resources/list handler
+  underlyingServer.setRequestHandler(ListResourcesRequestSchema, async () => {
+    if (debug) {
+      console.error('[DEBUG] Handling resources/list request');
+    }
+    
+    return {
+      resources: [
+        {
+          uri: 'time://local',
+          name: 'local-time',
+          description: 'Current local time with timezone information',
+          mimeType: 'application/json'
+        },
+        {
+          uri: 'time://server',
+          name: 'server-time',
+          description: 'Current WordPress server time with timezone information',
+          mimeType: 'application/json'
+        },
         {
           uri: 'info://server',
-          text: JSON.stringify({
-            name: config.name,
-            version: config.version,
-            description: 'MCP server for The Events Calendar and Event Tickets',
-            supportedPostTypes: ['event', 'venue', 'organizer', 'ticket'],
-            tools: toolDefinitions.map(t => ({
-              name: t.name,
-              description: t.description,
-            })),
-          }, null, 2),
-        },
-      ],
-    })
-  );
+          name: 'server-info',
+          description: 'Information about this MCP server',
+          mimeType: 'application/json'
+        }
+      ]
+    };
+  });
+  
+  // Set up resources/read handler
+  underlyingServer.setRequestHandler(ReadResourceRequestSchema, async (request) => {
+    const { uri } = request.params;
+    
+    if (debug) {
+      console.error(`[DEBUG] Handling resource read: ${uri}`);
+    }
+    
+    switch (uri) {
+      case 'time://local': {
+        const localTime = getLocalTime();
+        return {
+          contents: [
+            {
+              uri: 'time://local',
+              mimeType: 'application/json',
+              text: JSON.stringify(localTime, null, 2)
+            }
+          ]
+        };
+      }
+      
+      case 'time://server': {
+        const serverTime = await getServerTime(config.apiClient);
+        return {
+          contents: [
+            {
+              uri: 'time://server',
+              mimeType: 'application/json',
+              text: JSON.stringify(serverTime, null, 2)
+            }
+          ]
+        };
+      }
+      
+      case 'info://server': {
+        return {
+          contents: [
+            {
+              uri: 'info://server',
+              mimeType: 'application/json',
+              text: JSON.stringify({
+                name: config.name,
+                version: config.version,
+                description: 'MCP server for The Events Calendar and Event Tickets',
+                supportedPostTypes: ['tribe_events', 'tribe_venue', 'tribe_organizer', 'tribe_rsvp_tickets', 'tec_tc_ticket'],
+                tools: toolDefinitions.map(t => ({
+                  name: t.name,
+                  description: t.description,
+                })),
+              }, null, 2)
+            }
+          ]
+        };
+      }
+      
+      default:
+        throw new Error(`Resource not found: ${uri}`);
+    }
+  });
+  
+  if (debug) {
+    console.error('[DEBUG] Resources registered successfully');
+  }
 
   return server;
 }

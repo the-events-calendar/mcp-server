@@ -23,6 +23,8 @@ bunx @the-events-calendar/mcp-server
 - **Search Functionality**: Integrated search via the read tool with query parameter
 - **Nested Creation**: Create venues and organizers inline when creating events
 - **Type Safety**: Full TypeScript support with proper type definitions
+- **Time Resources**: Access local and server time with timezone information
+- **MCP Resources**: Provides server info and time data through resource URIs
 
 ## Installation
 
@@ -256,6 +258,82 @@ Search is integrated into the `calendar_read_entity` tool using the `query` para
     "start_date": "2024-12-01",
     "end_date": "2024-12-31"
   }
+}
+```
+
+## Available Resources
+
+### 1. `time://local`
+
+Provides current local time with timezone information.
+
+**Returns:**
+```json
+{
+  "datetime": "2024-12-19 14:30:45",
+  "timestamp": 1734620445,
+  "timezone": "America/New_York",
+  "timezone_offset": "-05:00",
+  "date": "2024-12-19",
+  "time": "14:30:45",
+  "iso8601": "2024-12-19T19:30:45.000Z",
+  "utc_datetime": "2024-12-19 19:30:45",
+  "utc_offset_seconds": 18000
+}
+```
+
+### 2. `time://server`
+
+Provides current WordPress server time with timezone information.
+
+**Returns:**
+```json
+{
+  "datetime": "2024-12-19 19:30:45",
+  "timestamp": 1734620445,
+  "timezone": "UTC",
+  "timezone_offset": "+00:00",
+  "date": "2024-12-19",
+  "time": "19:30:45",
+  "iso8601": "2024-12-19T19:30:45.000Z",
+  "utc_datetime": "2024-12-19 19:30:45",
+  "utc_offset_seconds": 0
+}
+```
+
+**Note:** Server timezone is determined from WordPress settings. If settings are not accessible, falls back to local time.
+
+### 3. `info://server`
+
+Provides information about the MCP server itself.
+
+**Returns:**
+```json
+{
+  "name": "tec-mcp-server",
+  "version": "1.0.0",
+  "description": "MCP server for The Events Calendar and Event Tickets",
+  "supportedPostTypes": [
+    "tribe_events",
+    "tribe_venue",
+    "tribe_organizer",
+    "tribe_rsvp_tickets",
+    "tec_tc_ticket"
+  ],
+  "tools": [
+    {
+      "name": "calendar_create_update_entity",
+      "description": "Create or update calendar entities"
+    },
+    {
+      "name": "calendar_read_entity",
+      "description": "Read calendar entities"
+    },
+    {
+      "name": "calendar_delete_entity",
+      "description": "Delete calendar entities"
+    }
+  ]
 }
 ```
 
