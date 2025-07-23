@@ -69,14 +69,28 @@ add_filter('ai_engine_tools', function($tools) {
 
 ## Building
 
-To generate the PHP files:
+### Using NPX (Recommended)
+
+You can generate the PHP file directly to any location using npx:
 
 ```bash
-# Build all WordPress integrations
-npm run build:wp
+# Output to stdout (pipe to any file)
+npx @the-events-calendar/mcp-server tec-mcp-build-wp > path/to/your/file.php
 
-# Build only AI Service integration
+# Example: Generate into a WordPress plugin
+npx @the-events-calendar/mcp-server tec-mcp-build-wp > src/Events/MCP/ai-engine-integration.php
+```
+
+### Using NPM Scripts
+
+For development, you can also use npm scripts:
+
+```bash
+# Output to stdout
 npm run build:wp:ai-service
+
+# Save to a specific file
+npm run build:wp:ai-service > my-integration.php
 
 # Build everything (TypeScript + WordPress)
 npm run build:all

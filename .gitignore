@@ -3,8 +3,6 @@ node_modules/
 
 # Build output
 dist/
-# But include WordPress integration files
-!dist/wordpress/
 
 # Environment variables
 .env

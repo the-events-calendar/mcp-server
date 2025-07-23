@@ -5,7 +5,8 @@
   "main": "dist/index.js",
   "type": "module",
   "bin": {
-    "tec-mcp-server": "./dist/index.js"
+    "tec-mcp-server": "./dist/index.js",
+    "tec-mcp-build-wp": "./dist/wordpress-integrations/ai-service/build.js"
   },
   "scripts": {
     "dev": "tsx --watch src/index.ts",
@@ -41,7 +42,8 @@
   "files": [
     "dist",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "src/wordpress-integrations/**/*"
   ],
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.15.1",

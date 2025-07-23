@@ -1,13 +1,9 @@
+#!/usr/bin/env node
 /**
  * Build script to generate PHP file with MCP tool definitions for AI Service
  */
 
-import { writeFileSync, mkdirSync } from 'fs';
-import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
 import { getToolDefinitionsForPhp } from '../shared/tool-definitions.js';
-
-const __dirname = dirname(fileURLToPath(import.meta.url));
 
 /**
  * Generate the PHP file content
@@ -43,25 +39,11 @@ return json_decode( '${toolDefinitionsJson}', true );
  */
 async function build() {
   try {
-    // Create output directory if it doesn't exist
-    const outputDir = join(__dirname, '../../../dist/wordpress');
-    mkdirSync(outputDir, { recursive: true });
-    
-    // Generate PHP file
+    // Generate PHP content
     const phpContent = generatePhpFile();
-    const outputPath = join(outputDir, 'tec-mcp-tools-ai-service.php');
     
-    // Write the file
-    writeFileSync(outputPath, phpContent, 'utf8');
-    
-    console.log(`✅ Successfully generated PHP file: ${outputPath}`);
-    
-    // Also generate a JSON file for reference
-    const { getToolDefinitions } = await import('../shared/tool-definitions.js');
-    const jsonPath = join(outputDir, 'tec-mcp-tools-ai-service.json');
-    writeFileSync(jsonPath, JSON.stringify(getToolDefinitions(), null, 2), 'utf8');
-    
-    console.log(`✅ Also generated JSON file for reference: ${jsonPath}`);
+    // Output to stdout for piping
+    process.stdout.write(phpContent);
     
   } catch (error) {
     console.error('❌ Build failed:', error);
