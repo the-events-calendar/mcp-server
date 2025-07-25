@@ -21,38 +21,36 @@ wordpress-integrations/
 
 The AI Service integration generates a PHP file that can be included in WordPress plugins to register MCP tools with AI Engine or similar services.
 
-### Generated Files
+### Generated Output
 
-After running the build script, you'll find:
+The build script outputs PHP code directly to stdout, allowing you to save it to any location. The PHP file contains:
 
-- `dist/wordpress/tec-mcp-tools-ai-service.php` - PHP file with tool definitions
-- `dist/wordpress/tec-mcp-tools-ai-service.json` - JSON reference file
+- Auto-generated header with timestamp
+- Embedded JSON with all MCP tool definitions
+- Direct return statement providing tool definitions as an array
 
 ### PHP File Usage
 
-The generated PHP file provides several functions:
+The generated PHP file directly returns an array of tool definitions when included:
 
 ```php
-// Get all tool definitions
-$tools = tec_get_mcp_tool_definitions();
+// Include the generated file to get tool definitions
+$tools = include 'path/to/tec-mcp-tools.php';
 
-// Get a specific tool
-$tool = tec_get_mcp_tool_definition('tec-calendar-create-update-entities');
-
-// Get tool names
-$names = tec_get_mcp_tool_names();
+// The $tools variable now contains an array of all tool definitions
+foreach ($tools as $tool) {
+    echo $tool['name'] . ': ' . $tool['description'] . "\n";
+}
 ```
 
 ### WordPress Integration Example
 
 ```php
 // In your WordPress plugin
-require_once 'path/to/tec-mcp-tools-ai-service.php';
+$mcp_tools = include 'path/to/tec-mcp-tools.php';
 
 // Register tools with AI Engine
-add_filter('ai_engine_tools', function($tools) {
-    $mcp_tools = tec_get_mcp_tool_definitions();
-    
+add_filter('ai_engine_tools', function($tools) use ($mcp_tools) {
     foreach ($mcp_tools as $tool) {
         $tools[] = [
             'id' => $tool['name'],
@@ -69,21 +67,33 @@ add_filter('ai_engine_tools', function($tools) {
 
 ## Building
 
-### Using NPX (Recommended)
+### Prerequisites
 
-You can generate the PHP file directly to any location using npx:
+Before using the build commands, ensure the TypeScript code is compiled:
+
+```bash
+# Build TypeScript first
+npm run build
+
+# Or build everything at once
+npm run build:all
+```
+
+### Using NPX (Recommended for Production)
+
+After installing the package, you can generate the PHP file directly:
 
 ```bash
 # Output to stdout (pipe to any file)
 npx @the-events-calendar/mcp-server tec-mcp-build-wp > path/to/your/file.php
 
 # Example: Generate into a WordPress plugin
-npx @the-events-calendar/mcp-server tec-mcp-build-wp > src/Events/MCP/ai-engine-integration.php
+npx @the-events-calendar/mcp-server tec-mcp-build-wp > wp-content/plugins/my-plugin/includes/tec-mcp-tools.php
 ```
 
-### Using NPM Scripts
+### Using NPM Scripts (For Development)
 
-For development, you can also use npm scripts:
+When developing locally, you can use npm scripts:
 
 ```bash
 # Output to stdout
@@ -92,22 +102,37 @@ npm run build:wp:ai-service
 # Save to a specific file
 npm run build:wp:ai-service > my-integration.php
 
-# Build everything (TypeScript + WordPress)
+# Build everything (TypeScript + WordPress integrations)
 npm run build:all
 ```
 
 ## Tool Definitions
 
-The tool definitions include:
+The generated PHP file includes all MCP tools:
 
 1. **tec-calendar-create-update-entities** - Create or update events, venues, organizers, and tickets
+   - Supports both creation (without ID) and updates (with ID)
+   - Handles all post types: event, venue, organizer, ticket
+   - Includes date/time handling guidance
+
 2. **tec-calendar-read-entities** - Read, list, or search calendar posts
+   - Get single post by ID
+   - List all posts of a type
+   - Search posts by keyword
+   - Supports all query parameters from WordPress REST API
+
 3. **tec-calendar-delete-entities** - Delete calendar posts
+   - Permanently removes posts by ID
+   - Works with all supported post types
+
 4. **tec-calendar-current-datetime** - Get current date/time information
+   - Returns server time, timezone, and formatted dates
+   - Essential for creating events with relative dates
 
 Each tool definition includes:
-- `name` - The tool identifier
-- `description` - Detailed description with usage examples
+
+- `name` - The tool identifier (follows `tec-calendar-*` pattern)
+- `description` - Detailed description with usage examples and important notes
 - `inputSchema` - JSON Schema defining the tool's parameters
 
 ## Adding New Integrations
@@ -120,9 +145,30 @@ To add support for a new WordPress AI service:
 4. Add a new npm script in `package.json`
 5. Update this README with usage instructions
 
-## Notes
+## Important Notes
 
-- The build process extracts tool schemas from the TypeScript MCP server code
-- Generated files should not be edited manually - they're overwritten on each build
-- The PHP files are designed to be included directly in WordPress plugins
-- All tool names follow the `tec-calendar-*` naming convention
+- **Build Order**: Always run `npm run build` before generating WordPress integrations
+- **Output Method**: The build script outputs to stdout - always pipe to a file
+- **No Intermediate Files**: Unlike some build processes, this doesn't create files in `dist/wordpress/`
+- **Direct Inclusion**: The generated PHP file can be directly included or required in WordPress
+- **Auto-generated Warning**: The PHP file includes a header warning not to edit manually
+- **Tool Naming**: All tool names follow the `tec-calendar-*` pattern for consistency
+- **Date Handling**: The current-datetime tool should be called before creating events with relative dates
+
+## Troubleshooting
+
+### Command not found
+
+If `npx @the-events-calendar/mcp-server tec-mcp-build-wp` doesn't work:
+
+1. Ensure the package is properly installed
+2. Run `npm run build` first to compile TypeScript
+3. Use the npm script as an alternative: `npm run build:wp:ai-service`
+
+### Empty output
+
+If the build command produces no output:
+
+1. Check for TypeScript compilation errors
+2. Ensure all dependencies are installed with `npm install`
+3. Try running `npm run build:all` to rebuild everything
