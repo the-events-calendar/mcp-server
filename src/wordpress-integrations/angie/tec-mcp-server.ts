@@ -152,7 +152,7 @@ function enrichToolsWithMetadata(tools: ToolDefinition[]): any[] {
     category: 'The Events Calendar',
     version: '1.0.0',
     metadata: {
-      source: 'mcp-server',
+      source: 'plugin-the-events-calendar',
       generated: new Date().toISOString(),
       postTypes: extractPostTypes(tool.inputSchema)
     }
