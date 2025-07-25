@@ -169,120 +169,108 @@ function createTecMcpServer(): McpServer {
     { capabilities: { tools: {} } }
   );
 
-  // Register list tools handler
-  (server as any).setRequestHandler(ListToolsRequestSchema, async () => ({
-    tools: tecTools.map(tool => ({
-      name: tool.name,
-      description: tool.description,
-      inputSchema: tool.inputSchema,
-    }))
-  }));
-
-  // Register call tool handler
-  (server as any).setRequestHandler(CallToolRequestSchema, async (request: CallToolRequest) => {
-    const { name, arguments: args = {} } = request.params;
-    
-    // Check if we have wpApiSettings
-    if (!window.wpApiSettings) {
-      throw new Error('WordPress API settings not found. Make sure wp_localize_script is called.');
-    }
-    
-    const { root, nonce } = window.wpApiSettings;
-    
-    // Find the tool
-    const tool = tecTools.find(t => t.name === name);
-    if (!tool) {
-      throw new Error(`Unknown tool: ${name}`);
-    }
-    
-    try {
-      // Handle current-datetime locally
-      if (name === 'tec-calendar-current-datetime') {
-        const now = new Date();
-        const timezone = args?.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone;
+  // Register each tool using the McpServer's tool method
+  tecTools.forEach(toolDef => {
+    server.registerTool(toolDef.name, {
+      description: toolDef.description,
+      inputSchema: toolDef.inputSchema.properties || {},
+    }, async (args, extra) => {
+      // Check if we have wpApiSettings
+      if (!window.wpApiSettings) {
+        throw new Error('WordPress API settings not found. Make sure wp_localize_script is called.');
+      }
+      
+      const { root, nonce } = window.wpApiSettings;
+      
+      try {
+        // Handle current-datetime locally
+        if (toolDef.name === 'tec-calendar-current-datetime') {
+          const now = new Date();
+          const timezone = (args as any)?.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone;
+          
+          return {
+            content: [{
+              type: 'text',
+              text: JSON.stringify({
+                current_date: now.toISOString().split('T')[0],
+                current_time: now.toTimeString().split(' ')[0],
+                current_datetime: now.toISOString(),
+                timezone,
+                timestamp: Math.floor(now.getTime() / 1000),
+                formatted: {
+                  date: now.toLocaleDateString(),
+                  time: now.toLocaleTimeString(),
+                  full: now.toLocaleString()
+                }
+              }, null, 2)
+            }]
+          };
+        }
         
+        // Build the endpoint URL
+        const endpoint = buildEndpointForTool(toolDef.name, args);
+        const url = `${root}${endpoint}`;
+        
+        // Determine HTTP method
+        let method = 'GET';
+        let body = undefined;
+        
+        switch (toolDef.name) {
+          case 'tec-calendar-create-update-entities':
+            method = (args as any).id ? 'PUT' : 'POST';
+            body = JSON.stringify((args as any).data || {});
+            break;
+          case 'tec-calendar-delete-entities':
+            method = 'DELETE';
+            break;
+        }
+        
+        // Make API request to WordPress
+        const response = await fetch(url, {
+          method,
+          headers: {
+            'X-WP-Nonce': nonce,
+            'Content-Type': 'application/json',
+          },
+          credentials: 'same-origin',
+          body,
+        });
+        
+        if (!response.ok) {
+          const error = await response.text();
+          let errorMessage;
+          try {
+            const errorJson = JSON.parse(error);
+            errorMessage = errorJson.message || errorJson.code || response.statusText;
+          } catch {
+            errorMessage = error || response.statusText;
+          }
+          throw new Error(`API request failed (${response.status}): ${errorMessage}`);
+        }
+        
+        const result = await response.json();
+        
+        // Handle list responses which may have data under a resource key
+        let data = result;
+        if (toolDef.name === 'tec-calendar-read-entities' && !(args as any).id && (args as any).postType) {
+          const resourceKey = ENDPOINTS[(args as any).postType]?.resource;
+          if (resourceKey && (result as any)[resourceKey]) {
+            data = (result as any)[resourceKey];
+          }
+        }
+        
+        // Return in MCP format
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify({
-              current_date: now.toISOString().split('T')[0],
-              current_time: now.toTimeString().split(' ')[0],
-              current_datetime: now.toISOString(),
-              timezone,
-              timestamp: Math.floor(now.getTime() / 1000),
-              formatted: {
-                date: now.toLocaleDateString(),
-                time: now.toLocaleTimeString(),
-                full: now.toLocaleString()
-              }
-            }, null, 2)
-          }]
+          content: [{ 
+            type: 'text', 
+            text: typeof data === 'string' ? data : JSON.stringify(data, null, 2) 
+          }],
         };
+      } catch (error: any) {
+        console.error(`Error calling tool ${toolDef.name}:`, error);
+        throw error;
       }
-      
-      // Build the endpoint URL
-      const endpoint = buildEndpointForTool(name, args);
-      const url = `${root}${endpoint}`;
-      
-      // Determine HTTP method
-      let method = 'GET';
-      let body = undefined;
-      
-      switch (name) {
-        case 'tec-calendar-create-update-entities':
-          method = args.id ? 'PUT' : 'POST';
-          body = JSON.stringify((args as any).data || {});
-          break;
-        case 'tec-calendar-delete-entities':
-          method = 'DELETE';
-          break;
-      }
-      
-      // Make API request to WordPress
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'X-WP-Nonce': nonce,
-          'Content-Type': 'application/json',
-        },
-        credentials: 'same-origin',
-        body,
-      });
-      
-      if (!response.ok) {
-        const error = await response.text();
-        let errorMessage;
-        try {
-          const errorJson = JSON.parse(error);
-          errorMessage = errorJson.message || errorJson.code || response.statusText;
-        } catch {
-          errorMessage = error || response.statusText;
-        }
-        throw new Error(`API request failed (${response.status}): ${errorMessage}`);
-      }
-      
-      const result = await response.json();
-      
-      // Handle list responses which may have data under a resource key
-      let data = result;
-      if (name === 'tec-calendar-read-entities' && !(args as any).id && (args as any).postType) {
-        const resourceKey = ENDPOINTS[(args as any).postType]?.resource;
-        if (resourceKey && (result as any)[resourceKey]) {
-          data = (result as any)[resourceKey];
-        }
-      }
-      
-      // Return in MCP format
-      return {
-        content: [{ 
-          type: 'text', 
-          text: typeof data === 'string' ? data : JSON.stringify(data, null, 2) 
-        }],
-      };
-    } catch (error: any) {
-      console.error(`Error calling tool ${name}:`, error);
-      throw error;
-    }
+    });
   });
 
   return server;
