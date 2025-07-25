@@ -176,11 +176,18 @@ function createTecMcpServer(): McpServer {
   tecTools.forEach(toolDef => {
     console.log(`[TEC_MCP] Registering tool: ${toolDef.name}`);
     
-    // Register as a zero-argument tool - we'll handle the arguments ourselves
-    server.tool(toolDef.name, toolDef.description, async (extra) => {
-      // Get the arguments from the request
-      const args = (extra as any).request?.params?.arguments || {};
+    // Register tool with a basic schema that accepts any object
+    // This avoids Zod parsing but still allows arguments to be passed
+    const anyObjectSchema = {} as any; // Empty object as schema
+    
+    server.tool(toolDef.name, toolDef.description, anyObjectSchema, async (args, extra) => {
       console.log(`[TEC_MCP] Tool called: ${toolDef.name}`, { args, extra });
+      
+      // Args should now contain the actual arguments passed to the tool
+      if (!args || typeof args !== 'object') {
+        console.warn(`[TEC_MCP] No arguments provided for ${toolDef.name}`);
+        args = {};
+      }
       
       // Check if we have wpApiSettings
       if (!window.wpApiSettings) {
