@@ -176,10 +176,10 @@ function createTecMcpServer(): McpServer {
   tecTools.forEach(toolDef => {
     console.log(`[TEC_MCP] Registering tool: ${toolDef.name}`);
     
-    server.registerTool(toolDef.name, {
-      description: toolDef.description,
-      inputSchema: toolDef.inputSchema.properties || {},
-    }, async (args, extra) => {
+    // Register as a zero-argument tool - we'll handle the arguments ourselves
+    server.tool(toolDef.name, toolDef.description, async (extra) => {
+      // Get the arguments from the request
+      const args = (extra as any).request?.params?.arguments || {};
       console.log(`[TEC_MCP] Tool called: ${toolDef.name}`, { args, extra });
       
       // Check if we have wpApiSettings
