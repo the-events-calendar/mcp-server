@@ -144,7 +144,7 @@ function createTecMcpServer(): Server {
   console.log('[TEC_MCP] Creating server with low-level API...');
   
   const server = new Server(
-    { name: 'tec-calendar-server', version: '1.0.0' },
+    { name: 'plugin-the-events-calendar', version: '1.0.0' },
     { capabilities: { tools: {} } }
   );
 
@@ -298,7 +298,7 @@ async function initializeTecMcpServer(): Promise<void> {
     const sdk = new AngieMcpSdk();
     
     const config: AngieServerConfig = {
-      name: 'tec-calendar-server',
+      name: 'plugin-the-events-calendar',
       version: '1.0.0',
       description: 'The Events Calendar tools for managing events, venues, organizers, and tickets',
       server,

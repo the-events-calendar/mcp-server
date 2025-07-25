@@ -168,7 +168,7 @@ console.log(`[TEC_MCP] Loaded ${tecTools.length} tool definitions:`, tecTools.ma
  */
 function createTecMcpServer(): McpServer {
   const server = new McpServer(
-    { name: 'tec-calendar-server', version: '1.0.0' },
+    { name: 'plugin-the-events-calendar', version: '1.0.0' },
     { capabilities: { tools: {} } }
   );
 
@@ -317,7 +317,7 @@ async function initializeTecMcpServer(): Promise<void> {
     const sdk = new AngieMcpSdk();
     
     const config: AngieServerConfig = {
-      name: 'tec-calendar-server',
+      name: 'plugin-the-events-calendar',
       version: '1.0.0',
       description: 'The Events Calendar tools for managing events, venues, organizers, and tickets',
       server,
