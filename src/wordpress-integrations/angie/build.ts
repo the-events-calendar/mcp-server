@@ -76,7 +76,7 @@ Examples:
     // Step 2: Bundle the MCP server with the extracted data
     console.error(`Bundling MCP server${shouldMinify ? ' (minified)' : ''}...`);
     const result = await esbuild.build({
-      entryPoints: [resolve(__dirname, 'tec-mcp-server.ts')],
+      entryPoints: [resolve(__dirname, 'tec-mcp-server-simple.ts')],
       bundle: true,
       format: 'iife',  // IIFE format for browser script tag
       globalName: 'TEC_MCP',  // Global variable name
