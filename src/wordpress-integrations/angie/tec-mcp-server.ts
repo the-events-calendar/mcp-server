@@ -79,10 +79,12 @@ const ENDPOINTS: Record<string, { namespace: string; resource: string; version: 
  * Build endpoint URL for a specific action
  */
 function buildEndpointForTool(toolName: string, params: any): string {
+  console.log(`[TEC_MCP] Building endpoint for tool:`, { toolName, params });
   const postType = params?.postType;
   const id = params?.id;
   
   if (!postType || !ENDPOINTS[postType]) {
+    console.error(`[TEC_MCP] Invalid post type:`, { postType, availableTypes: Object.keys(ENDPOINTS) });
     throw new Error(`Invalid post type: ${postType}`);
   }
   
@@ -159,6 +161,7 @@ function enrichToolsWithMetadata(tools: ToolDefinition[]): any[] {
 
 // Enrich tool definitions with metadata
 const tecTools = enrichToolsWithMetadata(toolsData as ToolDefinition[]);
+console.log(`[TEC_MCP] Loaded ${tecTools.length} tool definitions:`, tecTools.map(t => t.name));
 
 /**
  * Create The Events Calendar MCP Server
@@ -171,20 +174,27 @@ function createTecMcpServer(): McpServer {
 
   // Register each tool using the McpServer's tool method
   tecTools.forEach(toolDef => {
+    console.log(`[TEC_MCP] Registering tool: ${toolDef.name}`);
+    
     server.registerTool(toolDef.name, {
       description: toolDef.description,
       inputSchema: toolDef.inputSchema.properties || {},
     }, async (args, extra) => {
+      console.log(`[TEC_MCP] Tool called: ${toolDef.name}`, { args, extra });
+      
       // Check if we have wpApiSettings
       if (!window.wpApiSettings) {
+        console.error('[TEC_MCP] WordPress API settings not found');
         throw new Error('WordPress API settings not found. Make sure wp_localize_script is called.');
       }
       
       const { root, nonce } = window.wpApiSettings;
+      console.log(`[TEC_MCP] Using WordPress API:`, { root, nonceLength: nonce?.length });
       
       try {
         // Handle current-datetime locally
         if (toolDef.name === 'tec-calendar-current-datetime') {
+          console.log('[TEC_MCP] Handling current-datetime locally');
           const now = new Date();
           const timezone = (args as any)?.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone;
           
@@ -210,6 +220,7 @@ function createTecMcpServer(): McpServer {
         // Build the endpoint URL
         const endpoint = buildEndpointForTool(toolDef.name, args);
         const url = `${root}${endpoint}`;
+        console.log(`[TEC_MCP] Built endpoint URL:`, { tool: toolDef.name, endpoint, url });
         
         // Determine HTTP method
         let method = 'GET';
@@ -226,6 +237,7 @@ function createTecMcpServer(): McpServer {
         }
         
         // Make API request to WordPress
+        console.log(`[TEC_MCP] Making API request:`, { method, url, hasBody: !!body });
         const response = await fetch(url, {
           method,
           headers: {
@@ -235,6 +247,7 @@ function createTecMcpServer(): McpServer {
           credentials: 'same-origin',
           body,
         });
+        console.log(`[TEC_MCP] API response:`, { status: response.status, ok: response.ok });
         
         if (!response.ok) {
           const error = await response.text();
@@ -249,13 +262,16 @@ function createTecMcpServer(): McpServer {
         }
         
         const result = await response.json();
+        console.log(`[TEC_MCP] Raw API result:`, result);
         
         // Handle list responses which may have data under a resource key
         let data = result;
         if (toolDef.name === 'tec-calendar-read-entities' && !(args as any).id && (args as any).postType) {
           const resourceKey = ENDPOINTS[(args as any).postType]?.resource;
+          console.log(`[TEC_MCP] Checking for resource key:`, { resourceKey, hasKey: !!(result as any)[resourceKey] });
           if (resourceKey && (result as any)[resourceKey]) {
             data = (result as any)[resourceKey];
+            console.log(`[TEC_MCP] Extracted data from resource key:`, { itemCount: Array.isArray(data) ? data.length : 'not-array' });
           }
         }
         
@@ -267,7 +283,13 @@ function createTecMcpServer(): McpServer {
           }],
         };
       } catch (error: any) {
-        console.error(`Error calling tool ${toolDef.name}:`, error);
+        console.error(`[TEC_MCP] Error calling tool ${toolDef.name}:`, error);
+        console.error('[TEC_MCP] Error details:', { 
+          message: error.message, 
+          stack: error.stack,
+          tool: toolDef.name,
+          args 
+        });
         throw error;
       }
     });
@@ -280,8 +302,11 @@ function createTecMcpServer(): McpServer {
  * Initialize and register the MCP server with Angie
  */
 async function initializeTecMcpServer(): Promise<void> {
+  console.log('[TEC_MCP] Starting initialization...');
   try {
+    console.log('[TEC_MCP] Creating MCP server...');
     const server = createTecMcpServer();
+    console.log('[TEC_MCP] Server created, initializing Angie SDK...');
     const sdk = new AngieMcpSdk();
     
     const config: AngieServerConfig = {
@@ -291,9 +316,10 @@ async function initializeTecMcpServer(): Promise<void> {
       server,
     };
     
+    console.log('[TEC_MCP] Registering server with Angie SDK...', config);
     await sdk.registerServer(config);
     
-    console.log('TEC MCP Server registered successfully');
+    console.log('[TEC_MCP] Server registered successfully with Angie');
     
     // Expose server and tools on the global namespace
     if (!window.TEC_MCP) {
@@ -306,14 +332,25 @@ async function initializeTecMcpServer(): Promise<void> {
     window.TEC_MCP.tools = tecTools;
     
   } catch (error) {
-    console.error('Failed to initialize TEC MCP Server:', error);
+    console.error('[TEC_MCP] Failed to initialize server:', error);
+    console.error('[TEC_MCP] Initialization error details:', {
+      message: (error as any)?.message,
+      stack: (error as any)?.stack,
+      name: (error as any)?.name
+    });
   }
 }
 
 // Auto-initialize when DOM is ready
+console.log('[TEC_MCP] Module loaded, checking DOM state:', document.readyState);
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initializeTecMcpServer);
+  console.log('[TEC_MCP] DOM still loading, waiting for DOMContentLoaded...');
+  document.addEventListener('DOMContentLoaded', () => {
+    console.log('[TEC_MCP] DOMContentLoaded fired, initializing...');
+    initializeTecMcpServer();
+  });
 } else {
+  console.log('[TEC_MCP] DOM already loaded, initializing immediately...');
   initializeTecMcpServer();
 }
 
