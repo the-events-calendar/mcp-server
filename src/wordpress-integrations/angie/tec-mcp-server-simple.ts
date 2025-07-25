@@ -103,11 +103,21 @@ function buildEndpointForTool(toolName: string, params: any): string {
       }
       // For list operations, add query parameters
       const queryParams = new URLSearchParams();
-      if (params.search) queryParams.append('search', params.search);
-      if (params.per_page) queryParams.append('per_page', Math.min(params.per_page, 100).toString());
-      if (params.page) queryParams.append('page', params.page);
-      if (params.orderby) queryParams.append('orderby', params.orderby);
-      if (params.order) queryParams.append('order', params.order);
+      if (params.search) {
+        queryParams.append('search', params.search);
+      }
+      if (params.per_page) {
+        queryParams.append('per_page', Math.min(params.per_page, 100).toString());
+      }
+      if (params.page) {
+        queryParams.append('page', params.page);
+      }
+      if (params.orderby) {
+        queryParams.append('orderby', params.orderby);
+      }
+      if (params.order) {
+        queryParams.append('order', params.order);
+      }
       
       // Add post-type specific filters
       Object.entries(params).forEach(([key, value]) => {
@@ -120,7 +130,9 @@ function buildEndpointForTool(toolName: string, params: any): string {
       return query ? `${base}?${query}` : base;
     
     case 'tec-calendar-delete-entities':
-      if (!id) throw new Error('ID is required for delete operation');
+      if (!id) {
+        throw new Error('ID is required for delete operation');
+      }
       const force = params.force ? '?force=true' : '';
       return `${base}/${id}${force}`;
     
