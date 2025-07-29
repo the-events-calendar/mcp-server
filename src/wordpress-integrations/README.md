@@ -12,6 +12,8 @@ The MCP (Model Context Protocol) server defines tools for managing The Events Ca
 wordpress-integrations/
 ├── ai-service/           # AI Engine integration
 │   └── build.ts         # Generates PHP file for AI Engine
+├── angie/               # Angie integration
+│   └── build.ts         # Generates PHP file for Angie
 ├── shared/              # Shared utilities
 │   └── tool-definitions.ts  # Extracts tool schemas from MCP
 └── README.md           # This file
@@ -21,7 +23,7 @@ wordpress-integrations/
 
 The AI Service integration generates a PHP file that can be included in WordPress plugins to register MCP tools with AI Engine or similar services.
 
-### Generated Output
+### AI Service Output
 
 The build script outputs PHP code directly to stdout, allowing you to save it to any location. The PHP file contains:
 
@@ -65,6 +67,93 @@ add_filter('ai_engine_tools', function($tools) use ($mcp_tools) {
 });
 ```
 
+## Angie Integration
+
+The Angie integration generates a complete MCP (Model Context Protocol) server that implements the Angie SDK interface, ready to handle tool registration and execution.
+
+### Angie Output Format
+
+The build script uses esbuild to create a fully self-contained MCP server for browser use:
+
+- IIFE (Immediately Invoked Function Expression) format for direct browser inclusion
+- Complete MCP server implementation with Angie SDK bundled
+- Auto-initializes when DOM is ready
+- Handles tool listing and tool execution
+- Makes REST API calls to WordPress backend
+- Fully self-contained - all dependencies bundled (including Angie SDK and MCP SDK)
+- Exposes global namespace: `window.TEC_MCP` with `server` and `tools` properties
+
+### JavaScript File Usage
+
+```html
+<!-- 1. Include WordPress API settings (required) -->
+<script>
+window.wpApiSettings = {
+    root: '<?php echo esc_url_raw( rest_url() ); ?>',
+    nonce: '<?php echo wp_create_nonce( 'wp_rest' ); ?>'
+};
+</script>
+
+<!-- 2. Include the MCP server (self-contained, includes Angie SDK) -->
+<script src="tec-mcp-server.js"></script>
+
+<!-- The server auto-initializes and registers with Angie -->
+<!-- Access via: window.TEC_MCP.server and window.TEC_MCP.tools -->
+```
+
+### MCP Server Features
+
+The generated MCP server includes:
+
+- **Automatic registration** with Angie SDK on page load
+- **Tool listing handler** that returns all TEC tools
+- **Tool execution handler** that calls your WordPress REST API
+- **Error handling** for missing API settings or failed requests
+- **Debug access** via `window.TEC_MCP.server` and `window.TEC_MCP.tools`
+- **Manual initialization** available via `window.TEC_MCP.initialize()`
+
+### WordPress REST API Integration
+
+The MCP server expects your WordPress plugin to implement REST endpoints:
+
+```php
+// Example REST API endpoint implementation
+add_action('rest_api_init', function() {
+    register_rest_route('tec/v1', '/mcp/(?P<tool>[a-zA-Z0-9-]+)', [
+        'methods' => 'POST',
+        'callback' => 'handle_mcp_tool_request',
+        'permission_callback' => function() {
+            return current_user_can('edit_posts');
+        },
+        'args' => [
+            'tool' => [
+                'required' => true,
+                'validate_callback' => function($param) {
+                    return is_string($param);
+                }
+            ]
+        ]
+    ]);
+});
+
+function handle_mcp_tool_request($request) {
+    $tool = $request->get_param('tool');
+    $params = $request->get_json_params();
+    
+    switch ($tool) {
+        case 'tec-calendar-create-update-entities':
+            // Handle create/update logic
+            return handle_create_update($params);
+        case 'tec-calendar-read-entities':
+            // Handle read logic
+            return handle_read($params);
+        // ... other tools
+        default:
+            return new WP_Error('unknown_tool', 'Unknown tool: ' . $tool, ['status' => 404]);
+    }
+}
+```
+
 ## Building
 
 ### Prerequisites
@@ -81,14 +170,21 @@ npm run build:all
 
 ### Using NPX (Recommended for Production)
 
-After installing the package, you can generate the PHP file directly:
+After installing the package, you can generate PHP files for different integrations:
 
 ```bash
-# Output to stdout (pipe to any file)
-npx @the-events-calendar/mcp-server tec-mcp-build-wp > path/to/your/file.php
+# AI Service integration
+npx @the-events-calendar/mcp-server tec-mcp-build-wp > path/to/ai-service-tools.php
 
-# Example: Generate into a WordPress plugin
+# Angie integration (MCP server)
+npx @the-events-calendar/mcp-server tec-mcp-build-wp-angie path/to/tec-mcp-server.js
+npx @the-events-calendar/mcp-server tec-mcp-build-wp-angie --output path/to/tec-mcp-server.js
+npx @the-events-calendar/mcp-server tec-mcp-build-wp-angie --minify path/to/tec-mcp-server.min.js
+
+# Examples:
 npx @the-events-calendar/mcp-server tec-mcp-build-wp > wp-content/plugins/my-plugin/includes/tec-mcp-tools.php
+npx @the-events-calendar/mcp-server tec-mcp-build-wp-angie wp-content/plugins/my-plugin/assets/js/tec-mcp-server.js
+npx @the-events-calendar/mcp-server tec-mcp-build-wp-angie --minify wp-content/plugins/my-plugin/assets/js/tec-mcp-server.min.js
 ```
 
 ### Using NPM Scripts (For Development)
@@ -96,13 +192,16 @@ npx @the-events-calendar/mcp-server tec-mcp-build-wp > wp-content/plugins/my-plu
 When developing locally, you can use npm scripts:
 
 ```bash
-# Output to stdout
-npm run build:wp:ai-service
+# AI Service integration
+npm run build:wp:ai-service > my-ai-integration.php
 
-# Save to a specific file
-npm run build:wp:ai-service > my-integration.php
+# Angie integration (MCP server)
+npm run build:wp:angie -- my-tec-mcp-server.js
+npm run build:wp:angie -- --output my-tec-mcp-server.js
+npm run build:wp:angie -- --minify my-tec-mcp-server.min.js
+npm run build:wp:angie -- -m -o my-tec-mcp-server.min.js
 
-# Build everything (TypeScript + WordPress integrations)
+# Build everything (TypeScript + all integrations)
 npm run build:all
 ```
 
