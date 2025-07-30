@@ -91,6 +91,12 @@ function buildEndpointForTool(toolName: string, params: any): string {
   
   const config = ENDPOINTS[postType];
   const base = `${config.namespace}/${config.version}/${config.resource}`;
+  console.log(`[TEC_MCP] Endpoint config for ${postType}:`, {
+    namespace: config.namespace,
+    version: config.version,
+    resource: config.resource,
+    base: base
+  });
   
   // Handle different tool operations
   switch (toolName) {
@@ -221,7 +227,13 @@ function createTecMcpServer(): Server {
       // Build the endpoint URL
       const endpoint = buildEndpointForTool(toolName, args);
       const url = `${root}${endpoint}`;
-      console.log(`[TEC_MCP] Built endpoint URL:`, { tool: toolName, endpoint, url });
+      console.log(`[TEC_MCP] Built endpoint URL:`, { 
+        tool: toolName, 
+        endpoint, 
+        fullUrl: url,
+        root,
+        args: JSON.stringify(args, null, 2)
+      });
       
       // Determine HTTP method
       let method = 'GET';
@@ -238,7 +250,12 @@ function createTecMcpServer(): Server {
       }
       
       // Make API request to WordPress
-      console.log(`[TEC_MCP] Making API request:`, { method, url, hasBody: !!body });
+      console.log(`[TEC_MCP] Making API request:`, { 
+        method, 
+        url, 
+        hasBody: !!body,
+        bodyContent: body ? JSON.parse(body) : null
+      });
       
       // Prepare headers - tickets may need different auth
       const headers: Record<string, string> = {
@@ -251,10 +268,29 @@ function createTecMcpServer(): Server {
         headers['X-WP-Nonce'] = nonce;
         // Also add nonce to URL for ticket endpoints
         finalUrl = url.includes('?') ? `${url}&_wpnonce=${nonce}` : `${url}?_wpnonce=${nonce}`;
-        console.log(`[TEC_MCP] Using special ticket auth with nonce in URL:`, finalUrl);
+        console.log(`[TEC_MCP] Special ticket authentication:`, {
+          originalUrl: url,
+          finalUrl,
+          nonceInHeader: 'X-WP-Nonce',
+          nonceInUrl: '_wpnonce',
+          nonceValue: nonce
+        });
       } else {
         headers['X-WP-Nonce'] = nonce;
+        console.log(`[TEC_MCP] Standard authentication for ${args.postType}:`, {
+          url,
+          nonceInHeader: 'X-WP-Nonce',
+          nonceValue: nonce
+        });
       }
+      
+      console.log(`[TEC_MCP] Final request details:`, {
+        url: finalUrl,
+        method,
+        headers,
+        credentials: 'same-origin',
+        bodyLength: body ? body.length : 0
+      });
       
       const response = await fetch(finalUrl, {
         method,
@@ -262,15 +298,23 @@ function createTecMcpServer(): Server {
         credentials: 'same-origin',
         body,
       });
-      console.log(`[TEC_MCP] API response:`, { status: response.status, ok: response.ok });
+      console.log(`[TEC_MCP] API response:`, { 
+        status: response.status, 
+        statusText: response.statusText,
+        ok: response.ok,
+        headers: Object.fromEntries(response.headers.entries())
+      });
       
       if (!response.ok) {
         const error = await response.text();
+        console.log(`[TEC_MCP] Error response body:`, error);
         let errorMessage;
         try {
           const errorJson = JSON.parse(error);
+          console.log(`[TEC_MCP] Parsed error JSON:`, errorJson);
           errorMessage = errorJson.message || errorJson.code || response.statusText;
         } catch {
+          console.log(`[TEC_MCP] Could not parse error as JSON, using raw text`);
           errorMessage = error || response.statusText;
         }
         throw new Error(`API request failed (${response.status}): ${errorMessage}`);
