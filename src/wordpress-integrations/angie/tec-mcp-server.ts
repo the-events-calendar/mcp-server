@@ -257,12 +257,26 @@ function createTecMcpServer(): McpServer {
         
         // Make API request to WordPress
         console.log(`[TEC_MCP] Making API request:`, { method, url, hasBody: !!body });
-        const response = await fetch(url, {
+        
+        // Prepare headers - tickets may need different auth
+        const headers: Record<string, string> = {
+          'Content-Type': 'application/json',
+        };
+        
+        // For tickets, try both X-WP-Nonce and also add nonce as query parameter
+        let finalUrl = url;
+        if ((args as any).postType === 'ticket') {
+          headers['X-WP-Nonce'] = nonce;
+          // Also add nonce to URL for ticket endpoints
+          finalUrl = url.includes('?') ? `${url}&_wpnonce=${nonce}` : `${url}?_wpnonce=${nonce}`;
+          console.log(`[TEC_MCP] Using special ticket auth with nonce in URL:`, finalUrl);
+        } else {
+          headers['X-WP-Nonce'] = nonce;
+        }
+        
+        const response = await fetch(finalUrl, {
           method,
-          headers: {
-            'X-WP-Nonce': nonce,
-            'Content-Type': 'application/json',
-          },
+          headers,
           credentials: 'same-origin',
           body,
         });
