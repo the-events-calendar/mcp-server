@@ -1,5 +1,5 @@
 /**
- * MCP Server for The Events Calendar - Angie Integration
+ * MCP Server for The Events Calendar - Angie Integration (Simplified)
  * 
  * This creates a complete MCP server using the Angie SDK that can be
  * bundled and included in a WordPress plugin.
@@ -8,24 +8,16 @@
 /// <reference lib="dom" />
 
 import { AngieMcpSdk } from '@elementor/angie-sdk';
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { 
   CallToolRequestSchema, 
   ListToolsRequestSchema,
   type CallToolRequest,
+  type ListToolsRequest,
   type ServerCapabilities
 } from '@modelcontextprotocol/sdk/types.js';
 
-// Define the interface locally since it's not being exported properly
-interface AngieServerConfig {
-  name: string;
-  version: string;
-  description: string;
-  server: McpServer;
-  capabilities?: ServerCapabilities;
-}
-
-// Import tool definitions - will be injected during build
+// Import tool definitions
 import toolsData from './tools-data.json';
 
 // Type for our tool definitions
@@ -43,12 +35,21 @@ declare global {
       nonce: string;
     };
     TEC_MCP?: {
-      server?: McpServer;
+      server?: Server;
       tools?: any[];
       createServer: typeof createTecMcpServer;
       initialize: typeof initializeTecMcpServer;
     };
   }
+}
+
+// Define the interface locally since it's not being exported properly
+interface AngieServerConfig {
+  name: string;
+  version: string;
+  description: string;
+  server: Server;
+  capabilities?: ServerCapabilities;
 }
 
 // Endpoint configuration matching the API client
@@ -144,188 +145,168 @@ function buildEndpointForTool(toolName: string, params: any): string {
   }
 }
 
-/**
- * Extract supported post types from tool schema
- */
-function extractPostTypes(schema: any): string[] {
-  if (schema?.properties?.postType?.enum) {
-    return schema.properties.postType.enum;
-  }
-  return [];
-}
-
-/**
- * Transform MCP tool definitions to include Angie metadata
- */
-function enrichToolsWithMetadata(tools: ToolDefinition[]): any[] {
-  return tools.map(tool => ({
-    ...tool,
-    // Additional metadata for debugging/logging
-    category: 'The Events Calendar',
-    version: '1.0.0',
-    metadata: {
-      source: 'plugin-the-events-calendar',
-      generated: new Date().toISOString(),
-      postTypes: extractPostTypes(tool.inputSchema)
-    }
-  }));
-}
-
-// Enrich tool definitions with metadata
-const tecTools = enrichToolsWithMetadata(toolsData as ToolDefinition[]);
+// Tool definitions
+const tecTools = toolsData as ToolDefinition[];
 console.log(`[TEC_MCP] Loaded ${tecTools.length} tool definitions:`, tecTools.map(t => t.name));
 
 /**
  * Create The Events Calendar MCP Server
  */
-function createTecMcpServer(): McpServer {
-  const server = new McpServer(
+function createTecMcpServer(): Server {
+  console.log('[TEC_MCP] Creating server with low-level API...');
+  
+  const server = new Server(
     { name: 'plugin-the-events-calendar', version: '1.0.0' },
     { capabilities: { tools: {} } }
   );
 
-  // Register each tool using the McpServer's tool method
-  tecTools.forEach(toolDef => {
-    console.log(`[TEC_MCP] Registering tool: ${toolDef.name}`);
+  // Register list tools handler
+  server.setRequestHandler(ListToolsRequestSchema, async (request: ListToolsRequest) => {
+    console.log('[TEC_MCP] Handling tools/list request');
+    return {
+      tools: tecTools.map(tool => ({
+        name: tool.name,
+        description: tool.description,
+        inputSchema: tool.inputSchema,
+      }))
+    };
+  });
+
+  // Register call tool handler
+  server.setRequestHandler(CallToolRequestSchema, async (request: CallToolRequest) => {
+    const { name: toolName, arguments: args = {} } = request.params;
+    console.log(`[TEC_MCP] Tool called: ${toolName}`, { args, request });
     
-    // Register tool with a basic schema that accepts any object
-    // This avoids Zod parsing but still allows arguments to be passed
-    const anyObjectSchema = {} as any; // Empty object as schema
+    // Check if we have wpApiSettings
+    if (!window.wpApiSettings) {
+      console.error('[TEC_MCP] WordPress API settings not found');
+      throw new Error('WordPress API settings not found. Make sure wp_localize_script is called.');
+    }
     
-    server.tool(toolDef.name, toolDef.description, anyObjectSchema, async (args, extra) => {
-      console.log(`[TEC_MCP] Tool called: ${toolDef.name}`, { args, extra });
-      
-      // Args should now contain the actual arguments passed to the tool
-      if (!args || typeof args !== 'object') {
-        console.warn(`[TEC_MCP] No arguments provided for ${toolDef.name}`);
-        args = {};
-      }
-      
-      // Check if we have wpApiSettings
-      if (!window.wpApiSettings) {
-        console.error('[TEC_MCP] WordPress API settings not found');
-        throw new Error('WordPress API settings not found. Make sure wp_localize_script is called.');
-      }
-      
-      const { root, nonce } = window.wpApiSettings;
-      console.log(`[TEC_MCP] Using WordPress API:`, { root, nonceLength: nonce?.length });
-      
-      try {
-        // Handle current-datetime locally
-        if (toolDef.name === 'tec-calendar-current-datetime') {
-          console.log('[TEC_MCP] Handling current-datetime locally');
-          const now = new Date();
-          const timezone = (args as any)?.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone;
-          
-          return {
-            content: [{
-              type: 'text',
-              text: JSON.stringify({
-                current_date: now.toISOString().split('T')[0],
-                current_time: now.toTimeString().split(' ')[0],
-                current_datetime: now.toISOString(),
-                timezone,
-                timestamp: Math.floor(now.getTime() / 1000),
-                formatted: {
-                  date: now.toLocaleDateString(),
-                  time: now.toLocaleTimeString(),
-                  full: now.toLocaleString()
-                }
-              }, null, 2)
-            }]
-          };
-        }
+    const { root, nonce } = window.wpApiSettings;
+    console.log(`[TEC_MCP] Using WordPress API:`, { root, nonceLength: nonce?.length });
+    
+    // Find the tool
+    const tool = tecTools.find(t => t.name === toolName);
+    if (!tool) {
+      throw new Error(`Unknown tool: ${toolName}`);
+    }
+    
+    try {
+      // Handle current-datetime locally
+      if (toolName === 'tec-calendar-current-datetime') {
+        console.log('[TEC_MCP] Handling current-datetime locally');
+        const now = new Date();
+        const timezone = args.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone;
         
-        // Build the endpoint URL
-        const endpoint = buildEndpointForTool(toolDef.name, args);
-        const url = `${root}${endpoint}`;
-        console.log(`[TEC_MCP] Built endpoint URL:`, { tool: toolDef.name, endpoint, url });
-        
-        // Determine HTTP method
-        let method = 'GET';
-        let body = undefined;
-        
-        switch (toolDef.name) {
-          case 'tec-calendar-create-update-entities':
-            method = (args as any).id ? 'PUT' : 'POST';
-            body = JSON.stringify((args as any).data || {});
-            break;
-          case 'tec-calendar-delete-entities':
-            method = 'DELETE';
-            break;
-        }
-        
-        // Make API request to WordPress
-        console.log(`[TEC_MCP] Making API request:`, { method, url, hasBody: !!body });
-        
-        // Prepare headers - tickets may need different auth
-        const headers: Record<string, string> = {
-          'Content-Type': 'application/json',
-        };
-        
-        // For tickets, try both X-WP-Nonce and also add nonce as query parameter
-        let finalUrl = url;
-        if ((args as any).postType === 'ticket') {
-          headers['X-WP-Nonce'] = nonce;
-          // Also add nonce to URL for ticket endpoints
-          finalUrl = url.includes('?') ? `${url}&_wpnonce=${nonce}` : `${url}?_wpnonce=${nonce}`;
-          console.log(`[TEC_MCP] Using special ticket auth with nonce in URL:`, finalUrl);
-        } else {
-          headers['X-WP-Nonce'] = nonce;
-        }
-        
-        const response = await fetch(finalUrl, {
-          method,
-          headers,
-          credentials: 'same-origin',
-          body,
-        });
-        console.log(`[TEC_MCP] API response:`, { status: response.status, ok: response.ok });
-        
-        if (!response.ok) {
-          const error = await response.text();
-          let errorMessage;
-          try {
-            const errorJson = JSON.parse(error);
-            errorMessage = errorJson.message || errorJson.code || response.statusText;
-          } catch {
-            errorMessage = error || response.statusText;
-          }
-          throw new Error(`API request failed (${response.status}): ${errorMessage}`);
-        }
-        
-        const result = await response.json();
-        console.log(`[TEC_MCP] Raw API result:`, result);
-        
-        // Handle list responses which may have data under a resource key
-        let data = result;
-        if (toolDef.name === 'tec-calendar-read-entities' && !(args as any).id && (args as any).postType) {
-          const resourceKey = ENDPOINTS[(args as any).postType]?.resource;
-          console.log(`[TEC_MCP] Checking for resource key:`, { resourceKey, hasKey: !!(result as any)[resourceKey] });
-          if (resourceKey && (result as any)[resourceKey]) {
-            data = (result as any)[resourceKey];
-            console.log(`[TEC_MCP] Extracted data from resource key:`, { itemCount: Array.isArray(data) ? data.length : 'not-array' });
-          }
-        }
-        
-        // Return in MCP format
         return {
-          content: [{ 
-            type: 'text', 
-            text: typeof data === 'string' ? data : JSON.stringify(data, null, 2) 
-          }],
+          content: [{
+            type: 'text',
+            text: JSON.stringify({
+              current_date: now.toISOString().split('T')[0],
+              current_time: now.toTimeString().split(' ')[0],
+              current_datetime: now.toISOString(),
+              timezone,
+              timestamp: Math.floor(now.getTime() / 1000),
+              formatted: {
+                date: now.toLocaleDateString(),
+                time: now.toLocaleTimeString(),
+                full: now.toLocaleString()
+              }
+            }, null, 2)
+          }]
         };
-      } catch (error: any) {
-        console.error(`[TEC_MCP] Error calling tool ${toolDef.name}:`, error);
-        console.error('[TEC_MCP] Error details:', { 
-          message: error.message, 
-          stack: error.stack,
-          tool: toolDef.name,
-          args 
-        });
-        throw error;
       }
-    });
+      
+      // Build the endpoint URL
+      const endpoint = buildEndpointForTool(toolName, args);
+      const url = `${root}${endpoint}`;
+      console.log(`[TEC_MCP] Built endpoint URL:`, { tool: toolName, endpoint, url });
+      
+      // Determine HTTP method
+      let method = 'GET';
+      let body = undefined;
+      
+      switch (toolName) {
+        case 'tec-calendar-create-update-entities':
+          method = args.id ? 'PUT' : 'POST';
+          body = JSON.stringify(args.data || {});
+          break;
+        case 'tec-calendar-delete-entities':
+          method = 'DELETE';
+          break;
+      }
+      
+      // Make API request to WordPress
+      console.log(`[TEC_MCP] Making API request:`, { method, url, hasBody: !!body });
+      
+      // Prepare headers - tickets may need different auth
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+      
+      // For tickets, try both X-WP-Nonce and also add nonce as query parameter
+      let finalUrl = url;
+      if (args.postType === 'ticket') {
+        headers['X-WP-Nonce'] = nonce;
+        // Also add nonce to URL for ticket endpoints
+        finalUrl = url.includes('?') ? `${url}&_wpnonce=${nonce}` : `${url}?_wpnonce=${nonce}`;
+        console.log(`[TEC_MCP] Using special ticket auth with nonce in URL:`, finalUrl);
+      } else {
+        headers['X-WP-Nonce'] = nonce;
+      }
+      
+      const response = await fetch(finalUrl, {
+        method,
+        headers,
+        credentials: 'same-origin',
+        body,
+      });
+      console.log(`[TEC_MCP] API response:`, { status: response.status, ok: response.ok });
+      
+      if (!response.ok) {
+        const error = await response.text();
+        let errorMessage;
+        try {
+          const errorJson = JSON.parse(error);
+          errorMessage = errorJson.message || errorJson.code || response.statusText;
+        } catch {
+          errorMessage = error || response.statusText;
+        }
+        throw new Error(`API request failed (${response.status}): ${errorMessage}`);
+      }
+      
+      const result = await response.json();
+      console.log(`[TEC_MCP] Raw API result:`, result);
+      
+      // Handle list responses which may have data under a resource key
+      let data = result;
+      if (toolName === 'tec-calendar-read-entities' && !args.id && args.postType) {
+        const resourceKey = ENDPOINTS[args.postType]?.resource;
+        console.log(`[TEC_MCP] Checking for resource key:`, { resourceKey, hasKey: !!result[resourceKey] });
+        if (resourceKey && result[resourceKey]) {
+          data = result[resourceKey];
+          console.log(`[TEC_MCP] Extracted data from resource key:`, { itemCount: Array.isArray(data) ? data.length : 'not-array' });
+        }
+      }
+      
+      // Return in MCP format
+      return {
+        content: [{ 
+          type: 'text', 
+          text: typeof data === 'string' ? data : JSON.stringify(data, null, 2) 
+        }],
+      };
+    } catch (error: any) {
+      console.error(`[TEC_MCP] Error calling tool ${toolName}:`, error);
+      console.error('[TEC_MCP] Error details:', { 
+        message: error.message, 
+        stack: error.stack,
+        tool: toolName,
+        args 
+      });
+      throw error;
+    }
   });
 
   return server;
@@ -396,3 +377,12 @@ export default {
 
 // Also export named exports for direct imports
 export { createTecMcpServer, initializeTecMcpServer, tecTools };
+
+// Also expose as the expected global when bundled
+if (typeof window !== 'undefined') {
+  (window as any).TEC_MCP = {
+    createServer: createTecMcpServer,
+    initialize: initializeTecMcpServer,
+    tools: tecTools
+  };
+}
