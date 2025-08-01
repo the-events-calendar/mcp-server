@@ -18,13 +18,20 @@ import {
 } from '@modelcontextprotocol/sdk/types.js';
 
 // Import tool definitions
-import toolsData from './tools-data.json';
+import toolsData from './tools-data.json' with { type: 'json' };
 
 // Type for our tool definitions
 interface ToolDefinition {
   name: string;
   description: string;
   inputSchema: any;
+  annotations?: {
+    title?: string;
+    readOnlyHint?: boolean;
+    destructiveHint?: boolean;
+    idempotentHint?: boolean;
+    openWorldHint?: boolean;
+  };
 }
 
 // Extend window interface for WordPress API settings
@@ -155,6 +162,16 @@ function buildEndpointForTool(toolName: string, params: any): string {
 const tecTools = toolsData as ToolDefinition[];
 console.log(`[TEC_MCP] Loaded ${tecTools.length} tool definitions:`, tecTools.map(t => t.name));
 
+// Log full tool definitions with annotations
+console.log('[TEC_MCP] Full tool definitions with annotations:');
+tecTools.forEach((tool, index) => {
+  console.log(`[TEC_MCP] Tool ${index + 1}: ${tool.name}`);
+  console.log(`[TEC_MCP]   Title: ${tool.annotations?.title || 'No title'}`);
+  console.log(`[TEC_MCP]   Description: ${tool.description.substring(0, 100)}...`);
+  console.log(`[TEC_MCP]   Annotations:`, tool.annotations);
+  console.log(`[TEC_MCP]   Input Schema Properties:`, Object.keys(tool.inputSchema.properties || {}));
+});
+
 /**
  * Create The Events Calendar MCP Server
  */
@@ -167,15 +184,23 @@ function createTecMcpServer(): Server {
   );
 
   // Register list tools handler
-  server.setRequestHandler(ListToolsRequestSchema, async (request: ListToolsRequest) => {
+  server.setRequestHandler(ListToolsRequestSchema, async (_request: ListToolsRequest) => {
     console.log('[TEC_MCP] Handling tools/list request');
-    return {
-      tools: tecTools.map(tool => ({
-        name: tool.name,
-        description: tool.description,
-        inputSchema: tool.inputSchema,
-      }))
-    };
+    const tools = tecTools.map(tool => ({
+      name: tool.name,
+      description: tool.description,
+      inputSchema: tool.inputSchema,
+      annotations: tool.annotations,
+    }));
+    
+    console.log('[TEC_MCP] Returning tools with annotations:');
+    tools.forEach((tool, index) => {
+      console.log(`[TEC_MCP]   ${index + 1}. ${tool.name} - ${tool.annotations?.title || 'No title'}`);
+      console.log(`[TEC_MCP]      Read-only: ${tool.annotations?.readOnlyHint || false}`);
+      console.log(`[TEC_MCP]      Destructive: ${tool.annotations?.destructiveHint || false}`);
+    });
+    
+    return { tools };
   });
 
   // Register call tool handler
@@ -302,7 +327,7 @@ function createTecMcpServer(): Server {
         status: response.status, 
         statusText: response.statusText,
         ok: response.ok,
-        headers: Object.fromEntries(response.headers.entries())
+        headers: Array.from(response.headers.entries()).reduce((acc, [k, v]) => ({ ...acc, [k]: v }), {})
       });
       
       if (!response.ok) {
@@ -326,7 +351,7 @@ function createTecMcpServer(): Server {
       // Handle list responses which may have data under a resource key
       let data = result;
       if (toolName === 'tec-calendar-read-entities' && !args.id && args.postType) {
-        const resourceKey = ENDPOINTS[args.postType]?.resource;
+        const resourceKey = ENDPOINTS[args.postType as keyof typeof ENDPOINTS]?.resource;
         console.log(`[TEC_MCP] Checking for resource key:`, { resourceKey, hasKey: !!result[resourceKey] });
         if (resourceKey && result[resourceKey]) {
           data = result[resourceKey];

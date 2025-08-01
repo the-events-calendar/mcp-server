@@ -19,6 +19,13 @@ export interface ToolDefinition {
   name: string;
   description: string;
   inputSchema: any; // JSON Schema format
+  annotations?: {
+    title?: string;
+    readOnlyHint?: boolean;
+    destructiveHint?: boolean;
+    idempotentHint?: boolean;
+    openWorldHint?: boolean;
+  };
 }
 
 /**
@@ -35,10 +42,53 @@ export function getToolDefinitions(): ToolDefinition[] {
       additionalProperties: false,
     };
     
+    // Define annotations based on tool name
+    let annotations: ToolDefinition['annotations'] = {};
+    
+    switch (tool.name) {
+      case 'tec-calendar-create-update-entities':
+        annotations = {
+          title: 'Create or Update Calendar Entities',
+          readOnlyHint: false,
+          destructiveHint: false,
+          idempotentHint: true,
+          openWorldHint: false
+        };
+        break;
+      case 'tec-calendar-read-entities':
+        annotations = {
+          title: 'Read Calendar Entities',
+          readOnlyHint: true,
+          destructiveHint: false,
+          idempotentHint: true,
+          openWorldHint: false
+        };
+        break;
+      case 'tec-calendar-delete-entities':
+        annotations = {
+          title: 'Delete Calendar Entities',
+          readOnlyHint: false,
+          destructiveHint: true,
+          idempotentHint: false,
+          openWorldHint: false
+        };
+        break;
+      case 'tec-calendar-current-datetime':
+        annotations = {
+          title: 'Get Current Date and Time',
+          readOnlyHint: true,
+          destructiveHint: false,
+          idempotentHint: false,
+          openWorldHint: false
+        };
+        break;
+    }
+    
     return {
       name: tool.name,
       description: tool.description,
       inputSchema,
+      annotations,
     };
   });
 }
