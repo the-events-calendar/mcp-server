@@ -1,13 +1,12 @@
 {
   "mcpServers": {
     "tec-mcp": {
-      "command": "node",
-      "args": ["dist/index.js"],
+      "command": "npx",
+      "args": ["@the-events-calendar/mcp-server"],
       "env": {
-        "WP_URL": "https://dev.korhal",
+        "WP_URL": "https://your-wordpress-site.com",
         "WP_USERNAME": "your-username",
-        "WP_APP_PASSWORD": "your-application-password",
-        "WP_IGNORE_SSL_ERRORS": "true"
+        "WP_APP_PASSWORD": "your-application-password"
       }
     }
   }
