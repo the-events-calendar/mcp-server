@@ -62,22 +62,22 @@ interface AngieServerConfig {
 // Endpoint configuration matching the API client
 const ENDPOINTS: Record<string, { namespace: string; resource: string; version: string }> = {
   event: {
-    namespace: 'tribe/events',
+    namespace: 'tec',
     resource: 'events',
     version: 'v1'
   },
   venue: {
-    namespace: 'tribe/events',
+    namespace: 'tec',
     resource: 'venues',
     version: 'v1'
   },
   organizer: {
-    namespace: 'tribe/events',
+    namespace: 'tec',
     resource: 'organizers',
     version: 'v1'
   },
   ticket: {
-    namespace: 'tribe/tickets',
+    namespace: 'tec',
     resource: 'tickets',
     version: 'v1'
   }
@@ -285,6 +285,8 @@ function createTecMcpServer(): Server {
       // Prepare headers - tickets may need different auth
       const headers: Record<string, string> = {
         'Content-Type': 'application/json',
+        // Add experimental endpoint acknowledgement header for TEC v1 API
+        'X-TEC-EEA': 'I understand that this endpoint is experimental and may change in a future release without maintaining backward compatibility. I also understand that I am using this endpoint at my own risk, while support is not provided for it.',
       };
       
       // For tickets, try both X-WP-Nonce and also add nonce as query parameter
@@ -348,16 +350,13 @@ function createTecMcpServer(): Server {
       const result = await response.json();
       console.log(`[TEC_MCP] Raw API result:`, result);
       
-      // Handle list responses which may have data under a resource key
+      // The new TEC v1 API returns arrays directly for list responses
       let data = result;
-      if (toolName === 'tec-calendar-read-entities' && !args.id && args.postType) {
-        const resourceKey = ENDPOINTS[args.postType as keyof typeof ENDPOINTS]?.resource;
-        console.log(`[TEC_MCP] Checking for resource key:`, { resourceKey, hasKey: !!result[resourceKey] });
-        if (resourceKey && result[resourceKey]) {
-          data = result[resourceKey];
-          console.log(`[TEC_MCP] Extracted data from resource key:`, { itemCount: Array.isArray(data) ? data.length : 'not-array' });
-        }
-      }
+      console.log(`[TEC_MCP] Response type:`, { 
+        isArray: Array.isArray(data), 
+        length: Array.isArray(data) ? data.length : 'n/a',
+        type: typeof data
+      });
       
       // Return in MCP format
       return {

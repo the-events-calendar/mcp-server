@@ -14,22 +14,22 @@ export interface EndpointConfig {
  */
 export const ENDPOINTS: Record<PostType, EndpointConfig> = {
   event: {
-    namespace: 'tribe/events',
+    namespace: 'tec',
     resource: 'events',
     version: 'v1'
   },
   venue: {
-    namespace: 'tribe/events',
+    namespace: 'tec',
     resource: 'venues',
     version: 'v1'
   },
   organizer: {
-    namespace: 'tribe/events',
+    namespace: 'tec',
     resource: 'organizers',
     version: 'v1'
   },
   ticket: {
-    namespace: 'tribe/tickets',
+    namespace: 'tec',
     resource: 'tickets',
     version: 'v1'
   }

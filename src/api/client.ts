@@ -1,6 +1,6 @@
-import { PostType, PostTypeMap, FilterTypeMap, WPError, ListResponse } from '../types/index.js';
+import { PostType, PostTypeMap, FilterTypeMap, WPError } from '../types/index.js';
 import { ApiError } from '../utils/error-handling.js';
-import { buildEndpoint, ENDPOINTS } from './endpoints.js';
+import { buildEndpoint } from './endpoints.js';
 import { fetch as undiciFetch, Agent } from 'undici';
 import { getLogger } from '../utils/logger.js';
 
@@ -57,6 +57,8 @@ export class ApiClient {
       headers: {
         'Authorization': this.authHeader,
         'Content-Type': 'application/json',
+        // Add experimental endpoint acknowledgement header for TEC v1 API
+        'X-TEC-EEA': 'I understand that this endpoint is experimental and may change in a future release without maintaining backward compatibility. I also understand that I am using this endpoint at my own risk, while support is not provided for it.',
         ...options.headers,
       },
     };
@@ -157,14 +159,10 @@ export class ApiClient {
     const queryString = params.toString();
     const url = queryString ? `${endpoint}?${queryString}` : endpoint;
 
-    // The API returns a wrapper object with the data under a key matching the resource type
-    const response = await this.request<ListResponse<PostTypeMap[T]>>(url);
+    // The new TEC v1 API returns arrays directly, not wrapped in resource keys
+    const response = await this.request<PostTypeMap[T][]>(url);
     
-    // Extract the array from the response based on the resource type
-    const resourceKey = ENDPOINTS[postType].resource as keyof ListResponse<PostTypeMap[T]>;
-    const data = response[resourceKey] as PostTypeMap[T][] | undefined;
-    
-    return data || [];
+    return response || [];
   }
 
   /**
