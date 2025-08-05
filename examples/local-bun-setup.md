@@ -51,13 +51,14 @@
      "mcpServers": {
        "events-mcp": {
          "command": "bun",
-         "args": ["run", "dev"]
+         "args": ["run", "dev"],
+         "cwd": "/path/to/your/mcp-server"
        }
      }
    }
    ```
 
-   > **Note**: This configuration uses Bun to run the development server directly, with hot reload capabilities.
+   > **Note**: This configuration uses Bun to run the development server directly, with hot reload capabilities. The `cwd` parameter tells Cursor which directory to run the command from - replace `/path/to/your/mcp-server` with the actual path to your cloned mcp-server directory.
 
 ## Verification
 
@@ -146,7 +147,8 @@ bun run build && bun run start
   "mcpServers": {
     "events-mcp": {
       "command": "bun",
-      "args": ["run", "dev"]
+      "args": ["run", "dev"],
+      "cwd": "/path/to/your/mcp-server"
     }
   }
 }
@@ -159,7 +161,8 @@ bun run build && bun run start
   "mcpServers": {
     "events-mcp": {
       "command": "bun",
-      "args": ["run", "start"]
+      "args": ["run", "start"],
+      "cwd": "/path/to/your/mcp-server"
     }
   }
 }
@@ -173,6 +176,7 @@ bun run build && bun run start
     "events-mcp": {
       "command": "bun",
       "args": ["run", "dev"],
+      "cwd": "/path/to/your/mcp-server",
       "env": {
         "WP_URL": "https://your-specific-site.com",
         "LOG_LEVEL": "debug"
