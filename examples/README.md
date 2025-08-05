@@ -4,23 +4,27 @@ This directory contains configuration examples for various AI-powered code edito
 
 ## Configuration Files
 
-### Claude Desktop
+### Claude Desktop Configuration
+
 - `claude-desktop-config.json` - Uses environment variables for credentials
 - `claude-desktop-config-with-args.json` - Uses command-line arguments for credentials
 - `claude-desktop-config-local.json` - Local development with Node.js
 
-### Cursor
+### Cursor Configuration
+
 - `cursor-config.json` - Uses environment variables for credentials
 - `cursor-config-with-args.json` - Uses command-line arguments for credentials
 - `cursor-config-local.json` - Local development with Node.js
 - `cursor-config-local-bun.json` - Local development with Bun
 
-### Windsurf
+### Windsurf Configuration
+
 - `windsurf-config.json` - Uses environment variables for credentials
 - `windsurf-config-with-args.json` - Uses command-line arguments for credentials
 - `windsurf-config-local.json` - Local development with Node.js
 
 ### Local Development
+
 - `local-development.md` - Guide for using your local development version
 
 ## Setup Instructions
@@ -34,6 +38,7 @@ This directory contains configuration examples for various AI-powered code edito
 5. Save the configuration
 
 Configuration file location:
+
 - macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
 - Windows: `%APPDATA%\Claude\claude_desktop_config.json`
 - Linux: `~/.config/Claude/claude_desktop_config.json`
@@ -47,6 +52,7 @@ Configuration file location:
 5. Save the configuration
 
 Configuration file location:
+
 - macOS: `~/Library/Application Support/Cursor/User/mcp-servers.json`
 - Windows: `%APPDATA%\Cursor\User\mcp-servers.json`
 - Linux: `~/.config/Cursor/User/mcp-servers.json`
@@ -60,6 +66,7 @@ Configuration file location:
 5. Save the configuration
 
 Configuration file location:
+
 - macOS: `~/Library/Application Support/Windsurf/mcp-config.json`
 - Windows: `%APPDATA%\Windsurf\mcp-config.json`
 - Linux: `~/.config/Windsurf/mcp-config.json`
@@ -67,13 +74,17 @@ Configuration file location:
 ## Choosing Between Environment Variables and Command-Line Arguments
 
 ### Environment Variables Configuration
+
 Use the standard configuration files (without `-with-args` suffix) when:
+
 - You want to keep credentials secure in environment variables
 - You're using a shared configuration
 - You prefer not to expose credentials in the configuration file
 
 ### Command-Line Arguments Configuration
+
 Use the `-with-args` configuration files when:
+
 - You want a simpler setup without environment variables
 - You're comfortable storing credentials in the configuration file
 - You're using a local development environment

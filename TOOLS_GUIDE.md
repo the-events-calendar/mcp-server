@@ -5,15 +5,17 @@ This guide provides comprehensive examples and best practices for using The Even
 ## Overview
 
 The MCP server provides three main tools:
+
 - `tec-calendar-create-update-entities` - Create new posts or update existing ones
 - `tec-calendar-read-entities` - Read, list, or search posts
 - `tec-calendar-delete-entities` - Delete posts (trash or permanent)
 - `tec-calendar-current-datetime` - Get current date and time information
 
 All tools support four post types:
+
 - `event` - Calendar events
 - `venue` - Event locations
-- `organizer` - Event organizers  
+- `organizer` - Event organizers
 - `ticket` - Event tickets
 
 ## Tool Usage Examples
@@ -209,6 +211,7 @@ Get current date and time information for both local and WordPress server timezo
 ```
 
 **Response**:
+
 ```json
 {
   "local": {
@@ -346,7 +349,9 @@ To create multiple events, call the tool multiple times:
 ## Field Reference
 
 ### Common Filter Fields
+
 These filters are available for all post types at the top level:
+
 - `page` - Page number for pagination
 - `per_page` - Number of items per page
 - `order` - Sort order ("asc" or "desc")
@@ -359,6 +364,7 @@ These filters are available for all post types at the top level:
 ### Post-Type Specific Filters
 
 #### eventFilters (for events only)
+
 - `start_date` - Filter by start date (YYYY-MM-DD)
 - `end_date` - Filter by end date (YYYY-MM-DD)
 - `venue` - Filter by venue ID
@@ -368,6 +374,7 @@ These filters are available for all post types at the top level:
 - `tags` - Filter by tag IDs
 
 #### venueFilters (for venues only)
+
 - `city` - Filter by city
 - `state` - Filter by state/province
 - `country` - Filter by country
@@ -377,11 +384,13 @@ These filters are available for all post types at the top level:
 - `radius` - Filter by radius in km (with geo_lat/geo_lng)
 
 #### organizerFilters (for organizers only)
+
 - `email` - Filter by email
 - `website` - Filter by website
 - `phone` - Filter by phone
 
 #### ticketFilters (for tickets only)
+
 - `event` - Filter by event ID
 - `provider` - Filter by provider (RSVP, Ticket Commerce, WooCommerce)
 - `type` - Filter by ticket type ("rsvp" or "paid")
@@ -390,6 +399,7 @@ These filters are available for all post types at the top level:
 - `max_price` - Filter by maximum price
 
 ### Event Fields
+
 - `title` (required) - Event name
 - `start_date` (required) - Format: "YYYY-MM-DD HH:MM:SS"
 - `end_date` (required) - Format: "YYYY-MM-DD HH:MM:SS"
@@ -403,6 +413,7 @@ These filters are available for all post types at the top level:
 - `status` - "publish", "draft", "pending", etc.
 
 ### Venue Fields
+
 - `venue` (required) - Venue name
 - `address` - Street address
 - `city` - City name
@@ -414,6 +425,7 @@ These filters are available for all post types at the top level:
 - `status` - Publication status
 
 ### Organizer Fields
+
 - `organizer` (required) - Organizer name
 - `phone` - Contact phone
 - `website` - Organizer website
@@ -421,6 +433,7 @@ These filters are available for all post types at the top level:
 - `status` - Publication status
 
 ### Ticket Fields
+
 - `name` (required) - Ticket type name
 - `price` (required) - Ticket price (number or string)
 - `description` - Ticket description
