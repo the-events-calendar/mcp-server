@@ -20,7 +20,9 @@
     "start:bun": "bun run dist/index.js",
     "start:debug": "DEBUG=* bun run dist/index.js 2> debug.log",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "prepublishOnly": "npm run build:all"
+    "prepublishOnly": "npm run build:all",
+    "mcp": "source ~/.nvm/nvm.sh && nvm use && node dist/index.js",
+    "preinstall": "source ~/.nvm/nvm.sh && nvm use"
   },
   "keywords": [
     "mcp",
@@ -41,6 +43,10 @@
     "url": "https://github.com/the-events-calendar/mcp-server/issues"
   },
   "homepage": "https://github.com/the-events-calendar/mcp-server#readme",
+  "engines": {
+    "node": ">=20.0.0",
+    "npm": ">=9.0.0"
+  },
   "files": [
     "dist",
     "README.md",
