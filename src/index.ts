@@ -6,9 +6,22 @@ import { createServer } from './server.js';
 import { DebugTransport } from './debug-transport.js';
 import { initializeLogger, getLogger } from './utils/logger.js';
 import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+// Get the directory of this module
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Load environment variables
-dotenv.config();
+// First try to load from current working directory
+dotenv.config({ quiet: true });
+
+// If that didn't work, try relative to the project root (one level up from dist/)
+if (!process.env.WP_URL) {
+  const projectRoot = path.resolve(__dirname, '..');
+  dotenv.config({ path: path.join(projectRoot, '.env'), quiet: true });
+}
 
 // Check for SSL ignore early
 if (process.env.WP_IGNORE_SSL_ERRORS === 'true' || process.argv.includes('--ignore-ssl-errors')) {
@@ -26,16 +39,16 @@ async function main() {
   let wpIgnoreSslErrors: boolean = false;
   let logLevel: string = 'info';
   let logFile: string | undefined;
-  
+
   // Parse command-line arguments
   const args = process.argv.slice(2);
-  
+
   // Parse command-line arguments
   if (args.length >= 3) {
     wpUrl = args[0];
     wpUsername = args[1];
     wpAppPassword = args[2];
-    
+
     // Parse additional options
     for (let i = 3; i < args.length; i++) {
       if (args[i] === '--ignore-ssl-errors') {
@@ -66,10 +79,10 @@ async function main() {
     logLevel = process.env.LOG_LEVEL || logLevel;
     logFile = process.env.LOG_FILE || logFile;
   }
-  
+
   const serverName = process.env.MCP_SERVER_NAME || 'tec-mcp-server';
   const serverVersion = process.env.MCP_SERVER_VERSION || '1.0.0';
-  
+
   // Initialize logger
   initializeLogger({ level: logLevel, logFile });
   const logger = getLogger();
@@ -111,7 +124,7 @@ async function main() {
     ignoreSslErrors: wpIgnoreSslErrors,
     enforcePerPageLimit: process.env.WP_ENFORCE_PER_PAGE_LIMIT !== 'false', // Defaults to true
   });
-  
+
   if (wpIgnoreSslErrors) {
     logger.warn('SSL certificate verification is disabled. This should only be used for local development.');
   }
@@ -127,14 +140,14 @@ async function main() {
   // Add a small delay to ensure any module loading output has completed
   logger.silly('Waiting for module loading to complete...');
   await new Promise(resolve => setTimeout(resolve, 100));
-  
+
   logger.debug('Creating stdio transport...');
   const stdioTransport = new StdioServerTransport();
   const transport = debug ? new DebugTransport(stdioTransport) : stdioTransport;
-  
+
   logger.debug('Connecting server to transport...');
   await server.connect(transport);
-  
+
   logger.info(`${serverName} v${serverVersion} started successfully`);
   logger.debug('Server is ready for MCP communication');
 }

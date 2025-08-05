@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "events-mcp": {
+      "command": "bun",
+      "args": ["run", "/path/to/your/mcp-server/dist/index.js"]
+    }
+  }
+}

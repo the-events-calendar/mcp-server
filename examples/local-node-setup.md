@@ -71,6 +71,8 @@
    > - macOS/Linux: e.g., `/Users/YourName/projects/mcp-server`
    > - Windows: e.g., `C:/Users/YourName/projects/mcp-server` or `C:\\Users\\YourName\\projects\\mcp-server`
 
+   > **Important**: If you are working with a local site with a self-signed certificate, set WP_IGNORE_SSL_ERRORS to true to avoid connections issues!
+
 ## Verification
 
 1. **Test the Build**

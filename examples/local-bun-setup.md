@@ -51,14 +51,11 @@
      "mcpServers": {
        "events-mcp": {
          "command": "bun",
-         "args": ["run", "dev"],
-         "cwd": "/path/to/your/mcp-server"
+         "args": ["run", "/path/to/your/mcp-server/dist/index.js"]
        }
      }
    }
    ```
-
-   > **Note**: This configuration uses Bun to run the development server directly, with hot reload capabilities. The `cwd` parameter tells Cursor which directory to run the command from - replace `/path/to/your/mcp-server` with the actual path to your cloned mcp-server directory.
 
 ## Verification
 
@@ -147,8 +144,7 @@ bun run build && bun run start
   "mcpServers": {
     "events-mcp": {
       "command": "bun",
-      "args": ["run", "dev"],
-      "cwd": "/path/to/your/mcp-server"
+      "args": ["run", "/path/to/your/mcp-server/dist/index.js"]
     }
   }
 }
@@ -175,8 +171,7 @@ bun run build && bun run start
   "mcpServers": {
     "events-mcp": {
       "command": "bun",
-      "args": ["run", "dev"],
-      "cwd": "/path/to/your/mcp-server",
+      "args": ["run", "/path/to/your/mcp-server/dist/index.js"]
       "env": {
         "WP_URL": "https://your-specific-site.com",
         "LOG_LEVEL": "debug"
@@ -191,4 +186,9 @@ bun run build && bun run start
 1. Never commit your `.env` file or application passwords
 2. Only use `WP_IGNORE_SSL_ERRORS=true` for local development
 3. Keep your WordPress application password secure and rotate it regularly
-4. Bun respects `.env` files automatically - no additional configuration needed
+4. Bun respects `.env` files automatically - no additional configuration needed.
+5. If dev/hot reload is needed, run the server manually and then start Cursor it should connect to the running server.
+    ```bash
+    cd /path/to/your/mcp-server/
+    bun run dev
+    ```
