@@ -149,34 +149,87 @@ export function generateUpdateExamplesFromSchema(postType: PostType, count: numb
 function generateReadExamples(_postTypes: PostType[]): string[] {
   const examples: string[] = [];
   
-  // Single item retrieval
+  // === BASIC RETRIEVAL ===
   examples.push(
+    '// === BASIC RETRIEVAL ===',
+    '',
     '// Get a specific event by ID',
     JSON.stringify({ postType: 'event', id: 123 }, null, 2),
+    '',
+    '// Get a specific venue by ID',
+    JSON.stringify({ postType: 'venue', id: 456 }, null, 2),
+    '',
+    '// Get a specific organizer by ID',
+    JSON.stringify({ postType: 'organizer', id: 789 }, null, 2),
+    '',
+    '// Get a specific ticket by ID',
+    JSON.stringify({ postType: 'ticket', id: 101 }, null, 2),
     ''
   );
   
-  // List all with pagination
+  // === LISTING & PAGINATION ===
   examples.push(
-    '// List all venues with pagination',
+    '// === LISTING & PAGINATION ===',
+    '',
+    '// List all events (default pagination)',
+    JSON.stringify({ postType: 'event' }, null, 2),
+    '',
+    '// List venues with custom pagination',
     JSON.stringify({ postType: 'venue', per_page: 10, page: 1 }, null, 2),
+    '',
+    '// List organizers sorted by title',
+    JSON.stringify({ 
+      postType: 'organizer',
+      orderby: 'title',
+      order: 'asc',
+      per_page: 25
+    }, null, 2),
+    '',
+    '// List tickets with maximum results',
+    JSON.stringify({ 
+      postType: 'ticket',
+      per_page: 100
+    }, null, 2),
     ''
   );
   
-  // Search with query
+  // === SEARCH QUERIES ===
   examples.push(
-    '// Search for events containing "conference"',
+    '// === SEARCH QUERIES ===',
+    '',
+    '// Search events by keyword',
     JSON.stringify({ 
       postType: 'event', 
       search: 'conference',
       per_page: 20 
     }, null, 2),
+    '',
+    '// Search venues for "ballroom"',
+    JSON.stringify({ 
+      postType: 'venue',
+      search: 'ballroom'
+    }, null, 2),
+    '',
+    '// Search organizers by name',
+    JSON.stringify({ 
+      postType: 'organizer',
+      search: 'arts council'
+    }, null, 2),
+    '',
+    '// Search tickets for "VIP"',
+    JSON.stringify({ 
+      postType: 'ticket',
+      search: 'VIP'
+    }, null, 2),
     ''
   );
   
-  // Filter by date (events)
+  // === DATE FILTERING (EVENTS) ===
   examples.push(
-    '// Get upcoming events (after calling tec-calendar-current-datetime)',
+    '// === DATE FILTERING (EVENTS) ===',
+    '// Note: Always call tec-calendar-current-datetime first for date calculations',
+    '',
+    '// Get events in December 2024',
     JSON.stringify({ 
       postType: 'event',
       eventFilters: {
@@ -184,54 +237,321 @@ function generateReadExamples(_postTypes: PostType[]): string[] {
         end_date: '2024-12-31'
       }
     }, null, 2),
+    '',
+    '// Get events starting after a specific date',
+    JSON.stringify({ 
+      postType: 'event',
+      eventFilters: {
+        start_date: '2024-12-15'
+      }
+    }, null, 2),
+    '',
+    '// Get events ending before a date',
+    JSON.stringify({ 
+      postType: 'event',
+      eventFilters: {
+        end_date: '2024-12-25'
+      }
+    }, null, 2),
+    '',
+    '// Get today\'s events (use calculated date)',
+    JSON.stringify({ 
+      postType: 'event',
+      eventFilters: {
+        start_date: '2024-12-06',
+        end_date: '2024-12-06'
+      }
+    }, null, 2),
     ''
   );
   
-  // Filter by location (venues)
+  // === LOCATION FILTERING (VENUES) ===
   examples.push(
-    '// Find venues in San Francisco',
+    '// === LOCATION FILTERING (VENUES) ===',
+    '',
+    '// Find venues in a specific city',
     JSON.stringify({ 
       postType: 'venue',
       venueFilters: {
-        city: 'San Francisco',
-        state: 'CA'
+        city: 'San Francisco'
+      }
+    }, null, 2),
+    '',
+    '// Find venues by city and state',
+    JSON.stringify({ 
+      postType: 'venue',
+      venueFilters: {
+        city: 'Austin',
+        state: 'TX'
+      }
+    }, null, 2),
+    '',
+    '// Find venues in a country',
+    JSON.stringify({ 
+      postType: 'venue',
+      venueFilters: {
+        country: 'United Kingdom'
+      }
+    }, null, 2),
+    '',
+    '// Find venues by postal code',
+    JSON.stringify({ 
+      postType: 'venue',
+      venueFilters: {
+        zip: '94102'
+      }
+    }, null, 2),
+    '',
+    '// Find venues near coordinates (within radius)',
+    JSON.stringify({ 
+      postType: 'venue',
+      venueFilters: {
+        geo_lat: 37.7749,
+        geo_lng: -122.4194,
+        radius: 10
       }
     }, null, 2),
     ''
   );
   
-  // Filter by event (tickets)
+  // === EVENT-SPECIFIC FILTERS ===
   examples.push(
-    '// Get all tickets for a specific event',
+    '// === EVENT-SPECIFIC FILTERS ===',
+    '',
+    '// Get events at a specific venue',
+    JSON.stringify({ 
+      postType: 'event',
+      eventFilters: {
+        venue: 456
+      }
+    }, null, 2),
+    '',
+    '// Get events by a specific organizer',
+    JSON.stringify({ 
+      postType: 'event',
+      eventFilters: {
+        organizer: 789
+      }
+    }, null, 2),
+    '',
+    '// Get featured events only',
+    JSON.stringify({ 
+      postType: 'event',
+      eventFilters: {
+        featured: true
+      }
+    }, null, 2),
+    '',
+    '// Get events in specific categories',
+    JSON.stringify({ 
+      postType: 'event',
+      eventFilters: {
+        categories: [10, 11, 12]
+      }
+    }, null, 2),
+    '',
+    '// Get events with specific tags',
+    JSON.stringify({ 
+      postType: 'event',
+      eventFilters: {
+        tags: [20, 21]
+      }
+    }, null, 2),
+    ''
+  );
+  
+  // === TICKET FILTERS ===
+  examples.push(
+    '// === TICKET FILTERS ===',
+    '',
+    '// Get all tickets for an event',
     JSON.stringify({ 
       postType: 'ticket',
       ticketFilters: {
-        event: 456,
+        event: 123
+      }
+    }, null, 2),
+    '',
+    '// Get only available tickets for an event',
+    JSON.stringify({ 
+      postType: 'ticket',
+      ticketFilters: {
+        event: 123,
         available: true
+      }
+    }, null, 2),
+    '',
+    '// Get RSVP tickets only',
+    JSON.stringify({ 
+      postType: 'ticket',
+      ticketFilters: {
+        type: 'rsvp'
+      }
+    }, null, 2),
+    '',
+    '// Get paid tickets only',
+    JSON.stringify({ 
+      postType: 'ticket',
+      ticketFilters: {
+        type: 'paid'
+      }
+    }, null, 2),
+    '',
+    '// Get tickets by provider',
+    JSON.stringify({ 
+      postType: 'ticket',
+      ticketFilters: {
+        provider: 'WooCommerce'
+      }
+    }, null, 2),
+    '',
+    '// Get tickets in price range',
+    JSON.stringify({ 
+      postType: 'ticket',
+      ticketFilters: {
+        min_price: 25,
+        max_price: 100
       }
     }, null, 2),
     ''
   );
   
-  // Search organizers
+  // === ORGANIZER FILTERS ===
   examples.push(
-    '// Search for organizers by name',
+    '// === ORGANIZER FILTERS ===',
+    '',
+    '// Find organizers by email domain',
     JSON.stringify({ 
       postType: 'organizer',
-      search: 'arts council'
+      organizerFilters: {
+        email: '@example.org'
+      }
+    }, null, 2),
+    '',
+    '// Find organizers with websites',
+    JSON.stringify({ 
+      postType: 'organizer',
+      organizerFilters: {
+        website: 'https://'
+      }
+    }, null, 2),
+    '',
+    '// Find organizers by phone area code',
+    JSON.stringify({ 
+      postType: 'organizer',
+      organizerFilters: {
+        phone: '(555)'
+      }
     }, null, 2),
     ''
   );
   
-  // Complex filtering
+  // === STATUS FILTERING ===
   examples.push(
-    '// Get draft events with specific organizer',
+    '// === STATUS FILTERING ===',
+    '',
+    '// Get only published events',
+    JSON.stringify({ 
+      postType: 'event',
+      status: 'publish'
+    }, null, 2),
+    '',
+    '// Get draft venues',
+    JSON.stringify({ 
+      postType: 'venue',
+      status: 'draft'
+    }, null, 2),
+    '',
+    '// Get pending organizers',
+    JSON.stringify({ 
+      postType: 'organizer',
+      status: 'pending'
+    }, null, 2),
+    '',
+    '// Get private tickets',
+    JSON.stringify({ 
+      postType: 'ticket',
+      status: 'private'
+    }, null, 2),
+    '',
+    '// Get multiple statuses',
+    JSON.stringify({ 
+      postType: 'event',
+      status: ['publish', 'draft']
+    }, null, 2),
+    ''
+  );
+  
+  // === INCLUSION/EXCLUSION ===
+  examples.push(
+    '// === INCLUSION/EXCLUSION ===',
+    '',
+    '// Get only specific events by IDs',
+    JSON.stringify({ 
+      postType: 'event',
+      include: [123, 124, 125]
+    }, null, 2),
+    '',
+    '// Exclude specific venues from results',
+    JSON.stringify({ 
+      postType: 'venue',
+      exclude: [456, 457]
+    }, null, 2),
+    ''
+  );
+  
+  // === COMPLEX QUERIES ===
+  examples.push(
+    '// === COMPLEX QUERIES ===',
+    '',
+    '// Search upcoming published events at a venue',
+    JSON.stringify({ 
+      postType: 'event',
+      search: 'workshop',
+      status: 'publish',
+      eventFilters: {
+        venue: 456,
+        start_date: '2024-12-06'
+      },
+      per_page: 50
+    }, null, 2),
+    '',
+    '// Find draft events by organizer with date range',
     JSON.stringify({ 
       postType: 'event',
       status: 'draft',
       eventFilters: {
-        organizer: 789
-      }
+        organizer: 789,
+        start_date: '2024-12-01',
+        end_date: '2024-12-31'
+      },
+      orderby: 'date',
+      order: 'asc'
+    }, null, 2),
+    '',
+    '// Search venues in multiple cities with pagination',
+    JSON.stringify({ 
+      postType: 'venue',
+      search: 'conference',
+      venueFilters: {
+        state: 'CA'
+      },
+      page: 2,
+      per_page: 20,
+      orderby: 'title',
+      order: 'asc'
+    }, null, 2),
+    '',
+    '// Get available tickets under $50 for an event',
+    JSON.stringify({ 
+      postType: 'ticket',
+      ticketFilters: {
+        event: 123,
+        available: true,
+        max_price: 50
+      },
+      orderby: 'price',
+      order: 'asc'
     }, null, 2),
     ''
   );
