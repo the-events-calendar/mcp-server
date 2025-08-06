@@ -149,52 +149,111 @@ export function generateUpdateExamplesFromSchema(postType: PostType, count: numb
 function generateCompactReadExamples(): string[] {
   const examples: string[] = [];
   
-  // Most common use cases only
+  // 15 diverse examples covering main use cases
   examples.push(
-    '// Get specific event',
+    '// === BASIC QUERIES ===',
+    '',
+    '// 1. Get specific event by ID',
     '{ "postType": "event", "id": 123 }',
     '',
-    '// List all venues',
-    '{ "postType": "venue", "per_page": 20 }',
+    '// 2. List all venues with pagination',
+    '{ "postType": "venue", "per_page": 20, "page": 1 }',
     '',
-    '// Search events',
+    '// 3. Search events by keyword',
     '{ "postType": "event", "search": "conference" }',
     '',
-    '// Get upcoming events (after calling tec-calendar-current-datetime)',
+    '// 4. Get all organizers sorted by name',
+    '{ "postType": "organizer", "orderby": "title", "order": "asc" }',
+    '',
+    '// === DATE FILTERING ===',
+    '',
+    '// 5. Get upcoming events (after calling tec-calendar-current-datetime)',
     JSON.stringify({ 
       postType: 'event',
       eventFilters: { start_date: '2024-12-06' }
     }, null, 2),
     '',
-    '// Find venues by location',
+    '// 6. Get events in date range',
+    JSON.stringify({ 
+      postType: 'event',
+      eventFilters: { 
+        start_date: '2024-12-01',
+        end_date: '2024-12-31'
+      }
+    }, null, 2),
+    '',
+    '// === LOCATION FILTERING ===',
+    '',
+    '// 7. Find venues by city and state',
     JSON.stringify({ 
       postType: 'venue',
       venueFilters: { city: 'San Francisco', state: 'CA' }
     }, null, 2),
     '',
-    '// Get event tickets',
+    '// 8. Find venues near coordinates',
     JSON.stringify({ 
-      postType: 'ticket',
-      ticketFilters: { event: 123, available: true }
+      postType: 'venue',
+      venueFilters: { 
+        geo_lat: 37.7749,
+        geo_lng: -122.4194,
+        radius: 10
+      }
     }, null, 2),
     '',
-    '// Complex: Search events at venue with date range',
+    '// === RELATIONSHIP QUERIES ===',
+    '',
+    '// 9. Get events at specific venue',
+    '{ "postType": "event", "eventFilters": { "venue": 456 } }',
+    '',
+    '// 10. Get tickets for specific event',
+    '{ "postType": "ticket", "ticketFilters": { "event": 123 } }',
+    '',
+    '// 11. Get available tickets only',
+    JSON.stringify({ 
+      postType: 'ticket',
+      ticketFilters: { 
+        event: 123,
+        available: true
+      }
+    }, null, 2),
+    '',
+    '// === STATUS & FILTERING ===',
+    '',
+    '// 12. Get only published events',
+    '{ "postType": "event", "status": "publish" }',
+    '',
+    '// 13. Get draft and pending venues',
+    '{ "postType": "venue", "status": ["draft", "pending"] }',
+    '',
+    '// === COMPLEX QUERIES ===',
+    '',
+    '// 14. Search published events at venue with dates',
     JSON.stringify({ 
       postType: 'event',
       search: 'workshop',
       status: 'publish',
       eventFilters: {
         venue: 456,
-        start_date: '2024-12-01',
-        end_date: '2024-12-31'
+        start_date: '2024-12-01'
       },
       per_page: 50
     }, null, 2),
     '',
-    '💡 For more examples, see documentation or use query parameters:',
-    '• eventFilters: venue, organizer, featured, categories, tags, dates',
+    '// 15. Get tickets under $50 sorted by price',
+    JSON.stringify({ 
+      postType: 'ticket',
+      ticketFilters: { 
+        max_price: 50,
+        available: true
+      },
+      orderby: 'price',
+      order: 'asc'
+    }, null, 2),
+    '',
+    '💡 Available Filters:',
+    '• eventFilters: venue, organizer, featured, categories, tags',
     '• venueFilters: city, state, country, zip, geo_lat/lng, radius',
-    '• ticketFilters: event, available, type, provider, price range',
+    '• ticketFilters: event, type, provider, min/max_price',
     '• organizerFilters: email, website, phone',
     '• Common: status, search, include, exclude, page, per_page, orderby'
   );
