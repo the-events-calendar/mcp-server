@@ -61,7 +61,7 @@
    {
      "mcpServers": {
        "events-mcp": {
-         "command": "/absolute/path/to/your/mcp-server/start-node-mcp.sh"
+         "command": "/absolute/path/to/your/mcp-server/dev/start-node-mcp.sh"
        }
      }
    }
