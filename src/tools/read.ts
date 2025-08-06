@@ -300,13 +300,14 @@ export const readTool = {
     'tec-calendar-read-entities',
     `Read, list, or search calendar posts.
 
-⚠️ IMPORTANT: When filtering events by date (e.g., "events this week", "upcoming events"), ALWAYS call the tec-calendar-current-datetime tool FIRST to get the current date and calculate the appropriate date filters. Never assume or hardcode dates.
+**IMPORTANT**: When filtering events by date (e.g., "events this week", "upcoming events"), ALWAYS call the tec-calendar-current-datetime tool FIRST to get the current date and calculate the appropriate date filters. Never assume or hardcode dates.
 
-Use cases:
-1. Get single post: provide postType and id
-2. List all posts: provide postType only
-3. Search posts: provide postType and query
-4. Filter by dates: FIRST call tec-calendar-current-datetime tool, THEN apply filters`,
+### Use Cases
+
+1. **Get single post**: provide postType and id
+2. **List all posts**: provide postType only
+3. **Search posts**: provide postType and query
+4. **Filter by dates**: FIRST call tec-calendar-current-datetime tool, THEN apply filters`,
     ['event', 'venue', 'organizer', 'ticket'] as PostType[]
   ),
   inputSchema: ReadInputSchema,

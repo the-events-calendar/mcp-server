@@ -151,29 +151,40 @@ function generateCompactReadExamples(): string[] {
   
   // 15 diverse examples covering main use cases
   examples.push(
-    '// === BASIC QUERIES ===',
+    '### Basic Queries',
     '',
-    '// 1. Get specific event by ID',
+    '**1. Get specific event by ID**',
+    '```json',
     '{ "postType": "event", "id": 123 }',
+    '```',
     '',
-    '// 2. List all venues with pagination',
+    '**2. List all venues with pagination**',
+    '```json',
     '{ "postType": "venue", "per_page": 20, "page": 1 }',
+    '```',
     '',
-    '// 3. Search events by keyword',
+    '**3. Search events by keyword**',
+    '```json',
     '{ "postType": "event", "search": "conference" }',
+    '```',
     '',
-    '// 4. Get all organizers sorted by name',
+    '**4. Get all organizers sorted by name**',
+    '```json',
     '{ "postType": "organizer", "orderby": "title", "order": "asc" }',
+    '```',
     '',
-    '// === DATE FILTERING ===',
+    '### Date Filtering',
     '',
-    '// 5. Get upcoming events (after calling tec-calendar-current-datetime)',
+    '**5. Get upcoming events** *(after calling tec-calendar-current-datetime)*',
+    '```json',
     JSON.stringify({ 
       postType: 'event',
       eventFilters: { start_date: '2024-12-06' }
     }, null, 2),
+    '```',
     '',
-    '// 6. Get events in date range',
+    '**6. Get events in date range**',
+    '```json',
     JSON.stringify({ 
       postType: 'event',
       eventFilters: { 
@@ -181,16 +192,20 @@ function generateCompactReadExamples(): string[] {
         end_date: '2024-12-31'
       }
     }, null, 2),
+    '```',
     '',
-    '// === LOCATION FILTERING ===',
+    '### Location Filtering',
     '',
-    '// 7. Find venues by city and state',
+    '**7. Find venues by city and state**',
+    '```json',
     JSON.stringify({ 
       postType: 'venue',
       venueFilters: { city: 'San Francisco', state: 'CA' }
     }, null, 2),
+    '```',
     '',
-    '// 8. Find venues near coordinates',
+    '**8. Find venues near coordinates**',
+    '```json',
     JSON.stringify({ 
       postType: 'venue',
       venueFilters: { 
@@ -199,16 +214,22 @@ function generateCompactReadExamples(): string[] {
         radius: 10
       }
     }, null, 2),
+    '```',
     '',
-    '// === RELATIONSHIP QUERIES ===',
+    '### Relationship Queries',
     '',
-    '// 9. Get events at specific venue',
+    '**9. Get events at specific venue**',
+    '```json',
     '{ "postType": "event", "eventFilters": { "venue": 456 } }',
+    '```',
     '',
-    '// 10. Get tickets for specific event',
+    '**10. Get tickets for specific event**',
+    '```json',
     '{ "postType": "ticket", "ticketFilters": { "event": 123 } }',
+    '```',
     '',
-    '// 11. Get available tickets only',
+    '**11. Get available tickets only**',
+    '```json',
     JSON.stringify({ 
       postType: 'ticket',
       ticketFilters: { 
@@ -216,18 +237,24 @@ function generateCompactReadExamples(): string[] {
         available: true
       }
     }, null, 2),
+    '```',
     '',
-    '// === STATUS & FILTERING ===',
+    '### Status & Filtering',
     '',
-    '// 12. Get only published events',
+    '**12. Get only published events**',
+    '```json',
     '{ "postType": "event", "status": "publish" }',
+    '```',
     '',
-    '// 13. Get draft and pending venues',
+    '**13. Get draft and pending venues**',
+    '```json',
     '{ "postType": "venue", "status": ["draft", "pending"] }',
+    '```',
     '',
-    '// === COMPLEX QUERIES ===',
+    '### Complex Queries',
     '',
-    '// 14. Search published events at venue with dates',
+    '**14. Search published events at venue with dates**',
+    '```json',
     JSON.stringify({ 
       postType: 'event',
       search: 'workshop',
@@ -238,8 +265,10 @@ function generateCompactReadExamples(): string[] {
       },
       per_page: 50
     }, null, 2),
+    '```',
     '',
-    '// 15. Get tickets under $50 sorted by price',
+    '**15. Get tickets under $50 sorted by price**',
+    '```json',
     JSON.stringify({ 
       postType: 'ticket',
       ticketFilters: { 
@@ -249,13 +278,15 @@ function generateCompactReadExamples(): string[] {
       orderby: 'price',
       order: 'asc'
     }, null, 2),
+    '```',
     '',
-    '💡 Available Filters:',
-    '• eventFilters: venue, organizer, featured, categories, tags',
-    '• venueFilters: city, state, country, zip, geo_lat/lng, radius',
-    '• ticketFilters: event, type, provider, min/max_price',
-    '• organizerFilters: email, website, phone',
-    '• Common: status, search, include, exclude, page, per_page, orderby'
+    '### Available Filters',
+    '',
+    '- **eventFilters**: venue, organizer, featured, categories, tags',
+    '- **venueFilters**: city, state, country, zip, geo_lat/lng, radius',
+    '- **ticketFilters**: event, type, provider, min/max_price',
+    '- **organizerFilters**: email, website, phone',
+    '- **Common**: status, search, include, exclude, page, per_page, orderby'
   );
   
   return examples;
@@ -684,21 +715,23 @@ const TOOL_DESCRIPTION_TEMPLATES: Record<string, (postTypes: PostType[]) => stri
   'tec-calendar-create-update-entities': (postTypes) => {
     const lines: string[] = [
       '',
-      '⚠️ IMPORTANT: Before creating events with dates/times, ALWAYS call the tec-calendar-current-datetime tool first to get the current date, time, and timezone context.',
+      '**IMPORTANT**: Before creating events with dates/times, ALWAYS call the `tec-calendar-current-datetime` tool first to get the current date, time, and timezone context.',
       '',
-      '📅 Date Formats Supported:',
-      '• ISO 8601: "2024-12-25T15:00:00"',
-      '• Date and time: "2024-12-25 15:00:00"',  
-      '• Natural language: "tomorrow 2pm", "next monday", "first thursday of next month"',
-      '• Relative: "+3 days", "+2 hours", "3 days 1 hour"',
-      '• Specific dates: "December 15, 2024 7:00 PM"',
+      '### Date Formats Supported',
       '',
-      '🔄 Workflow for Events with Dates:',
-      '1. Call tec-calendar-current-datetime tool',
+      '- **ISO 8601**: `"2024-12-25T15:00:00"`',
+      '- **Date and time**: `"2024-12-25 15:00:00"`',  
+      '- **Natural language**: `"tomorrow 2pm"`, `"next monday"`, `"first thursday of next month"`',
+      '- **Relative**: `"+3 days"`, `"+2 hours"`, `"3 days 1 hour"`',
+      '- **Specific dates**: `"December 15, 2024 7:00 PM"`',
+      '',
+      '### Workflow for Events with Dates',
+      '',
+      '1. Call `tec-calendar-current-datetime` tool',
       '2. Calculate appropriate dates based on response',
       '3. Create/update event with calculated dates',
       '',
-      '📝 CREATE Examples:',
+      '### Create Examples',
       ''
     ];
     
@@ -707,30 +740,34 @@ const TOOL_DESCRIPTION_TEMPLATES: Record<string, (postTypes: PostType[]) => stri
       const typeLabel = postType.charAt(0).toUpperCase() + postType.slice(1);
       const examples = generateCreateExamplesFromSchema(postType, postType === 'event' ? 4 : 2);
       
-      lines.push(`// === ${typeLabel} Creation Examples ===`);
-      examples.forEach((example, index) => {
-        if (index > 0) lines.push('');
-        lines.push(`// Example ${index + 1}: ${getExampleDescription(postType, index)}`);
-        lines.push(example);
-      });
+      lines.push(`#### ${typeLabel} Creation`);
       lines.push('');
+      examples.forEach((example, index) => {
+        lines.push(`**Example ${index + 1}: ${getExampleDescription(postType, index)}**`);
+        lines.push('```json');
+        lines.push(example);
+        lines.push('```');
+        lines.push('');
+      });
     }
     
     // Add update examples
-    lines.push('✏️ UPDATE Examples:');
+    lines.push('### Update Examples');
     lines.push('');
     
     for (const postType of ['event', 'venue'] as PostType[]) {
       const typeLabel = postType.charAt(0).toUpperCase() + postType.slice(1);
       const examples = generateUpdateExamplesFromSchema(postType, 2);
       
-      lines.push(`// === Updating ${typeLabel}s ===`);
-      examples.forEach((example, index) => {
-        if (index > 0) lines.push('');
-        lines.push(`// Partial update example ${index + 1}`);
-        lines.push(example);
-      });
+      lines.push(`#### Updating ${typeLabel}s`);
       lines.push('');
+      examples.forEach((example, index) => {
+        lines.push(`**Partial update example ${index + 1}**`);
+        lines.push('```json');
+        lines.push(example);
+        lines.push('```');
+        lines.push('');
+      });
     }
     
     return lines;
@@ -738,14 +775,15 @@ const TOOL_DESCRIPTION_TEMPLATES: Record<string, (postTypes: PostType[]) => stri
   
   'tec-calendar-read-entities': (_postTypes) => [
     '',
-    '🔍 Query Capabilities:',
-    '• Get single post by ID',
-    '• List all posts with pagination',
-    '• Search posts by keyword',
-    '• Filter by post-specific criteria',
-    '• Combine multiple filters',
+    '### Query Capabilities',
     '',
-    '📋 Common Examples:',
+    '- Get single post by ID',
+    '- List all posts with pagination',
+    '- Search posts by keyword',
+    '- Filter by post-specific criteria',
+    '- Combine multiple filters',
+    '',
+    '## Examples',
     '',
     ...generateCompactReadExamples()
   ],
@@ -753,16 +791,18 @@ const TOOL_DESCRIPTION_TEMPLATES: Record<string, (postTypes: PostType[]) => stri
   'tec-calendar-delete-entities': (postTypes) => {
     const lines: string[] = [
       '',
-      '🗑️ Delete Behaviors:',
-      '• Default (force=false): Moves to trash (recoverable)',
-      '• Force delete (force=true): Permanent deletion (not recoverable)',
+      '### Delete Behaviors',
       '',
-      '⚠️ Best Practices:',
-      '• Always use default trash unless permanent deletion is required',
-      '• Consider checking post details before deletion',
-      '• For events, verify dates with tec-calendar-current-datetime first',
+      '- **Default** (`force=false`): Moves to trash (recoverable)',
+      '- **Force delete** (`force=true`): Permanent deletion (not recoverable)',
       '',
-      'Examples:',
+      '### Best Practices',
+      '',
+      '- Always use default trash unless permanent deletion is required',
+      '- Consider checking post details before deletion',
+      '- For events, verify dates with `tec-calendar-current-datetime` first',
+      '',
+      '### Examples',
       ''
     ];
     
@@ -778,20 +818,24 @@ const TOOL_DESCRIPTION_TEMPLATES: Record<string, (postTypes: PostType[]) => stri
       const typeLabel = postType.charAt(0).toUpperCase() + postType.slice(1);
       const ids = exampleIds[postType] || [100, 101];
       
-      lines.push(`// === ${typeLabel} Deletion ===`);
+      lines.push(`#### ${typeLabel} Deletion`);
       lines.push('');
-      lines.push(`// Move to trash (default, recoverable)`);
+      lines.push('**Move to trash (default, recoverable)**');
+      lines.push('```json');
       lines.push(JSON.stringify({ 
         postType, 
         id: ids[0]
       }, null, 2));
+      lines.push('```');
       lines.push('');
-      lines.push(`// Permanent deletion (not recoverable)`);
+      lines.push('**Permanent deletion (not recoverable)**');
+      lines.push('```json');
       lines.push(JSON.stringify({ 
         postType, 
         id: ids[1],
         force: true
       }, null, 2));
+      lines.push('```');
       lines.push('');
     }
     
