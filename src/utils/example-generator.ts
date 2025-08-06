@@ -267,19 +267,31 @@ const TOOL_DESCRIPTION_TEMPLATES: Record<string, (postTypes: PostType[]) => stri
   
   'tec-calendar-delete-entities': (postTypes) => [
     '',
+    'Default behavior: Moves posts to trash (can be restored)',
+    'Force delete: Permanently deletes posts (cannot be restored)',
+    '',
     'Examples:',
     '',
     ...postTypes.slice(0, 2).flatMap(postType => {
       const config = POST_TYPE_CONFIGS[postType];
+      const capitalizedType = postType.charAt(0).toUpperCase() + postType.slice(1);
+      const article = postType === 'event' ? 'an' : 'a';
       return [
-        `// Delete ${postType === 'event' ? 'an' : 'a'} ${postType.charAt(0).toUpperCase() + postType.slice(1)}`,
+        `// Move ${article} ${capitalizedType} to trash (default)`,
         JSON.stringify({ 
           postType, 
           id: postType === 'event' ? 789 : config.exampleValues?.id || 456
         }, null, 2),
+        '',
+        `// Permanently delete ${article} ${capitalizedType}`,
+        JSON.stringify({ 
+          postType, 
+          id: postType === 'event' ? 789 : config.exampleValues?.id || 456,
+          force: true
+        }, null, 2),
         ''
       ];
-    })
+    }).slice(0, -1) // Remove last empty string
   ]
 };
 

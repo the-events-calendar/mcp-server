@@ -96,9 +96,10 @@ export const deleteTool = {
   name: 'tec-calendar-delete-entities',
   description: generateToolDescription(
     'tec-calendar-delete-entities',
-    `Delete a calendar post (Event, Venue, Organizer, or Ticket).
+    `Delete or trash a calendar post (Event, Venue, Organizer, or Ticket).
 
-By default moves to trash. Set force=true for permanent deletion.
+• Default (force=false or omitted): Moves posts to trash where they can be restored
+• Permanent delete (force=true): Permanently deletes posts with no option to restore
 
 NOTE: When deleting time-sensitive content like events, consider using the tec-calendar-current-datetime tool to verify the current date/time context before deletion.`,
     ['event', 'venue', 'organizer', 'ticket'] as PostType[]
