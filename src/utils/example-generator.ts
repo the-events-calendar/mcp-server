@@ -1,302 +1,404 @@
 import { z } from 'zod';
 import { PostType } from '../types/schemas/index.js';
-import { getSchemaForPostType } from './validation.js';
+import { SCHEMA_EXAMPLES } from './schema-examples.js';
 
 /**
- * Template for generating example values based on field types and names
+ * Get examples from schema metadata
  */
-interface FieldTemplate {
-  pattern?: RegExp;
-  value: any;
-  priority?: number;
+function getSchemaExamples(postType: PostType): any[] {
+  return SCHEMA_EXAMPLES[postType] || [];
 }
 
 /**
- * Post type specific configurations
+ * Clean example for tool usage (remove id and type fields)
  */
-interface PostTypeConfig {
-  requiredFields: string[];
-  optionalFields: string[];
-  updateFields: string[];
-  exampleValues?: Record<string, any>;
-}
-
-/**
- * Field value templates organized by priority
- */
-const FIELD_TEMPLATES: FieldTemplate[] = [
-  // Specific field names (highest priority)
-  { pattern: /^title$/, value: 'My Event Title', priority: 100 },
-  { pattern: /^start_date$/, value: '2024-12-25 15:00:00', priority: 100 },
-  { pattern: /^end_date$/, value: '2024-12-25 17:00:00', priority: 100 },
-  { pattern: /^description$/, value: 'Event description here', priority: 100 },
-  { pattern: /^content$/, value: 'Full content here', priority: 100 },
-  { pattern: /^address$/, value: '123 Main St', priority: 100 },
-  { pattern: /^city$/, value: 'San Francisco', priority: 100 },
-  { pattern: /^country$/, value: 'United States', priority: 100 },
-  { pattern: /^state_province$/, value: 'California', priority: 100 },
-  { pattern: /^zip$/, value: '94102', priority: 100 },
-  { pattern: /^phone$/, value: '555-1234', priority: 100 },
-  { pattern: /^email$/, value: 'contact@example.com', priority: 100 },
-  { pattern: /^website$/, value: 'https://example.com', priority: 100 },
-  { pattern: /^venue$/, value: 'Conference Center', priority: 90 },
-  { pattern: /^organizer$/, value: 'John Doe', priority: 90 },
-  { pattern: /^price$/, value: '$25.00', priority: 100 },
-  { pattern: /^cost$/, value: 'Free', priority: 100 },
-  { pattern: /^sku$/, value: 'TIX-001', priority: 100 },
-  { pattern: /^timezone$/, value: 'America/New_York', priority: 100 },
-  { pattern: /^slug$/, value: 'my-event', priority: 100 },
-  { pattern: /^excerpt$/, value: 'A brief summary', priority: 100 },
-  { pattern: /^stock$/, value: 100, priority: 100 },
-  { pattern: /^capacity$/, value: 200, priority: 100 },
-  { pattern: /^all_day$/, value: false, priority: 100 },
+function cleanExampleForTool(example: any): any {
+  const cleaned = { ...example };
+  delete cleaned.id;
+  delete cleaned.type;
+  delete cleaned.slug; // Usually auto-generated
+  delete cleaned.status; // Has default value
   
-  // ID fields for relationships
-  { pattern: /^venue$/, value: 123, priority: 80 },
-  { pattern: /^event$/, value: 456, priority: 80 },
-  { pattern: /^organizers$/, value: [10, 11], priority: 80 },
-  { pattern: /^categories$/, value: [5, 6], priority: 80 },
-  { pattern: /^tags$/, value: [7, 8], priority: 80 },
-];
+  // For events, clean up date details if present
+  delete cleaned.start_date_details;
+  delete cleaned.end_date_details;
+  delete cleaned.cost_details;
+  delete cleaned.image;
+  
+  // For tickets, clean availability details if present
+  delete cleaned.availability;
+  
+  return cleaned;
+}
 
 /**
- * Configuration for each post type
+ * Select diverse examples from schema
  */
-const POST_TYPE_CONFIGS: Record<PostType, PostTypeConfig> = {
-  event: {
-    requiredFields: ['title', 'start_date', 'end_date'],
-    optionalFields: ['description', 'venue', 'organizers', 'all_day', 'timezone', 'cost'],
-    updateFields: ['title', 'start_date', 'end_date'],
-    exampleValues: {
-      id: 789,
-    }
-  },
-  venue: {
-    requiredFields: ['title', 'address', 'city'],
-    optionalFields: ['country', 'state_province', 'zip', 'phone', 'website'],
-    updateFields: ['address', 'city'],
-    exampleValues: {
-      id: 456,
-    }
-  },
-  organizer: {
-    requiredFields: ['title', 'email'],
-    optionalFields: ['phone', 'website'],
-    updateFields: ['email', 'phone'],
-    exampleValues: {
-      id: 456,
-    }
-  },
-  ticket: {
-    requiredFields: ['title', 'event', 'price'],
-    optionalFields: ['stock', 'capacity', 'sku'],
-    updateFields: ['price', 'stock'],
-    exampleValues: {
-      id: 456,
-    }
-  },
-};
-
-/**
- * Get example value for a field based on templates
- */
-function getExampleValue(field: z.ZodTypeAny, key: string): any {
-  // Sort templates by priority
-  const sortedTemplates = [...FIELD_TEMPLATES].sort((a, b) => 
-    (b.priority || 0) - (a.priority || 0)
+function selectDiverseExamples(examples: any[], count: number): any[] {
+  if (examples.length <= count) {
+    return examples;
+  }
+  
+  // Try to get a diverse set of examples
+  const selected: any[] = [];
+  const indices = new Set<number>();
+  
+  // First, try to get examples with different characteristics
+  // Priority 1: Different date formats for events
+  const withNaturalDates = examples.findIndex(e => 
+    e.start_date && (e.start_date.includes('next') || e.start_date.includes('tomorrow') || e.start_date.includes('+'))
   );
+  if (withNaturalDates !== -1 && indices.size < count) {
+    selected.push(examples[withNaturalDates]);
+    indices.add(withNaturalDates);
+  }
   
-  // Find matching template
-  for (const template of sortedTemplates) {
-    if (template.pattern && template.pattern.test(key)) {
-      // Check if the value type matches the field type
-      if (field instanceof z.ZodNumber && typeof template.value === 'number') {
-        return template.value;
-      }
-      if (field instanceof z.ZodString && typeof template.value === 'string') {
-        return template.value;
-      }
-      if (field instanceof z.ZodBoolean && typeof template.value === 'boolean') {
-        return template.value;
-      }
-      if (field instanceof z.ZodArray && Array.isArray(template.value)) {
-        return template.value;
-      }
+  // Priority 2: With relationships (venue, organizers)
+  const withRelations = examples.findIndex(e => 
+    (e.venue || e.organizers || e.event) && !indices.has(examples.indexOf(e))
+  );
+  if (withRelations !== -1 && indices.size < count) {
+    selected.push(examples[withRelations]);
+    indices.add(withRelations);
+  }
+  
+  // Priority 3: Different statuses
+  const draft = examples.findIndex(e => e.status === 'draft' && !indices.has(examples.indexOf(e)));
+  if (draft !== -1 && indices.size < count) {
+    selected.push(examples[draft]);
+    indices.add(draft);
+  }
+  
+  // Priority 4: With special fields (all_day, cost, etc.)
+  const withSpecialFields = examples.findIndex(e => 
+    (e.all_day || e.cost || e.website || e.geo_lat) && !indices.has(examples.indexOf(e))
+  );
+  if (withSpecialFields !== -1 && indices.size < count) {
+    selected.push(examples[withSpecialFields]);
+    indices.add(withSpecialFields);
+  }
+  
+  // Fill remaining slots with first available examples
+  for (let i = 0; i < examples.length && selected.length < count; i++) {
+    if (!indices.has(i)) {
+      selected.push(examples[i]);
+      indices.add(i);
     }
   }
   
-  // Handle special Zod types
-  if (field instanceof z.ZodOptional) {
-    return getExampleValue((field as any)._def.innerType, key);
-  }
-  
-  if (field instanceof z.ZodDefault) {
-    return (field as any)._def.defaultValue();
-  }
-  
-  if (field instanceof z.ZodEnum) {
-    const values = (field as any)._def.values;
-    return values[0] || 'publish';
-  }
-  
-  // Default values by type
-  if (field instanceof z.ZodString) return 'example text';
-  if (field instanceof z.ZodNumber) return 1;
-  if (field instanceof z.ZodBoolean) return true;
-  if (field instanceof z.ZodArray) return [];
-  
-  return null;
+  return selected;
 }
 
 /**
- * Generate example data from schema using configuration
+ * Generate create examples from schema metadata
  */
-function generateExampleFromSchema(
-  schema: z.ZodObject<any>, 
-  postType: PostType,
-  fields: string[]
-): Record<string, any> {
-  const shape = schema.shape as Record<string, z.ZodTypeAny>;
-  const example: Record<string, any> = {};
-  const config = POST_TYPE_CONFIGS[postType];
+export function generateCreateExamplesFromSchema(postType: PostType, count: number = 3): string[] {
+  const examples = getSchemaExamples(postType);
+  const selected = selectDiverseExamples(examples, count);
   
-  for (const field of fields) {
-    if (shape[field]) {
-      // Check for custom example value first
-      if (config.exampleValues?.[field] !== undefined) {
-        example[field] = config.exampleValues[field];
-      } else {
-        const value = getExampleValue(shape[field], field);
-        if (value !== null && value !== undefined) {
-          example[field] = value;
-        }
+  return selected.map(example => {
+    const cleaned = cleanExampleForTool(example);
+    return JSON.stringify({
+      postType,
+      data: cleaned
+    }, null, 2);
+  });
+}
+
+/**
+ * Generate update examples from schema metadata
+ */
+export function generateUpdateExamplesFromSchema(postType: PostType, count: number = 2): string[] {
+  const examples = getSchemaExamples(postType);
+  const selected = selectDiverseExamples(examples, count);
+  
+  return selected.map(example => {
+    const cleaned = { ...example };
+    
+    // For updates, only include a subset of fields to show partial updates
+    const updateFields: Record<string, string[]> = {
+      event: ['title', 'start_date', 'end_date', 'venue', 'cost'],
+      venue: ['address', 'city', 'phone', 'website'],
+      organizer: ['email', 'phone', 'website'],
+      ticket: ['price', 'stock', 'capacity'],
+    };
+    
+    const fieldsToUpdate = updateFields[postType] || ['title'];
+    const updateData: any = {};
+    
+    // Pick 2-3 fields to update
+    const fieldCount = Math.min(3, fieldsToUpdate.length);
+    for (let i = 0; i < fieldCount; i++) {
+      const field = fieldsToUpdate[i];
+      if (cleaned[field] !== undefined) {
+        updateData[field] = cleaned[field];
       }
     }
-  }
-  
-  return example;
+    
+    return JSON.stringify({
+      postType,
+      id: example.id || 123,
+      data: updateData
+    }, null, 2);
+  });
 }
 
 /**
- * Generate a create example for a post type
+ * Generate read/search examples
  */
-export function generateCreateExample(postType: PostType): string {
-  const schema = getSchemaForPostType(postType);
-  const config = POST_TYPE_CONFIGS[postType];
+function generateReadExamples(_postTypes: PostType[]): string[] {
+  const examples: string[] = [];
   
-  // Combine required and a subset of optional fields
-  const fields = [
-    ...config.requiredFields,
-    ...config.optionalFields.slice(0, 2)
-  ];
-  
-  const exampleData = generateExampleFromSchema(schema, postType, fields);
-  
-  return JSON.stringify({
-    postType,
-    data: exampleData
-  }, null, 2);
-}
-
-/**
- * Generate an update example for a post type
- */
-export function generateUpdateExample(postType: PostType): string {
-  const schema = getSchemaForPostType(postType);
-  const config = POST_TYPE_CONFIGS[postType];
-  
-  const exampleData = generateExampleFromSchema(schema, postType, config.updateFields);
-  
-  return JSON.stringify({
-    postType,
-    id: config.exampleValues?.id || 456,
-    data: exampleData
-  }, null, 2);
-}
-
-/**
- * Template for tool descriptions
- */
-const TOOL_DESCRIPTION_TEMPLATES: Record<string, (postTypes: PostType[]) => string[]> = {
-  'tec-calendar-create-update-entities': (postTypes) => [
-    '',
-    '⚠️ IMPORTANT: Before creating events with dates/times, ALWAYS call the tec-calendar-current-datetime tool first to get the current date, time, and timezone context.',
-    '',
-    'Date format for events: "YYYY-MM-DD HH:MM:SS" (e.g., "2024-12-25 15:00:00")',
-    'Alternative: Use natural language like "tomorrow 2pm", "next monday", "+3 days"',
-    '',
-    'Workflow example:',
-    '1. First: Call tec-calendar-current-datetime tool to get current date/time',
-    '2. Then: Create event with calculated dates based on the response',
-    '',
-    'Examples:',
-    '',
-    ...postTypes.flatMap(postType => [
-      `// Creating ${postType === 'event' ? 'an' : 'a'} ${postType.charAt(0).toUpperCase() + postType.slice(1)}`,
-      generateCreateExample(postType),
-      ''
-    ]),
-    '// Updating an existing post',
-    generateUpdateExample('event')
-  ],
-  
-  'tec-calendar-read-entities': (_postTypes) => [
-    '',
-    'Examples:',
-    '',
+  // Single item retrieval
+  examples.push(
     '// Get a specific event by ID',
     JSON.stringify({ postType: 'event', id: 123 }, null, 2),
-    '',
-    '// List all venues',
-    JSON.stringify({ postType: 'venue' }, null, 2),
-    '',
-    '// Search for events',
+    ''
+  );
+  
+  // List all with pagination
+  examples.push(
+    '// List all venues with pagination',
+    JSON.stringify({ postType: 'venue', per_page: 10, page: 1 }, null, 2),
+    ''
+  );
+  
+  // Search with query
+  examples.push(
+    '// Search for events containing "conference"',
     JSON.stringify({ 
       postType: 'event', 
       search: 'conference',
-      per_page: 10 
+      per_page: 20 
     }, null, 2),
-    '',
-    '// Get events with pagination',
+    ''
+  );
+  
+  // Filter by date (events)
+  examples.push(
+    '// Get upcoming events (after calling tec-calendar-current-datetime)',
     JSON.stringify({ 
       postType: 'event',
-      page: 2,
-      per_page: 20
-    }, null, 2)
-  ],
+      eventFilters: {
+        start_date: '2024-12-01',
+        end_date: '2024-12-31'
+      }
+    }, null, 2),
+    ''
+  );
   
-  'tec-calendar-delete-entities': (postTypes) => [
+  // Filter by location (venues)
+  examples.push(
+    '// Find venues in San Francisco',
+    JSON.stringify({ 
+      postType: 'venue',
+      venueFilters: {
+        city: 'San Francisco',
+        state: 'CA'
+      }
+    }, null, 2),
+    ''
+  );
+  
+  // Filter by event (tickets)
+  examples.push(
+    '// Get all tickets for a specific event',
+    JSON.stringify({ 
+      postType: 'ticket',
+      ticketFilters: {
+        event: 456,
+        available: true
+      }
+    }, null, 2),
+    ''
+  );
+  
+  // Search organizers
+  examples.push(
+    '// Search for organizers by name',
+    JSON.stringify({ 
+      postType: 'organizer',
+      search: 'arts council'
+    }, null, 2),
+    ''
+  );
+  
+  // Complex filtering
+  examples.push(
+    '// Get draft events with specific organizer',
+    JSON.stringify({ 
+      postType: 'event',
+      status: 'draft',
+      eventFilters: {
+        organizer: 789
+      }
+    }, null, 2),
+    ''
+  );
+  
+  return examples;
+}
+
+/**
+ * Template for tool descriptions with rich examples
+ */
+const TOOL_DESCRIPTION_TEMPLATES: Record<string, (postTypes: PostType[]) => string[]> = {
+  'tec-calendar-create-update-entities': (postTypes) => {
+    const lines: string[] = [
+      '',
+      '⚠️ IMPORTANT: Before creating events with dates/times, ALWAYS call the tec-calendar-current-datetime tool first to get the current date, time, and timezone context.',
+      '',
+      '📅 Date Formats Supported:',
+      '• ISO 8601: "2024-12-25T15:00:00"',
+      '• Date and time: "2024-12-25 15:00:00"',  
+      '• Natural language: "tomorrow 2pm", "next monday", "first thursday of next month"',
+      '• Relative: "+3 days", "+2 hours", "3 days 1 hour"',
+      '• Specific dates: "December 15, 2024 7:00 PM"',
+      '',
+      '🔄 Workflow for Events with Dates:',
+      '1. Call tec-calendar-current-datetime tool',
+      '2. Calculate appropriate dates based on response',
+      '3. Create/update event with calculated dates',
+      '',
+      '📝 CREATE Examples:',
+      ''
+    ];
+    
+    // Add create examples for each post type
+    for (const postType of postTypes) {
+      const typeLabel = postType.charAt(0).toUpperCase() + postType.slice(1);
+      const examples = generateCreateExamplesFromSchema(postType, postType === 'event' ? 4 : 2);
+      
+      lines.push(`// === ${typeLabel} Creation Examples ===`);
+      examples.forEach((example, index) => {
+        if (index > 0) lines.push('');
+        lines.push(`// Example ${index + 1}: ${getExampleDescription(postType, index)}`);
+        lines.push(example);
+      });
+      lines.push('');
+    }
+    
+    // Add update examples
+    lines.push('✏️ UPDATE Examples:');
+    lines.push('');
+    
+    for (const postType of ['event', 'venue'] as PostType[]) {
+      const typeLabel = postType.charAt(0).toUpperCase() + postType.slice(1);
+      const examples = generateUpdateExamplesFromSchema(postType, 2);
+      
+      lines.push(`// === Updating ${typeLabel}s ===`);
+      examples.forEach((example, index) => {
+        if (index > 0) lines.push('');
+        lines.push(`// Partial update example ${index + 1}`);
+        lines.push(example);
+      });
+      lines.push('');
+    }
+    
+    return lines;
+  },
+  
+  'tec-calendar-read-entities': (_postTypes) => [
     '',
-    'Default behavior: Moves posts to trash (can be restored)',
-    'Force delete: Permanently deletes posts (cannot be restored)',
+    '🔍 Query Capabilities:',
+    '• Get single post by ID',
+    '• List all posts with pagination',
+    '• Search posts by keyword',
+    '• Filter by post-specific criteria',
+    '• Combine multiple filters',
     '',
     'Examples:',
     '',
-    ...postTypes.slice(0, 2).flatMap(postType => {
-      const config = POST_TYPE_CONFIGS[postType];
-      const capitalizedType = postType.charAt(0).toUpperCase() + postType.slice(1);
-      const article = postType === 'event' ? 'an' : 'a';
-      return [
-        `// Move ${article} ${capitalizedType} to trash (default)`,
-        JSON.stringify({ 
-          postType, 
-          id: postType === 'event' ? 789 : config.exampleValues?.id || 456
-        }, null, 2),
-        '',
-        `// Permanently delete ${article} ${capitalizedType}`,
-        JSON.stringify({ 
-          postType, 
-          id: postType === 'event' ? 789 : config.exampleValues?.id || 456,
-          force: true
-        }, null, 2),
-        ''
-      ];
-    }).slice(0, -1) // Remove last empty string
-  ]
+    ...generateReadExamples(['event', 'venue', 'organizer', 'ticket'] as PostType[])
+  ],
+  
+  'tec-calendar-delete-entities': (postTypes) => {
+    const lines: string[] = [
+      '',
+      '🗑️ Delete Behaviors:',
+      '• Default (force=false): Moves to trash (recoverable)',
+      '• Force delete (force=true): Permanent deletion (not recoverable)',
+      '',
+      '⚠️ Best Practices:',
+      '• Always use default trash unless permanent deletion is required',
+      '• Consider checking post details before deletion',
+      '• For events, verify dates with tec-calendar-current-datetime first',
+      '',
+      'Examples:',
+      ''
+    ];
+    
+    // Get real IDs from schema examples
+    const exampleIds: Record<PostType, number[]> = {
+      event: [123, 124, 125],
+      venue: [456, 457, 458],
+      organizer: [789, 790, 791],
+      ticket: [101, 102, 103]
+    };
+    
+    for (const postType of postTypes.slice(0, 3)) {
+      const typeLabel = postType.charAt(0).toUpperCase() + postType.slice(1);
+      const ids = exampleIds[postType] || [100, 101];
+      
+      lines.push(`// === ${typeLabel} Deletion ===`);
+      lines.push('');
+      lines.push(`// Move to trash (default, recoverable)`);
+      lines.push(JSON.stringify({ 
+        postType, 
+        id: ids[0]
+      }, null, 2));
+      lines.push('');
+      lines.push(`// Permanent deletion (not recoverable)`);
+      lines.push(JSON.stringify({ 
+        postType, 
+        id: ids[1],
+        force: true
+      }, null, 2));
+      lines.push('');
+    }
+    
+    return lines;
+  }
 };
 
 /**
- * Generate tool description using templates
+ * Get descriptive label for example based on index and type
+ */
+function getExampleDescription(postType: PostType, index: number): string {
+  const descriptions: Record<PostType, string[]> = {
+    event: [
+      'Standard event with ISO dates',
+      'Event with natural language dates',
+      'All-day event',
+      'Event with venue and organizers',
+      'Draft event with cost',
+      'Multi-day event'
+    ],
+    venue: [
+      'Complete venue with address',
+      'Virtual/online venue',
+      'International venue',
+      'Minimal venue info'
+    ],
+    organizer: [
+      'Organization with full contact',
+      'Individual organizer',
+      'Organization without phone',
+      'Draft organizer'
+    ],
+    ticket: [
+      'Paid general admission',
+      'VIP ticket with limited availability',
+      'Free RSVP',
+      'Early bird special'
+    ]
+  };
+  
+  return descriptions[postType]?.[index] || `${postType} example`;
+}
+
+/**
+ * Generate tool description using templates and schema examples
  */
 export function generateToolDescription(
   toolName: string,
