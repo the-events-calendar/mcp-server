@@ -54,10 +54,12 @@ export const EventSchema = BasePostSchema.extend({
   end_date_details: DateDetailsSchema.describe('Breakdown of the end date'),
   all_day: z.boolean().describe('Whether this is an all-day event'),
   timezone: z.string().describe('Timezone identifier (e.g., America/New_York)'),
-  venue: z.union([
-    z.number().describe('ID of an existing venue post'),
-    VenueSchema.omit({ id: true, type: true }).describe('New venue data to create')
-  ]).optional().describe('Venue - either an existing venue ID or new venue data to create'),
+  venues: z.array(
+    z.union([
+      z.number().describe('ID of an existing venue post'),
+      VenueSchema.omit({ id: true, type: true }).describe('New venue data to create')
+    ])
+  ).optional().describe('Array of venues - either existing venue IDs or new venue data to create'),
   organizers: z.array(
     z.union([
       z.number().describe('ID of an existing organizer post'),
@@ -97,7 +99,7 @@ export const EventSchema = BasePostSchema.extend({
       end_date: 'next friday 5pm',
       all_day: false,
       timezone: 'America/New_York',
-      venue: 456,
+      venues: [456],
       organizers: [789],
     },
     {
@@ -134,7 +136,7 @@ export const EventSchema = BasePostSchema.extend({
       end_date: 'December 15, 2024 11:30 PM',
       all_day: false,
       timezone: 'America/Denver',
-      venue: 789,
+      venues: [789],
       cost: '$25 per person',
     },
     {
@@ -170,7 +172,7 @@ export const EventSchema = BasePostSchema.extend({
       end_date: '2025-02-14 23:59:59',
       all_day: false,
       timezone: 'America/Los_Angeles',
-      venue: 101,
+      venues: [101],
       organizers: [102, 103],
       cost: '$150',
       categories: [10, 11],

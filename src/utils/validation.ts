@@ -32,8 +32,8 @@ export const EventDataSchema = BasePostUpdateSchema.extend({
     .describe('Whether this is an all-day event'),
   timezone: z.string().optional()
     .describe('Timezone identifier (e.g., America/New_York)'),
-  venue: z.number().optional()
-    .describe('ID of the associated venue post'),
+  venues: z.array(z.number()).optional()
+    .describe('Array of venue post IDs'),
   organizers: z.array(z.number()).optional()
     .describe('Array of organizer post IDs'),
   cost: z.string().optional()

@@ -53,9 +53,9 @@ function selectDiverseExamples(examples: any[], count: number): any[] {
     indices.add(withNaturalDates);
   }
   
-  // Priority 2: With relationships (venue, organizers)
+  // Priority 2: With relationships (venues, organizers)
   const withRelations = examples.findIndex(e => 
-    (e.venue || e.organizers || e.event) && !indices.has(examples.indexOf(e))
+    (e.venues || e.venue || e.organizers || e.event) && !indices.has(examples.indexOf(e))
   );
   if (withRelations !== -1 && indices.size < count) {
     selected.push(examples[withRelations]);
@@ -117,7 +117,7 @@ export function generateUpdateExamplesFromSchema(postType: PostType, count: numb
     
     // For updates, only include a subset of fields to show partial updates
     const updateFields: Record<string, string[]> = {
-      event: ['title', 'start_date', 'end_date', 'venue', 'cost'],
+      event: ['title', 'start_date', 'end_date', 'venues', 'cost'],
       venue: ['address', 'city', 'phone', 'website'],
       organizer: ['email', 'phone', 'website'],
       ticket: ['price', 'stock', 'capacity'],
@@ -218,9 +218,9 @@ function generateCompactReadExamples(): string[] {
     '',
     '### Relationship Queries',
     '',
-    '**9. Get events at specific venue**',
+    '**9. Get events at specific venues**',
     '```json',
-    '{ "postType": "event", "eventFilters": { "venue": 456 } }',
+    '{ "postType": "event", "eventFilters": { "venues": [456] } }',
     '```',
     '',
     '**10. Get tickets for specific event**',
@@ -253,14 +253,14 @@ function generateCompactReadExamples(): string[] {
     '',
     '### Complex Queries',
     '',
-    '**14. Search published events at venue with dates**',
+    '**14. Search published events at venues with dates**',
     '```json',
     JSON.stringify({ 
       postType: 'event',
       search: 'workshop',
       status: 'publish',
       eventFilters: {
-        venue: 456,
+        venues: [456, 457],
         start_date: '2024-12-01'
       },
       per_page: 50
@@ -467,11 +467,11 @@ function generateReadExamples(_postTypes: PostType[]): string[] {
   examples.push(
     '// === EVENT-SPECIFIC FILTERS ===',
     '',
-    '// Get events at a specific venue',
+    '// Get events at specific venues',
     JSON.stringify({ 
       postType: 'event',
       eventFilters: {
-        venue: 456
+        venues: [456]
       }
     }, null, 2),
     '',
@@ -653,13 +653,13 @@ function generateReadExamples(_postTypes: PostType[]): string[] {
   examples.push(
     '// === COMPLEX QUERIES ===',
     '',
-    '// Search upcoming published events at a venue',
+    '// Search upcoming published events at venues',
     JSON.stringify({ 
       postType: 'event',
       search: 'workshop',
       status: 'publish',
       eventFilters: {
-        venue: 456,
+        venues: [456, 457],
         start_date: '2024-12-06'
       },
       per_page: 50

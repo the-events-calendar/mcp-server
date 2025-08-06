@@ -13,7 +13,7 @@ import { generateToolDescription } from '../utils/example-generator.js';
 const EventFiltersSchema = z.object({
   start_date: z.string().optional().describe('Event start date filter (YYYY-MM-DD). ⚠️ Call tec-calendar-current-datetime tool FIRST to get current date.'),
   end_date: z.string().optional().describe('Event end date filter (YYYY-MM-DD). ⚠️ Call tec-calendar-current-datetime tool FIRST to get current date.'),
-  venue: z.number().optional().describe('Filter by venue ID'),
+  venues: z.array(z.number()).optional().describe('Filter by venue IDs'),
   organizer: z.number().optional().describe('Filter by organizer ID'),
   featured: z.boolean().optional().describe('Filter featured events'),
   categories: z.array(z.number()).optional().describe('Filter by category IDs'),
@@ -241,7 +241,7 @@ export const ReadJsonSchema = {
       properties: {
         start_date: { type: 'string' as const, description: 'Event start date filter (YYYY-MM-DD). ⚠️ Call tec-calendar-current-datetime tool FIRST to get current date.' },
         end_date: { type: 'string' as const, description: 'Event end date filter (YYYY-MM-DD). ⚠️ Call tec-calendar-current-datetime tool FIRST to get current date.' },
-        venue: { type: 'number' as const, description: 'Filter by venue ID' },
+        venues: { type: 'array' as const, items: { type: 'number' as const }, description: 'Filter by venue IDs' },
         organizer: { type: 'number' as const, description: 'Filter by organizer ID' },
         featured: { type: 'boolean' as const, description: 'Filter featured events' },
         categories: { type: 'array' as const, items: { type: 'number' as const }, description: 'Filter by category IDs' },

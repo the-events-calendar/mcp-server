@@ -28,7 +28,7 @@ export const SCHEMA_EXAMPLES: Record<PostType, any[]> = {
       end_date: 'next friday 5pm',
       all_day: false,
       timezone: 'America/New_York',
-      venue: 456,
+      venues: [456],
       organizers: [789],
     },
     {
@@ -65,7 +65,7 @@ export const SCHEMA_EXAMPLES: Record<PostType, any[]> = {
       end_date: 'December 15, 2024 11:30 PM',
       all_day: false,
       timezone: 'America/Denver',
-      venue: 789,
+      venues: [789],
       cost: '$25 per person',
     },
     {
@@ -101,7 +101,7 @@ export const SCHEMA_EXAMPLES: Record<PostType, any[]> = {
       end_date: '2025-02-14 23:59:59',
       all_day: false,
       timezone: 'America/Los_Angeles',
-      venue: 101,
+      venues: [101, 102],
       organizers: [102, 103],
       cost: '$150',
       categories: [10, 11],
