@@ -39,7 +39,7 @@ export interface Event extends BasePost {
   };
   all_day: boolean;
   timezone: string;
-  venue?: number;
+  venues?: number[];
   organizers?: number[];
   cost?: string;
   cost_details?: {
