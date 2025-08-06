@@ -4,6 +4,7 @@ import { formatError } from '../utils/error-handling.js';
 import { ApiClient } from '../api/client.js';
 import { PostType } from '../types/index.js';
 import { getLogger } from '../utils/logger.js';
+import { generateToolDescription } from '../utils/example-generator.js';
 
 /**
  * Schema for create/update tool input
@@ -120,53 +121,14 @@ export const CreateUpdateJsonSchema = {
  */
 export const createUpdateTool = {
   name: 'tec-calendar-create-update-entities',
-  description: `Create or update a calendar post (Event, Venue, Organizer, or Ticket).
+  description: generateToolDescription(
+    'tec-calendar-create-update-entities',
+    `Create or update a calendar post (Event, Venue, Organizer, or Ticket).
 
 For creating: provide postType and data.
-For updating: provide postType, id, and data.
-
-⚠️ IMPORTANT: Before creating events with dates/times, ALWAYS call the tec-calendar-current-datetime tool first to get the current date, time, and timezone context. This ensures you create events with accurate dates relative to "today" or "tomorrow".
-
-Date format for events: "YYYY-MM-DD HH:MM:SS" (e.g., "2024-12-25 15:00:00")
-
-Workflow example:
-1. First: Call tec-calendar-current-datetime tool to get current date/time
-2. Then: Create event with calculated dates based on the response
-
-Examples:
-
-// Creating an event
-{
-  "postType": "event",
-  "data": {
-    "title": "My Event",
-    "start_date": "2024-12-25 15:00:00",
-    "end_date": "2024-12-25 17:00:00",
-    "description": "Event description",
-    "venue": 123
-  }
-}
-
-// Creating a venue (using title)
-{
-  "postType": "venue",
-  "data": {
-    "title": "Conference Center",
-    "address": "123 Main St",
-    "city": "San Francisco",
-    "country": "United States"
-  }
-}
-
-// Creating an organizer (using title)
-{
-  "postType": "organizer",
-  "data": {
-    "title": "John Doe",
-    "email": "john@example.com",
-    "phone": "555-1234"
-  }
-}`,
+For updating: provide postType, id, and data.`,
+    ['event', 'venue', 'organizer', 'ticket'] as PostType[]
+  ),
   inputSchema: CreateUpdateInputSchema,
   jsonSchema: CreateUpdateJsonSchema,
 };

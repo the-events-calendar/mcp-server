@@ -4,6 +4,7 @@ import { formatError } from '../utils/error-handling.js';
 import { ApiClient } from '../api/client.js';
 import { PostType } from '../types/index.js';
 import { getLogger } from '../utils/logger.js';
+import { generateToolDescription } from '../utils/example-generator.js';
 
 
 /**
@@ -295,32 +296,20 @@ export const ReadJsonSchema = {
  */
 export const readTool = {
   name: 'tec-calendar-read-entities',
-  description: `Read, list, or search calendar posts.
+  description: generateToolDescription(
+    'tec-calendar-read-entities',
+    `Read, list, or search calendar posts.
 
-⚠️ IMPORTANT: When filtering events by date (e.g., "events this week", "upcoming events"), ALWAYS call the tec-calendar-current-datetime tool FIRST to get the current date and calculate the appropriate date filters. Never assume or hardcode dates.
+**IMPORTANT**: When filtering events by date (e.g., "events this week", "upcoming events"), ALWAYS call the tec-calendar-current-datetime tool FIRST to get the current date and calculate the appropriate date filters. Never assume or hardcode dates.
 
-Use cases:
-1. Get single post: provide postType and id
-2. List all posts: provide postType only
-3. Search posts: provide postType and query
-4. Filter by dates: FIRST call tec-calendar-current-datetime tool, THEN apply filters
+### Use Cases
 
-Examples:
-
-// Get single event
-{"postType": "event", "id": 123}
-
-// List all venues with pagination
-{"postType": "venue", "per_page": 10}
-
-// Search events with date filter (after calling tec-calendar-current-datetime)
-{"postType": "event", "query": "conference", "eventFilters": {"start_date": "2024-12-01"}}
-
-// Filter venues by location
-{"postType": "venue", "venueFilters": {"city": "San Francisco", "state": "CA"}}
-
-// List available tickets for an event
-{"postType": "ticket", "ticketFilters": {"event": 123, "available": true}}`,
+1. **Get single post**: provide postType and id
+2. **List all posts**: provide postType only
+3. **Search posts**: provide postType and query
+4. **Filter by dates**: FIRST call tec-calendar-current-datetime tool, THEN apply filters`,
+    ['event', 'venue', 'organizer', 'ticket'] as PostType[]
+  ),
   inputSchema: ReadInputSchema,
   jsonSchema: ReadJsonSchema,
 };
