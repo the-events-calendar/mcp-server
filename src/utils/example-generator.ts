@@ -144,7 +144,66 @@ export function generateUpdateExamplesFromSchema(postType: PostType, count: numb
 }
 
 /**
- * Generate read/search examples
+ * Generate compact read examples for tool description
+ */
+function generateCompactReadExamples(): string[] {
+  const examples: string[] = [];
+  
+  // Most common use cases only
+  examples.push(
+    '// Get specific event',
+    '{ "postType": "event", "id": 123 }',
+    '',
+    '// List all venues',
+    '{ "postType": "venue", "per_page": 20 }',
+    '',
+    '// Search events',
+    '{ "postType": "event", "search": "conference" }',
+    '',
+    '// Get upcoming events (after calling tec-calendar-current-datetime)',
+    JSON.stringify({ 
+      postType: 'event',
+      eventFilters: { start_date: '2024-12-06' }
+    }, null, 2),
+    '',
+    '// Find venues by location',
+    JSON.stringify({ 
+      postType: 'venue',
+      venueFilters: { city: 'San Francisco', state: 'CA' }
+    }, null, 2),
+    '',
+    '// Get event tickets',
+    JSON.stringify({ 
+      postType: 'ticket',
+      ticketFilters: { event: 123, available: true }
+    }, null, 2),
+    '',
+    '// Complex: Search events at venue with date range',
+    JSON.stringify({ 
+      postType: 'event',
+      search: 'workshop',
+      status: 'publish',
+      eventFilters: {
+        venue: 456,
+        start_date: '2024-12-01',
+        end_date: '2024-12-31'
+      },
+      per_page: 50
+    }, null, 2),
+    '',
+    '💡 For more examples, see documentation or use query parameters:',
+    '• eventFilters: venue, organizer, featured, categories, tags, dates',
+    '• venueFilters: city, state, country, zip, geo_lat/lng, radius',
+    '• ticketFilters: event, available, type, provider, price range',
+    '• organizerFilters: email, website, phone',
+    '• Common: status, search, include, exclude, page, per_page, orderby'
+  );
+  
+  return examples;
+}
+
+/**
+ * Generate full read/search examples (for documentation)
  */
 function generateReadExamples(_postTypes: PostType[]): string[] {
   const examples: string[] = [];
@@ -627,9 +686,9 @@ const TOOL_DESCRIPTION_TEMPLATES: Record<string, (postTypes: PostType[]) => stri
     '• Filter by post-specific criteria',
     '• Combine multiple filters',
     '',
-    'Examples:',
+    '📋 Common Examples:',
     '',
-    ...generateReadExamples(['event', 'venue', 'organizer', 'ticket'] as PostType[])
+    ...generateCompactReadExamples()
   ],
   
   'tec-calendar-delete-entities': (postTypes) => {
@@ -750,4 +809,17 @@ export function generateFieldDescription(schema: z.ZodObject<any>): string {
   }
   
   return fields.join('\n');
+}
+
+/**
+ * Generate full documentation with all examples (for external docs)
+ */
+export function generateFullReadDocumentation(): string {
+  return [
+    'Read, list, or search calendar posts.',
+    '',
+    '⚠️ IMPORTANT: When filtering events by date, ALWAYS call the tec-calendar-current-datetime tool FIRST.',
+    '',
+    ...generateReadExamples(['event', 'venue', 'organizer', 'ticket'] as PostType[])
+  ].join('\n');
 }
