@@ -27,7 +27,7 @@ export class ApiClient {
     // Create Basic Auth header
     const credentials = Buffer.from(`${config.username}:${config.appPassword}`).toString('base64');
     this.authHeader = `Basic ${credentials}`;
-    
+
     // Create dispatcher if SSL errors should be ignored
     if (config.ignoreSslErrors) {
       this.dispatcher = new Agent({
@@ -50,7 +50,7 @@ export class ApiClient {
     options: RequestInit = {}
   ): Promise<T> {
     const url = `${this.config.baseUrl}${path}`;
-    
+
     // Build fetch options
     const fetchOptions: any = {
       ...options,
@@ -62,7 +62,7 @@ export class ApiClient {
         ...options.headers,
       },
     };
-    
+
     this.logger.http(`API Request: ${options.method || 'GET'} ${url}`);
     this.logger.debug('Request headers:', {
       ...fetchOptions.headers,
@@ -72,23 +72,23 @@ export class ApiClient {
       this.logger.debug('Request body:', options.body);
     }
     this.logger.silly(`SSL verification: ${this.config.ignoreSslErrors ? 'DISABLED' : 'enabled'}`);
-    
+
     // Add dispatcher if configured
     if (this.dispatcher) {
       fetchOptions.dispatcher = this.dispatcher;
       this.logger.silly('Using custom dispatcher with SSL ignore');
     }
-    
+
     try {
       const startTime = Date.now();
       const response = await fetch(url, fetchOptions);
       const duration = Date.now() - startTime;
-      
+
       this.logger.http(`API Response: ${response.status} ${response.statusText} (${duration}ms)`);
       this.logger.debug('Response headers:', Object.fromEntries(response.headers.entries()));
 
       const data = await response.json();
-      
+
       if (response.ok) {
         this.logger.silly('Response body:', data);
       } else {
@@ -102,7 +102,7 @@ export class ApiClient {
       if (error.cause) {
         this.logger.error('Error cause:', error.cause);
       }
-      
+
       // Re-throw with more context for SSL errors
       if (error.message.includes('certificate') || error.message.includes('self-signed')) {
         throw new Error(
@@ -110,7 +110,7 @@ export class ApiClient {
           `${this.config.ignoreSslErrors ? 'SSL ignore is enabled but error still occurred.' : 'To ignore SSL errors for local development, set WP_IGNORE_SSL_ERRORS=true'}`
         );
       }
-      
+
       throw error;
     }
   }
@@ -139,7 +139,7 @@ export class ApiClient {
     // Apply per_page limit if enforced (default: true)
     const enforceLimit = this.config.enforcePerPageLimit !== false;
     const processedFilters = { ...filters };
-    
+
     if (enforceLimit && processedFilters.per_page && processedFilters.per_page > 100) {
       this.logger.warn(`per_page value ${processedFilters.per_page} exceeds maximum allowed (100). Limiting to 100.`);
       processedFilters.per_page = 100;
@@ -161,7 +161,7 @@ export class ApiClient {
 
     // The new TEC v1 API returns arrays directly, not wrapped in resource keys
     const response = await this.request<PostTypeMap[T][]>(url);
-    
+
     return response || [];
   }
 
@@ -222,7 +222,7 @@ export class ApiClient {
       search: query,
     } as FilterTypeMap[T]);
   }
-  
+
   /**
    * Get site information
    */
