@@ -218,9 +218,9 @@ function generateCompactReadExamples(): string[] {
     '',
     '### Relationship Queries',
     '',
-    '**9. Get events at specific venues**',
+    '**9. Get events at specific venue**',
     '```json',
-    '{ "postType": "event", "eventFilters": { "venues": [456] } }',
+    '{ "postType": "event", "eventFilters": { "venue": 456 } }',
     '```',
     '',
     '**10. Get tickets for specific event**',
@@ -260,7 +260,7 @@ function generateCompactReadExamples(): string[] {
       search: 'workshop',
       status: 'publish',
       eventFilters: {
-        venues: [456, 457],
+        venue: 456,
         start_date: '2024-12-01'
       },
       per_page: 50
@@ -467,11 +467,11 @@ function generateReadExamples(_postTypes: PostType[]): string[] {
   examples.push(
     '// === EVENT-SPECIFIC FILTERS ===',
     '',
-    '// Get events at specific venues',
+    '// Get events at a specific venue',
     JSON.stringify({ 
       postType: 'event',
       eventFilters: {
-        venues: [456]
+        venue: 456
       }
     }, null, 2),
     '',
@@ -653,13 +653,13 @@ function generateReadExamples(_postTypes: PostType[]): string[] {
   examples.push(
     '// === COMPLEX QUERIES ===',
     '',
-    '// Search upcoming published events at venues',
+    '// Search upcoming published events at a venue',
     JSON.stringify({ 
       postType: 'event',
       search: 'workshop',
       status: 'publish',
       eventFilters: {
-        venues: [456, 457],
+        venue: 456,
         start_date: '2024-12-06'
       },
       per_page: 50
