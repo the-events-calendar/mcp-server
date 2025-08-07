@@ -97,10 +97,10 @@ export const OrganizerDataSchema = BasePostUpdateSchema.extend({
  * Ticket-specific update fields
  */
 export const TicketDataSchema = BasePostUpdateSchema.extend({
-  event: z.number().optional()
+  event_id: z.number().optional()
     .describe('ID of the associated event'),
   price: z.string().optional()
-    .describe('Ticket price (formatted with currency)'),
+    .describe('Ticket price (numeric string without currency symbols, e.g. "25.00")'),
   stock: z.number().optional()
     .describe('Total number of tickets available'),
   capacity: z.number().optional()
