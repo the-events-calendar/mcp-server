@@ -110,9 +110,9 @@ export const TicketDataSchema = BasePostUpdateSchema.extend({
   sku: z.string().optional()
     .describe('Stock keeping unit for inventory tracking'),
   start_date: z.string().optional()
-    .describe('When ticket sales start (Y-m-d H:i:s format, defaults to 1 week before event)'),
+    .describe('When ticket sales start (Y-m-d H:i:s format, defaults to 1 week before event). Soft requirement: tickets not visible before this date'),
   end_date: z.string().optional()
-    .describe('When ticket sales end (Y-m-d H:i:s format, defaults to event start date)'),
+    .describe('When ticket sales end (Y-m-d H:i:s format, defaults to event start date). Soft requirement: tickets not available after this date'),
   manage_stock: z.boolean().optional()
     .describe('Enable inventory tracking'),
   show_description: z.boolean().optional()

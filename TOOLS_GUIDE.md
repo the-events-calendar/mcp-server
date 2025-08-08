@@ -101,6 +101,8 @@ This tool creates new posts or updates existing ones. If you provide an `id`, it
 - If `end_date` is not provided, it defaults to the event start date
 - You can override these by providing explicit dates in "YYYY-MM-DD HH:MM:SS" format
 
+**⚠️ Important**: The `start_date` and `end_date` fields are soft requirements. While they're automatically set to sensible defaults, they control when tickets are available for sale. **Tickets will not be displayed or available for purchase outside of these dates.**
+
 **Advanced Ticket Example**:
 ```json
 {
@@ -458,8 +460,8 @@ These filters are available for all post types at the top level:
 - `stock` - Total number of tickets available
 - `manage_stock` - Enable inventory tracking (boolean)
 - `capacity` - Maximum capacity for this ticket type
-- `start_date` - When ticket sales start (defaults to 1 week before event)
-- `end_date` - When ticket sales end (defaults to event start date)
+- `start_date` - When ticket sales start (soft requirement, defaults to 1 week before event) - Controls ticket visibility
+- `end_date` - When ticket sales end (soft requirement, defaults to event start date) - Controls ticket availability
 - `sale_price` - Discounted price (number or string)
 - `sale_price_start_date` - When sale price starts
 - `sale_price_end_date` - When sale price ends

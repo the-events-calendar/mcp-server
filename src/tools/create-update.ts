@@ -81,6 +81,7 @@ export async function createUpdatePost(
         }
         
         // If no sale dates provided, we need to fetch the event to set defaults
+        // Note: These are soft requirements - tickets won't display/be available outside these dates
         if (!transformedData.start_date || !transformedData.end_date) {
           const eventId = transformedData.event || transformedData.event_id;
           logger.debug(`Fetching event ${eventId} to calculate ticket sale dates`);
@@ -97,12 +98,14 @@ export async function createUpdatePost(
             const eventStartDate = new Date(event.start_date);
             
             // Default ticket sale end date to event start date
+            // IMPORTANT: Tickets won't be available for purchase after this date
             if (!transformedData.end_date) {
               transformedData.end_date = event.start_date;
-              logger.info(`Set ticket sale end date to event start: ${transformedData.end_date}`);
+              logger.info(`Set ticket sale end date to event start: ${transformedData.end_date} (tickets unavailable after this)`);
             }
             
             // Default ticket sale start date to 1 week before event
+            // IMPORTANT: Tickets won't be visible/available before this date
             if (!transformedData.start_date) {
               const saleStartDate = new Date(eventStartDate);
               saleStartDate.setDate(saleStartDate.getDate() - 7);
@@ -116,7 +119,7 @@ export async function createUpdatePost(
               const seconds = String(saleStartDate.getSeconds()).padStart(2, '0');
               
               transformedData.start_date = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
-              logger.info(`Set ticket sale start date to 1 week before event: ${transformedData.start_date}`);
+              logger.info(`Set ticket sale start date to 1 week before event: ${transformedData.start_date} (tickets not visible before this)`);
             }
           } catch (error) {
             logger.error(`Failed to fetch event for ticket date calculation:`, error);
