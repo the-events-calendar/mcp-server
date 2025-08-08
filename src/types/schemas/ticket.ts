@@ -31,7 +31,7 @@ export const TicketSchema = BasePostSchema.extend({
   availability: TicketAvailabilitySchema.optional()
     .describe('Current availability information'),
   sku: z.string().optional().describe('Stock keeping unit for inventory tracking'),
-  provider: z.string().optional().describe('Ticketing provider (e.g., RSVP, Ticket Commerce, WooCommerce)'),
+  provider: z.string().optional().describe('Ticketing provider (defaults to "Tickets Commerce", alternatives: RSVP, WooCommerce)'),
   rsvp: z.boolean().optional().describe('Whether this is a free RSVP ticket'),
   start_date: z.string().optional().describe('When ticket sales start (Y-m-d H:i:s format) - tickets not visible before this'),
   end_date: z.string().optional().describe('When ticket sales end (Y-m-d H:i:s format) - tickets not available after this'),
@@ -55,7 +55,7 @@ export const TicketSchema = BasePostSchema.extend({
       stock: 100,
       capacity: 100,
       sku: 'GA-2024-001',
-      provider: 'WooCommerce',
+      provider: 'Tickets Commerce',
     },
     {
       id: 102,

@@ -129,6 +129,12 @@ export async function createUpdatePost(
         
         // Ensure event_id field is set (the API expects this field name)
         transformedData.event_id = transformedData.event || transformedData.event_id;
+        
+        // Set default provider to "Tickets Commerce" unless specifically provided
+        if (!transformedData.provider) {
+          transformedData.provider = 'Tickets Commerce';
+          logger.info('Set default ticket provider to "Tickets Commerce"');
+        }
       }
     }
     

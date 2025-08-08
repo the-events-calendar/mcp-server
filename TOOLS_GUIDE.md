@@ -96,10 +96,11 @@ This tool creates new posts or updates existing ones. If you provide an `id`, it
 }
 ```
 
-**Automatic Date Handling**:
-- If `start_date` is not provided, it defaults to 1 week before the event start date
-- If `end_date` is not provided, it defaults to the event start date
-- You can override these by providing explicit dates in "YYYY-MM-DD HH:MM:SS" format
+**Automatic Defaults**:
+- `provider` defaults to "Tickets Commerce" (the preferred ticketing system)
+- `start_date` defaults to 1 week before the event start date
+- `end_date` defaults to the event start date
+- You can override any of these defaults by providing explicit values
 
 **⚠️ Important**: The `start_date` and `end_date` fields are soft requirements. While they're automatically set to sensible defaults, they control when tickets are available for sale. **Tickets will not be displayed or available for purchase outside of these dates.**
 
@@ -468,6 +469,7 @@ These filters are available for all post types at the top level:
 - `show_description` - Display description on frontend (boolean)
 - `sku` - Stock keeping unit for inventory tracking
 - `description` - Ticket description
+- `provider` - Ticketing provider (defaults to "Tickets Commerce")
 - `status` - Publication status
 
 ## Error Handling

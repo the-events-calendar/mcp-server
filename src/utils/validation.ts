@@ -109,6 +109,8 @@ export const TicketDataSchema = BasePostUpdateSchema.extend({
     .describe('Maximum capacity for this ticket type'),
   sku: z.string().optional()
     .describe('Stock keeping unit for inventory tracking'),
+  provider: z.string().optional()
+    .describe('Ticketing provider (defaults to "Tickets Commerce" if not specified)'),
   start_date: z.string().optional()
     .describe('When ticket sales start (Y-m-d H:i:s format, defaults to 1 week before event). Soft requirement: tickets not visible before this date'),
   end_date: z.string().optional()
