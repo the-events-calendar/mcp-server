@@ -80,14 +80,45 @@ This tool creates new posts or updates existing ones. If you provide an `id`, it
 
 #### Creating a Ticket
 
+**Important**: Tickets MUST be associated with an event. The `event` or `event_id` field is required.
+
 ```json
 {
   "postType": "ticket",
   "data": {
     "title": "General Admission",
-    "price": "49.99",
-    "description": "Standard entry ticket",
-    "capacity": 500,
+    "event_id": 123,
+    "price": 49.99,
+    "stock": 100,
+    "manage_stock": true,
+    "status": "publish"
+  }
+}
+```
+
+**Automatic Date Handling**:
+- If `start_date` is not provided, it defaults to 1 week before the event start date
+- If `end_date` is not provided, it defaults to the event start date
+- You can override these by providing explicit dates in "YYYY-MM-DD HH:MM:SS" format
+
+**Advanced Ticket Example**:
+```json
+{
+  "postType": "ticket",
+  "data": {
+    "title": "VIP Experience",
+    "event_id": 123,
+    "price": 150.00,
+    "sale_price": 120.00,
+    "sale_price_start_date": "2025-02-01 00:00:00",
+    "sale_price_end_date": "2025-02-28 23:59:59",
+    "description": "Premium VIP package",
+    "stock": 30,
+    "manage_stock": true,
+    "show_description": true,
+    "start_date": "2025-01-15 10:00:00",
+    "end_date": "2025-03-15 23:59:59",
+    "sku": "VIP-2025-001",
     "status": "publish"
   }
 }
@@ -422,12 +453,19 @@ These filters are available for all post types at the top level:
 
 ### Ticket Fields
 - `title` (required) - Ticket type name
+- `event_id` or `event` (required) - ID of the associated event
 - `price` - Ticket price (number or string)
-- `event` - ID of the associated event
 - `stock` - Total number of tickets available
+- `manage_stock` - Enable inventory tracking (boolean)
 - `capacity` - Maximum capacity for this ticket type
+- `start_date` - When ticket sales start (defaults to 1 week before event)
+- `end_date` - When ticket sales end (defaults to event start date)
+- `sale_price` - Discounted price (number or string)
+- `sale_price_start_date` - When sale price starts
+- `sale_price_end_date` - When sale price ends
+- `show_description` - Display description on frontend (boolean)
 - `sku` - Stock keeping unit for inventory tracking
-- `description` - Ticket description (via content field)
+- `description` - Ticket description
 - `status` - Publication status
 
 ## Error Handling
