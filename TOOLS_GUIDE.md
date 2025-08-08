@@ -84,7 +84,7 @@ This tool creates new posts or updates existing ones. If you provide an `id`, it
 {
   "postType": "ticket",
   "data": {
-    "name": "General Admission",
+    "title": "General Admission",
     "price": "49.99",
     "description": "Standard entry ticket",
     "capacity": 500,
@@ -421,10 +421,13 @@ These filters are available for all post types at the top level:
 - `status` - Publication status
 
 ### Ticket Fields
-- `name` (required) - Ticket type name
-- `price` (required) - Ticket price (number or string)
-- `description` - Ticket description
-- `capacity` - Available tickets
+- `title` (required) - Ticket type name
+- `price` - Ticket price (number or string)
+- `event` - ID of the associated event
+- `stock` - Total number of tickets available
+- `capacity` - Maximum capacity for this ticket type
+- `sku` - Stock keeping unit for inventory tracking
+- `description` - Ticket description (via content field)
 - `status` - Publication status
 
 ## Error Handling

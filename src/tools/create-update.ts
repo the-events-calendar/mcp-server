@@ -12,7 +12,7 @@ import { generateToolDescription } from '../utils/example-generator.js';
 export const CreateUpdateSchema = z.object({
   postType: PostTypeSchema.describe('The type of post to create or update (event, venue, organizer, or ticket)'),
   id: z.number().optional().describe('Post ID (required for updates, omit for creation)'),
-  data: z.record(z.string(), z.any()).describe('The post data. Required fields depend on postType: Event (title, start_date, end_date), Venue (title or venue, address, city, country), Organizer (title or organizer), Ticket (name, price). Note: For Venue and Organizer, you can use "title" which will be converted to the appropriate field.'),
+  data: z.record(z.string(), z.any()).describe('The post data. Required fields depend on postType: Event (title, start_date, end_date), Venue (title or venue, address, city, country), Organizer (title or organizer), Ticket (title). Note: For Venue and Organizer, you can use "title" which will be converted to the appropriate field.'),
 });
 
 /**
@@ -21,7 +21,7 @@ export const CreateUpdateSchema = z.object({
 export const CreateUpdateInputSchema = {
   postType: PostTypeSchema.describe('The type of post to create or update (event, venue, organizer, or ticket)'),
   id: z.number().optional().describe('Post ID (required for updates, omit for creation)'),
-  data: z.record(z.string(), z.any()).describe('The post data. Required fields depend on postType: Event (title, start_date, end_date), Venue (title or venue, address, city, country), Organizer (title or organizer), Ticket (name, price). Note: For Venue and Organizer, you can use "title" which will be converted to the appropriate field.'),
+  data: z.record(z.string(), z.any()).describe('The post data. Required fields depend on postType: Event (title, start_date, end_date), Venue (title or venue, address, city, country), Organizer (title or organizer), Ticket (title). Note: For Venue and Organizer, you can use "title" which will be converted to the appropriate field.'),
 };
 
 /**
@@ -52,6 +52,21 @@ export async function createUpdatePost(
         logger.debug(`Set title from ${postType} field:`, transformedData[postType]);
       }
       // If neither is provided, that's an error we'll catch in validation
+    }
+    
+    // Validate required fields for creation
+    if (!id) {
+      // This is a creation operation
+      if (!transformedData.title) {
+        throw new Error(`Title is required when creating a new ${postType}`);
+      }
+      
+      // Additional required fields validation for specific post types
+      if (postType === 'event') {
+        if (!transformedData.start_date || !transformedData.end_date) {
+          throw new Error('Both start_date and end_date are required when creating an event');
+        }
+      }
     }
     
     // Get the appropriate schema for the post type
@@ -108,7 +123,7 @@ export const CreateUpdateJsonSchema = {
     },
     data: {
       type: 'object' as const,
-      description: 'The post data. Required fields depend on postType: Event (title, start_date, end_date), Venue (title or venue, address, city, country), Organizer (title or organizer), Ticket (name, price). Note: For Venue and Organizer, you can use "title" which will be converted to the appropriate field. ⚠️ ALWAYS call tec-calendar-current-datetime tool FIRST before setting any date/time fields to ensure correct relative dates.',
+      description: 'The post data. Required fields depend on postType: Event (title, start_date, end_date), Venue (title or venue, address, city, country), Organizer (title or organizer), Ticket (title). Note: For Venue and Organizer, you can use "title" which will be converted to the appropriate field. ⚠️ ALWAYS call tec-calendar-current-datetime tool FIRST before setting any date/time fields to ensure correct relative dates.',
       additionalProperties: true
     }
   },
