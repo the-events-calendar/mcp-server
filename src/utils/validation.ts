@@ -98,15 +98,33 @@ export const OrganizerDataSchema = BasePostUpdateSchema.extend({
  */
 export const TicketDataSchema = BasePostUpdateSchema.extend({
   event: z.number().optional()
-    .describe('ID of the associated event'),
-  price: z.string().optional()
-    .describe('Ticket price (formatted with currency)'),
+    .describe('ID of the associated event (required for creation)'),
+  event_id: z.number().optional()
+    .describe('Alternative field name for event ID (required for creation)'),
+  price: z.union([z.string(), z.number()]).optional()
+    .describe('Ticket price (can be string with currency or number)'),
   stock: z.number().optional()
     .describe('Total number of tickets available'),
   capacity: z.number().optional()
     .describe('Maximum capacity for this ticket type'),
   sku: z.string().optional()
     .describe('Stock keeping unit for inventory tracking'),
+  provider: z.string().optional()
+    .describe('Ticketing provider (defaults to "Tickets Commerce" if not specified)'),
+  start_date: z.string().optional()
+    .describe('When ticket sales start (Y-m-d H:i:s format, defaults to 1 week before event). Soft requirement: tickets not visible before this date'),
+  end_date: z.string().optional()
+    .describe('When ticket sales end (Y-m-d H:i:s format, defaults to event start date). Soft requirement: tickets not available after this date'),
+  manage_stock: z.boolean().optional()
+    .describe('Enable inventory tracking'),
+  show_description: z.boolean().optional()
+    .describe('Display description on frontend'),
+  sale_price: z.union([z.string(), z.number()]).optional()
+    .describe('Discounted/sale price'),
+  sale_price_start_date: z.string().optional()
+    .describe('When sale price starts (Y-m-d H:i:s format)'),
+  sale_price_end_date: z.string().optional()
+    .describe('When sale price ends (Y-m-d H:i:s format)'),
 }).meta({
   title: 'Ticket Update Data',
   description: 'Fields that can be updated on a ticket post',

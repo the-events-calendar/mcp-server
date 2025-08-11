@@ -80,14 +80,48 @@ This tool creates new posts or updates existing ones. If you provide an `id`, it
 
 #### Creating a Ticket
 
+**Important**: Tickets MUST be associated with an event. The `event` or `event_id` field is required.
+
 ```json
 {
   "postType": "ticket",
   "data": {
-    "name": "General Admission",
-    "price": "49.99",
-    "description": "Standard entry ticket",
-    "capacity": 500,
+    "title": "General Admission",
+    "event_id": 123,
+    "price": 49.99,
+    "stock": 100,
+    "manage_stock": true,
+    "status": "publish"
+  }
+}
+```
+
+**Automatic Defaults**:
+- `provider` defaults to "Tickets Commerce" (the preferred ticketing system)
+- `start_date` defaults to 1 week before the event start date
+- `end_date` defaults to the event start date
+- You can override any of these defaults by providing explicit values
+
+**⚠️ Important**: The `start_date` and `end_date` fields are soft requirements. While they're automatically set to sensible defaults, they control when tickets are available for sale. **Tickets will not be displayed or available for purchase outside of these dates.**
+
+**Advanced Ticket Example**:
+```json
+{
+  "postType": "ticket",
+  "data": {
+    "title": "VIP Experience",
+    "event_id": 123,
+    "price": 150.00,
+    "sale_price": 120.00,
+    "sale_price_start_date": "2025-02-01 00:00:00",
+    "sale_price_end_date": "2025-02-28 23:59:59",
+    "description": "Premium VIP package",
+    "stock": 30,
+    "manage_stock": true,
+    "show_description": true,
+    "start_date": "2025-01-15 10:00:00",
+    "end_date": "2025-03-15 23:59:59",
+    "sku": "VIP-2025-001",
     "status": "publish"
   }
 }
@@ -421,10 +455,21 @@ These filters are available for all post types at the top level:
 - `status` - Publication status
 
 ### Ticket Fields
-- `name` (required) - Ticket type name
-- `price` (required) - Ticket price (number or string)
+- `title` (required) - Ticket type name
+- `event_id` or `event` (required) - ID of the associated event
+- `price` - Ticket price (number or string)
+- `stock` - Total number of tickets available
+- `manage_stock` - Enable inventory tracking (boolean)
+- `capacity` - Maximum capacity for this ticket type
+- `start_date` - When ticket sales start (soft requirement, defaults to 1 week before event) - Controls ticket visibility
+- `end_date` - When ticket sales end (soft requirement, defaults to event start date) - Controls ticket availability
+- `sale_price` - Discounted price (number or string)
+- `sale_price_start_date` - When sale price starts
+- `sale_price_end_date` - When sale price ends
+- `show_description` - Display description on frontend (boolean)
+- `sku` - Stock keeping unit for inventory tracking
 - `description` - Ticket description
-- `capacity` - Available tickets
+- `provider` - Ticketing provider (defaults to "Tickets Commerce")
 - `status` - Publication status
 
 ## Error Handling

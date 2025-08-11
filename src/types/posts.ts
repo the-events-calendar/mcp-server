@@ -97,7 +97,8 @@ export interface Organizer extends BasePost {
 export interface Ticket extends BasePost {
   type: 'tribe_rsvp_tickets' | 'tec_tc_ticket';
   event?: number;
-  price?: string;
+  event_id?: number;
+  price?: string | number;
   stock?: number;
   capacity?: number;
   availability?: {
@@ -109,6 +110,13 @@ export interface Ticket extends BasePost {
   sku?: string;
   provider?: string;
   rsvp?: boolean;
+  start_date?: string;
+  end_date?: string;
+  manage_stock?: boolean;
+  show_description?: boolean;
+  sale_price?: string | number;
+  sale_price_start_date?: string;
+  sale_price_end_date?: string;
 }
 
 /**
