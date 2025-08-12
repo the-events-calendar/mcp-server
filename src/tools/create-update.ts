@@ -138,11 +138,24 @@ export async function createUpdatePost(
       }
     }
 
+    // Convert price 0 to omitted field for free tickets (WordPress API defaults to 0)
+    if (postType === 'ticket') {
+      if (transformedData.price === 0) {
+        delete transformedData.price;
+        logger.info('Omitted price 0 for free ticket creation - WordPress will default to 0');
+      }
+      if (transformedData.sale_price === 0) {
+        delete transformedData.sale_price;
+        logger.info('Omitted sale_price 0 - WordPress will default to null');
+      }
+    }
+
     // Get the appropriate schema for the post type
     const dataSchema = getSchemaForPostType(postType as PostType);
     logger.silly('Using schema for validation:', postType);
 
     // Validate the data against the schema
+    logger.debug('About to validate data:', transformedData);
     const validatedData = dataSchema.parse(transformedData);
     logger.debug('Validated data:', validatedData);
 
@@ -210,7 +223,9 @@ export const createUpdateTool = {
     `Create or update a calendar post (Event, Venue, Organizer, or Ticket).
 
 For creating: provide postType and data.
-For updating: provide postType, id, and data.`,
+For updating: provide postType, id, and data.
+
+**FREE TICKETS**: To create free tickets, omit the price field entirely. WordPress will automatically default to price 0. Both Tickets Commerce and RSVP providers support free tickets this way.`,
     ['event', 'venue', 'organizer', 'ticket'] as PostType[]
   ),
   inputSchema: CreateUpdateInputSchema,

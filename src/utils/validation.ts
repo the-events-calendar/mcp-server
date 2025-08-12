@@ -99,8 +99,8 @@ export const OrganizerDataSchema = BasePostUpdateSchema.extend({
 export const TicketDataSchema = BasePostUpdateSchema.extend({
   event: z.number().int().positive()
     .describe('ID of the associated event (required for creation)'),
-  price: z.number().positive().optional()
-    .describe('Ticket price. Needs to be a positive number. Use 0 for free tickets.'),
+  price: z.number().gte(0).optional()
+    .describe('Ticket price. Must be 0 or greater. Use 0 for free tickets (will be omitted from API call).'),
   stock: z.number().optional()
     .describe('Total number of tickets available'),
   capacity: z.number().optional()
@@ -117,8 +117,8 @@ export const TicketDataSchema = BasePostUpdateSchema.extend({
     .describe('Enable inventory tracking'),
   show_description: z.boolean().optional()
     .describe('Display description on frontend'),
-  sale_price: z.number().positive().optional()
-    .describe('Discounted/sale price. Needs to be a positive number. Use 0 for free tickets.'),
+  sale_price: z.number().gte(0).optional()
+    .describe('Discounted/sale price. Must be 0 or greater. Use 0 for free tickets (will be omitted from API call).'),
   sale_price_start_date: z.string().optional()
     .describe('When sale price starts (Y-m-d H:i:s format)'),
   sale_price_end_date: z.string().optional()
