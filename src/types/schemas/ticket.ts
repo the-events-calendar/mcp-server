@@ -24,7 +24,6 @@ export const TicketSchema = BasePostSchema.extend({
     z.literal('tec_tc_ticket'),
   ]).describe('Ticket post type identifier (RSVP or paid ticket)'),
   event: z.number().optional().describe('ID of the associated event'),
-  event_id: z.number().optional().describe('ID of the associated event (alternative field name)'),
   price: z.union([z.string(), z.number()]).optional().describe('Ticket price (formatted with currency or number)'),
   stock: z.number().optional().describe('Total number of tickets available'),
   capacity: z.number().optional().describe('Maximum capacity for this ticket type'),
@@ -42,7 +41,7 @@ export const TicketSchema = BasePostSchema.extend({
   sale_price_end_date: z.string().optional().describe('When sale price ends (Y-m-d H:i:s format)'),
 }).meta({
   title: 'Ticket',
-  description: 'Event ticket or RSVP type with pricing and availability information',
+  description: 'Event ticket type with pricing and date range availability, RSVPs and other providers should only be used when specifically requested.',
   examples: [
     {
       id: 101,

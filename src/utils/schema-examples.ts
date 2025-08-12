@@ -133,7 +133,7 @@ export const SCHEMA_EXAMPLES: Record<PostType, any[]> = {
       excerpt: 'A technical presentation on modern web technologies',
     },
   ],
-  
+
   venue: [
     {
       id: 456,
@@ -236,7 +236,7 @@ export const SCHEMA_EXAMPLES: Record<PostType, any[]> = {
       geo_lng: 139.7639,
     },
   ],
-  
+
   organizer: [
     {
       id: 789,
@@ -301,7 +301,7 @@ export const SCHEMA_EXAMPLES: Record<PostType, any[]> = {
       phone: '1-800-GO-GREEN',
     },
   ],
-  
+
   ticket: [
     {
       id: 101,
@@ -310,11 +310,10 @@ export const SCHEMA_EXAMPLES: Record<PostType, any[]> = {
       status: 'publish',
       type: 'tec_tc_ticket',
       event: 123,
-      price: '$25.00',
+      price: 25.00,
       stock: 100,
       capacity: 100,
       sku: 'GA-2024-001',
-      provider: 'WooCommerce',
     },
     {
       id: 102,
@@ -323,7 +322,7 @@ export const SCHEMA_EXAMPLES: Record<PostType, any[]> = {
       status: 'publish',
       type: 'tec_tc_ticket',
       event: 123,
-      price: '$150.00',
+      price: 150.00,
       stock: 20,
       capacity: 30,
       availability: {
@@ -333,7 +332,6 @@ export const SCHEMA_EXAMPLES: Record<PostType, any[]> = {
         pending: 0,
       },
       sku: 'VIP-2024-001',
-      provider: 'WooCommerce',
     },
     {
       id: 103,
@@ -342,11 +340,23 @@ export const SCHEMA_EXAMPLES: Record<PostType, any[]> = {
       status: 'publish',
       type: 'tribe_rsvp_tickets',
       event: 124,
-      price: 'Free',
+      price: 0,
       stock: 500,
       capacity: 500,
       rsvp: true,
       provider: 'RSVP',
+    },
+    {
+      id: 103,
+      title: 'Free Ticket',
+      slug: 'free-ticket',
+      status: 'publish',
+      type: 'tec_tc_ticket',
+      event: 124,
+      price: 0,
+      stock: 30,
+      capacity: 30,
+      provider: 'Tickets Commerce',
     },
     {
       id: 104,
@@ -355,7 +365,7 @@ export const SCHEMA_EXAMPLES: Record<PostType, any[]> = {
       status: 'publish',
       type: 'tec_tc_ticket',
       event: 125,
-      price: '$45.00',
+      price: 45.00,
       stock: 50,
       capacity: 50,
       availability: {
@@ -373,7 +383,7 @@ export const SCHEMA_EXAMPLES: Record<PostType, any[]> = {
       status: 'publish',
       type: 'tec_tc_ticket',
       event: 126,
-      price: '$15.00',
+      price: 15.00,
       stock: 75,
       capacity: 100,
       availability: {
@@ -383,7 +393,6 @@ export const SCHEMA_EXAMPLES: Record<PostType, any[]> = {
         pending: 5,
       },
       sku: 'STU-DISC-001',
-      provider: 'WooCommerce',
     },
     {
       id: 106,
@@ -392,7 +401,7 @@ export const SCHEMA_EXAMPLES: Record<PostType, any[]> = {
       status: 'publish',
       type: 'tec_tc_ticket',
       event: 127,
-      price: '$200.00',
+      price: 200.00,
       stock: 10,
       capacity: 10,
       sku: 'GRP-10-PKG',
