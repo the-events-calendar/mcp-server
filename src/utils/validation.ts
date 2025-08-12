@@ -99,12 +99,12 @@ export const OrganizerDataSchema = BasePostUpdateSchema.extend({
 export const TicketDataSchema = BasePostUpdateSchema.extend({
   event: z.number().int().positive()
     .describe('ID of the associated event (required for creation)'),
-  price: z.number().positive().optional()
-    .describe('Ticket price. Needs to be a positive number. Use 0 for free tickets.'),
+  price: z.number().gte(0).optional()
+    .describe('Ticket price. Must be greater than 0. For free tickets, omit this field entirely - do NOT set to 0.'),
   stock: z.number().optional()
-    .describe('Total number of tickets available'),
+    .describe('Total number of tickets available. Use -1 for unlimited tickets when manage_stock is false.'),
   capacity: z.number().optional()
-    .describe('Maximum capacity for this ticket type'),
+    .describe('Maximum capacity for this ticket type.'),
   sku: z.string().optional()
     .describe('Stock keeping unit for inventory tracking'),
   provider: z.string().optional()
@@ -114,11 +114,11 @@ export const TicketDataSchema = BasePostUpdateSchema.extend({
   end_date: z.string().optional()
     .describe('When ticket sales end (Y-m-d H:i:s format, defaults to event start date). Soft requirement: tickets not available after this date'),
   manage_stock: z.boolean().optional()
-    .describe('Enable inventory tracking'),
+    .describe('Enable inventory tracking. Set to false for unlimited tickets.'),
   show_description: z.boolean().optional()
     .describe('Display description on frontend'),
-  sale_price: z.number().positive().optional()
-    .describe('Discounted/sale price. Needs to be a positive number. Use 0 for free tickets.'),
+  sale_price: z.number().gte(0).optional()
+    .describe('Discounted/sale price. Must be 0 or greater. Use 0 for free tickets (will be omitted from API call).'),
   sale_price_start_date: z.string().optional()
     .describe('When sale price starts (Y-m-d H:i:s format)'),
   sale_price_end_date: z.string().optional()
