@@ -82,6 +82,7 @@ export async function createUpdatePost(
 
         // If no sale dates provided, we need to fetch the event to set defaults
         // Note: These are soft requirements - tickets won't display/be available outside these dates
+        // The start_date and end_date fields control when tickets are available for purchase
         if (!transformedData.start_date || !transformedData.end_date) {
           const eventId = transformedData.event || transformedData.event_id;
           logger.debug(`Fetching event ${eventId} to calculate ticket sale dates`);
@@ -226,6 +227,24 @@ For creating: provide postType and data.
 For updating: provide postType, id, and data.
 
 **FREE TICKETS**: To create free tickets, omit the price field entirely. WordPress will automatically default to price 0. Do NOT set price to 0 explicitly as this triggers validation errors. Both Tickets Commerce and RSVP providers support free tickets when the price field is omitted.
+
+**TICKET AVAILABILITY DATES**: Use start_date and end_date fields to control when tickets are available for purchase. start_date is when tickets become available, end_date is when sales stop (typically the event start time). If not provided, defaults to 1 week before event (start) and event start time (end).
+
+**SALE PRICING**: To offer tickets at a reduced price during specific periods:
+- price: Regular ticket price
+- sale_price: Discounted price (must be less than regular price)
+- sale_price_start_date: When the sale price becomes active
+- sale_price_end_date: When the sale price expires (reverts to regular price)
+
+Example: Regular $50 ticket on sale for $35 from Dec 1-15:
+\`\`\`json
+{
+  "price": 50,
+  "sale_price": 35,
+  "sale_price_start_date": "2024-12-01 00:00:00",
+  "sale_price_end_date": "2024-12-15 23:59:59"
+}
+\`\`\`
 
 **UNLIMITED TICKETS**: To create unlimited tickets, set manage_stock to false. When manage_stock is false, the stock field will automatically be set to -1 for unlimited availability.`,
     ['event', 'venue', 'organizer', 'ticket'] as PostType[]

@@ -366,7 +366,12 @@ export const SCHEMA_EXAMPLES: Record<PostType, any[]> = {
       status: 'publish',
       type: 'tec_tc_ticket',
       event: 125,
-      price: 45.00,
+      price: 75.00,
+      sale_price: 45.00,
+      sale_price_start_date: '2024-12-01 00:00:00',
+      sale_price_end_date: '2024-12-15 23:59:59',
+      start_date: '2024-11-20 09:00:00',
+      end_date: '2025-01-15 18:00:00',
       stock: 50,
       capacity: 50,
       availability: {
