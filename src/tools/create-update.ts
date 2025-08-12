@@ -138,15 +138,15 @@ export async function createUpdatePost(
       }
     }
 
-    // Convert price 0 to omitted field for free tickets (WordPress API defaults to 0)
+    // Remove price fields set to 0 for ticket creation (prevents validation errors)
     if (postType === 'ticket') {
       if (transformedData.price === 0) {
         delete transformedData.price;
-        logger.info('Omitted price 0 for free ticket creation - WordPress will default to 0');
+        logger.info('Removed price field set to 0 - WordPress will default to free ticket');
       }
       if (transformedData.sale_price === 0) {
         delete transformedData.sale_price;
-        logger.info('Omitted sale_price 0 - WordPress will default to null');
+        logger.info('Removed sale_price field set to 0 - WordPress will default to null');
       }
     }
 
@@ -225,7 +225,7 @@ export const createUpdateTool = {
 For creating: provide postType and data.
 For updating: provide postType, id, and data.
 
-**FREE TICKETS**: To create free tickets, omit the price field entirely. WordPress will automatically default to price 0. Both Tickets Commerce and RSVP providers support free tickets this way.`,
+**FREE TICKETS**: To create free tickets, omit the price field entirely. WordPress will automatically default to price 0. Do NOT set price to 0 explicitly as this triggers validation errors. Both Tickets Commerce and RSVP providers support free tickets when the price field is omitted.`,
     ['event', 'venue', 'organizer', 'ticket'] as PostType[]
   ),
   inputSchema: CreateUpdateInputSchema,

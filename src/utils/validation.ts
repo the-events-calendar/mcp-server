@@ -100,7 +100,7 @@ export const TicketDataSchema = BasePostUpdateSchema.extend({
   event: z.number().int().positive()
     .describe('ID of the associated event (required for creation)'),
   price: z.number().gte(0).optional()
-    .describe('Ticket price. Must be 0 or greater. Use 0 for free tickets (will be omitted from API call).'),
+    .describe('Ticket price. Must be 0 or greater. For free tickets, omit this field entirely - do NOT set to 0.'),
   stock: z.number().optional()
     .describe('Total number of tickets available'),
   capacity: z.number().optional()
