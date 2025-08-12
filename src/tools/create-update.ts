@@ -225,7 +225,9 @@ export const createUpdateTool = {
 For creating: provide postType and data.
 For updating: provide postType, id, and data.
 
-**FREE TICKETS**: To create free tickets, omit the price field entirely. WordPress will automatically default to price 0. Do NOT set price to 0 explicitly as this triggers validation errors. Both Tickets Commerce and RSVP providers support free tickets when the price field is omitted.`,
+**FREE TICKETS**: To create free tickets, omit the price field entirely. WordPress will automatically default to price 0. Do NOT set price to 0 explicitly as this triggers validation errors. Both Tickets Commerce and RSVP providers support free tickets when the price field is omitted.
+
+**UNLIMITED TICKETS**: To create unlimited tickets, set manage_stock to false. When manage_stock is false, the stock field will automatically be set to -1 for unlimited availability.`,
     ['event', 'venue', 'organizer', 'ticket'] as PostType[]
   ),
   inputSchema: CreateUpdateInputSchema,

@@ -342,8 +342,9 @@ export const SCHEMA_EXAMPLES: Record<PostType, any[]> = {
       event: 124,
       // Note: No price field - WordPress defaults to 0 for free tickets
       stock: 500,
-      capacity: 500,
+      manage_stock: true,
       provider: 'Tickets Commerce',
+      sku: 'FREE-TC-001',
     },
     {
       id: 104,
@@ -354,8 +355,9 @@ export const SCHEMA_EXAMPLES: Record<PostType, any[]> = {
       event: 124,
       // Note: No price field - RSVP tickets are always free
       stock: 30,
-      capacity: 30,
+      manage_stock: true,
       provider: 'RSVP',
+      sku: 'RSVP-FREE-001',
     },
     {
       id: 104,
@@ -402,8 +404,32 @@ export const SCHEMA_EXAMPLES: Record<PostType, any[]> = {
       event: 127,
       price: 200.00,
       stock: 10,
-      capacity: 10,
+      manage_stock: true,
       sku: 'GRP-10-PKG',
+    },
+    {
+      id: 107,
+      title: 'Unlimited VIP Access',
+      slug: 'unlimited-vip-access',
+      status: 'publish',
+      type: 'tec_tc_ticket',
+      event: 128,
+      price: 500.00,
+      manage_stock: false, // Set to false for unlimited tickets
+      stock: -1, // When manage_stock is false, stock will be -1
+      sku: 'UNLIMITED-VIP-001',
+    },
+    {
+      id: 108,
+      title: 'Free Unlimited Community Access',
+      slug: 'free-unlimited-community',
+      status: 'publish',
+      type: 'tec_tc_ticket',
+      event: 129,
+      // Note: No price field for free tickets - WordPress defaults to 0
+      manage_stock: false, // Set to false for unlimited tickets
+      stock: -1, // When manage_stock is false, stock will be -1
+      sku: 'FREE-UNLIMITED-001',
     },
   ],
 };
