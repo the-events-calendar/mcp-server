@@ -97,12 +97,10 @@ export const OrganizerDataSchema = BasePostUpdateSchema.extend({
  * Ticket-specific update fields
  */
 export const TicketDataSchema = BasePostUpdateSchema.extend({
-  event: z.number().optional()
+  event: z.number().int().positive()
     .describe('ID of the associated event (required for creation)'),
-  event_id: z.number().optional()
-    .describe('Alternative field name for event ID (required for creation)'),
-  price: z.union([z.string(), z.number()]).optional()
-    .describe('Ticket price (can be string with currency or number)'),
+  price: z.number().positive().optional()
+    .describe('Ticket price. Needs to be a positive number. Use 0 for free tickets.'),
   stock: z.number().optional()
     .describe('Total number of tickets available'),
   capacity: z.number().optional()
@@ -119,8 +117,8 @@ export const TicketDataSchema = BasePostUpdateSchema.extend({
     .describe('Enable inventory tracking'),
   show_description: z.boolean().optional()
     .describe('Display description on frontend'),
-  sale_price: z.union([z.string(), z.number()]).optional()
-    .describe('Discounted/sale price'),
+  sale_price: z.number().positive().optional()
+    .describe('Discounted/sale price. Needs to be a positive number. Use 0 for free tickets.'),
   sale_price_start_date: z.string().optional()
     .describe('When sale price starts (Y-m-d H:i:s format)'),
   sale_price_end_date: z.string().optional()
