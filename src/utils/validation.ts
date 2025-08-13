@@ -110,9 +110,9 @@ export const TicketDataSchema = BasePostUpdateSchema.extend({
   provider: z.string().optional()
     .describe('Ticketing provider (defaults to "Tickets Commerce" if not specified)'),
   start_date: z.string().optional()
-    .describe('When ticket sales start (Y-m-d H:i:s format, defaults to 1 week before event). Soft requirement: tickets not visible before this date'),
+    .describe('When ticket sales start (flexible date formats accepted, defaults to 1 week before event). Soft requirement: tickets not visible before this date'),
   end_date: z.string().optional()
-    .describe('When ticket sales end (Y-m-d H:i:s format, defaults to event start date). Soft requirement: tickets not available after this date'),
+    .describe('When ticket sales end (flexible date formats accepted, defaults to event start date). Soft requirement: tickets not available after this date'),
   manage_stock: z.boolean().optional()
     .describe('Enable inventory tracking. Set to false for unlimited tickets.'),
   show_description: z.boolean().optional()
@@ -120,9 +120,9 @@ export const TicketDataSchema = BasePostUpdateSchema.extend({
   sale_price: z.number().gte(0).optional()
     .describe('Discounted/sale price. Must be 0 or greater. Use 0 for free tickets (will be omitted from API call).'),
   sale_price_start_date: z.string().optional()
-    .describe('When sale price starts (Y-m-d H:i:s format)'),
+    .describe('When sale price starts (flexible date formats accepted)'),
   sale_price_end_date: z.string().optional()
-    .describe('When sale price ends (Y-m-d H:i:s format)'),
+    .describe('When sale price ends (flexible date formats accepted)'),
 }).meta({
   title: 'Ticket Update Data',
   description: 'Fields that can be updated on a ticket post',

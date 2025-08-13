@@ -291,14 +291,14 @@
 **6a. Event Date Normalization:**
 
 1. **Natural Language Event Creation**:
-   - Test creating event with `start_date: "Friday 6pm"` → Should normalize to proper MySQL datetime
+   - Test creating event with `start_date: "Friday 6pm"` → Repository should normalize to proper MySQL datetime
    - Test creating event with `start_date: "tomorrow 2pm"` → Should calculate correct future date
    - Test creating event with `start_date: "next Monday"` → Should handle week calculations
    - Test creating event with `start_date: "+3 days 10am"` → Should handle relative date arithmetic
 
 2. **Standard Format Preservation**:
    - Test creating event with `start_date: "2025-08-15 18:00:00"` → Should preserve exact format
-   - Test creating event with `start_date: "2025-08-15T18:00:00"` → Should normalize ISO format
+   - Test creating event with `start_date: "2025-08-15T18:00:00"` → Repository should normalize ISO format
    - Test creating event with `start_date: "August 15, 2025 6:00 PM"` → Should parse descriptive format
 
 **6b. Ticket Date Normalization Testing** *(if ET is active)*:
@@ -317,14 +317,14 @@
 
 3. **Sale Price Date Normalization**:
    - Create ticket with sale pricing using natural language dates:
-     ```json
-     {
-       "price": 50,
-       "sale_price": 35,
-       "sale_price_start_date": "today",
-       "sale_price_end_date": "+2 days 11:59pm"
-     }
-     ```
+            ```json
+            {
+            "price": 50,
+            "sale_price": 35,
+            "sale_price_start_date": "today",
+            "sale_price_end_date": "+2 days 11:59pm"
+            }
+            ```
    - Verify all 4 date fields are properly normalized:
      - `start_date`, `end_date`, `sale_price_start_date`, `sale_price_end_date`
 
@@ -385,9 +385,9 @@ Test all supported natural language formats:
 
 **Architecture Verification:**
 
-1. **Repository-Level Processing**: Verify date normalization occurs at the repository level, not just REST API
+1. **Repository-Level Processing**: Verify date normalization occurs at the repository level for all data sources
 2. **Centralized Logic**: Confirm all date processing uses the centralized `Ticket::normalize_date_text_to_mysql()` method
-3. **Multiple Pathway Coverage**: Test that both direct `save()` calls and ORM-based creation normalize dates
+3. **Multiple Pathway Coverage**: Test that MCP, REST API, admin UI, and ORM-based creation all normalize dates consistently
 4. **No Regression**: Ensure standard date formats continue to work after natural language support is added
 
 ---
@@ -438,7 +438,7 @@ wp db query "SELECT post_id, meta_key, meta_value FROM wp_postmeta WHERE meta_ke
 ## **Technical Implementation Notes for Date Normalization**
 
 **Root Challenge:**
-Natural language date strings (like "tomorrow 10am", "+1 day", "Friday 6pm") were being passed through to WordPress without normalization, causing inconsistent storage and potential functionality issues.
+Natural language date strings (like "tomorrow 10am", "+1 day", "Friday 6pm") needed consistent normalization across all input sources (MCP, REST API, admin UI) to ensure reliable database storage and functionality.
 
 **Solution Architecture:**
 Implemented centralized date normalization at the repository level to ensure all ticket creation pathways properly handle natural language dates.
@@ -461,13 +461,13 @@ Implemented centralized date normalization at the repository level to ensure all
    - Removed unused `Date_I18n` imports from REST endpoints
 
 4. **MCP Server** (`mcp-server/src/tools/create-update.ts`)
-   - Enhanced date parsing logic to handle standard formats while passing natural language to WordPress
-   - Added regex patterns to detect natural language vs. standard formats
-   - Improved fallback handling for date parsing
+   - Simplified to pass all date values through unchanged to WordPress
+   - Removed redundant date normalization logic to avoid conflicts with repository layer
+   - Date processing now handled entirely by WordPress repository layer
 
 **Date Processing Flow:**
 
-1. **MCP Server**: Handles standard date formats, passes natural language strings to WordPress
+1. **MCP Server**: Passes all date values through unchanged (no normalization)
 2. **Repository Layer**: Intercepts all `set()` operations and normalizes date fields using centralized method
 3. **Ticket Class**: Provides centralized normalization logic and handles legacy save operations
 4. **Database Storage**: All dates stored in consistent MySQL datetime format (`Y-m-d H:i:s`)
