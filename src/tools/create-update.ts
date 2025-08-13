@@ -12,7 +12,7 @@ import { generateToolDescription } from '../utils/example-generator.js';
 export const CreateUpdateSchema = z.object({
   postType: PostTypeSchema.describe('The type of post to create or update (event, venue, organizer, or ticket)'),
   id: z.number().optional().describe('Post ID (required for updates, omit for creation)'),
-  data: z.record(z.string(), z.any()).describe('The post data. Required fields depend on postType: Event (title, start_date, end_date), Venue (title or venue, address, city, country), Organizer (title or organizer), Ticket (title, event). Note: For Venue and Organizer, you can use "title" which will be converted to the appropriate field. For Tickets, sales dates default to 1 week before event (start) and event start date (end) if not specified.'),
+  data: z.record(z.string(), z.any()).describe('The post data. Required fields depend on postType: Event (title, start_date, end_date), Venue (title or venue, address, city, country), Organizer (title or organizer), Ticket (title, event). Note: For Venue and Organizer, you can use "title" which will be converted to the appropriate field. For Tickets, sales dates default to 1 week before event (start) and event start date (end) if not specified. User-specified ticket end_date will always override the default capping to the event start date.'),
 });
 
 /**
@@ -21,7 +21,7 @@ export const CreateUpdateSchema = z.object({
 export const CreateUpdateInputSchema = {
   postType: PostTypeSchema.describe('The type of post to create or update (event, venue, organizer, or ticket)'),
   id: z.number().optional().describe('Post ID (required for updates, omit for creation)'),
-  data: z.record(z.string(), z.any()).describe('The post data. Required fields depend on postType: Event (title, start_date, end_date), Venue (title or venue, address, city, country), Organizer (title or organizer), Ticket (title, event). Note: For Venue and Organizer, you can use "title" which will be converted to the appropriate field. For Tickets, sales dates default to 1 week before event (start) and event start date (end) if not specified.'),
+  data: z.record(z.string(), z.any()).describe('The post data. Required fields depend on postType: Event (title, start_date, end_date), Venue (title or venue, address, city, country), Organizer (title or organizer), Ticket (title, event). Note: For Venue and Organizer, you can use "title" which will be converted to the appropriate field. For Tickets, sales dates default to 1 week before event (start) and event start date (end) if not specified. User-specified ticket end_date will always override the default capping to the event start date.'),
 };
 
 /**
@@ -70,6 +70,8 @@ export async function createUpdatePost(
 
       // Ticket-specific validation and defaults
       if (postType === 'ticket') {
+        // Detect whether the user explicitly provided an end_date. If they did,
+        // we will respect it and not apply automatic capping later.
         // Normalize event_id to event field
         if (transformedData.event_id && !transformedData.event) {
           transformedData.event = transformedData.event_id;
@@ -83,7 +85,7 @@ export async function createUpdatePost(
         // If no sale dates provided, we need to fetch the event to set defaults
         // Note: These are soft requirements - tickets won't display/be available outside these dates
         // The start_date and end_date fields control when tickets are available for purchase
-        if (!transformedData.start_date || !transformedData.end_date) {
+       if (!transformedData.start_date || !transformedData.end_date) {
           const eventId = transformedData.event || transformedData.event_id;
           logger.debug(`Fetching event ${eventId} to calculate ticket sale dates`);
 
@@ -135,7 +137,10 @@ export async function createUpdatePost(
         if (!transformedData.provider) {
           transformedData.provider = 'Tickets Commerce';
           logger.info('Set default ticket provider to "Tickets Commerce"');
-        }
+         }
+
+        // We will enforce capping after ticket creation only when the end_date
+        // was not provided by the user.
       }
     }
 
@@ -148,6 +153,44 @@ export async function createUpdatePost(
       if (transformedData.sale_price === 0) {
         delete transformedData.sale_price;
         logger.info('Removed sale_price field set to 0 - WordPress will default to null');
+      }
+
+      // Normalize inventory: prioritize syncing stock/capacity first, then manage_stock
+      const hasStockNumber = typeof transformedData.stock === 'number' && !Number.isNaN(transformedData.stock);
+      const hasCapacityNumber = typeof transformedData.capacity === 'number' && !Number.isNaN(transformedData.capacity);
+
+      // If capacity is missing but stock is provided, mirror stock into capacity
+      if (!hasCapacityNumber && hasStockNumber) {
+        transformedData.capacity = transformedData.stock;
+        logger.info(`Capacity not provided; defaulting capacity to stock: ${transformedData.capacity}`);
+      }
+
+      // If stock is missing but capacity is provided, mirror capacity into stock
+      if (!hasStockNumber && hasCapacityNumber) {
+        transformedData.stock = transformedData.capacity;
+        logger.info(`Stock not provided; defaulting stock to capacity: ${transformedData.stock}`);
+      }
+
+      // Re-evaluate after normalization
+      const normalizedHasStock = typeof transformedData.stock === 'number' && !Number.isNaN(transformedData.stock);
+      const normalizedHasCapacity = typeof transformedData.capacity === 'number' && !Number.isNaN(transformedData.capacity);
+
+      // Auto-expand capacity to be at least stock when both provided and stock is greater.
+      if (normalizedHasStock && normalizedHasCapacity) {
+        const stockNum = Number(transformedData.stock);
+        const capacityNum = Number(transformedData.capacity);
+        if (stockNum > capacityNum) {
+          transformedData.capacity = stockNum;
+          logger.info(`Stock (${stockNum}) greater than capacity (${capacityNum}); auto-expanding capacity to ${stockNum}`);
+        }
+      }
+
+      // If either stock or capacity is set, enforce manage_stock = true
+      if (normalizedHasStock || normalizedHasCapacity) {
+        if (transformedData.manage_stock !== true) {
+          transformedData.manage_stock = true;
+          logger.info('Stock or capacity provided; setting manage_stock to true');
+        }
       }
     }
 
@@ -162,9 +205,39 @@ export async function createUpdatePost(
 
     // Perform create or update
     logger.info(`${id ? 'Updating' : 'Creating'} ${postType}${id ? ` with ID ${id}` : ''}`);
-    const result = id
+    let result = id
       ? await apiClient.updatePost(postType as PostType, id, validatedData)
       : await apiClient.createPost(postType as PostType, validatedData);
+
+    // For newly created tickets, cap end_date to event start by default unless the
+    // user explicitly provided an end_date in the input.
+    if (!id && postType === 'ticket') {
+      try {
+        const userProvidedEndDate = Object.prototype.hasOwnProperty.call(data, 'end_date');
+
+        if (!userProvidedEndDate && result && result.id && (result as any).event_id) {
+          const eventIdForCap = (result as any).event_id as number;
+          const event = await apiClient.getPost('event', eventIdForCap);
+          if (event && event.start_date && (result as any).end_date) {
+            const toDate = (s: string) => new Date(String(s).replace(' ', 'T'));
+            const eventStart = toDate(event.start_date);
+            const ticketEnd = toDate((result as any).end_date);
+
+            if (Number.isFinite(eventStart.getTime()) && Number.isFinite(ticketEnd.getTime())) {
+              if (ticketEnd.getTime() > eventStart.getTime()) {
+                logger.info(`Capping ticket end_date (${(result as any).end_date}) to event start (${event.start_date}) by default`);
+                const updated = await apiClient.updatePost('ticket' as PostType, result.id, { end_date: event.start_date });
+                result = updated;
+              }
+            } else {
+              logger.warn('Unable to parse dates for capping comparison; skipping cap.');
+            }
+          }
+        }
+      } catch (capError) {
+        logger.warn('Failed to apply end_date capping logic after ticket creation:', capError);
+      }
+    }
 
     logger.info(`Successfully ${id ? 'updated' : 'created'} ${postType} with ID: ${result.id}`);
 
@@ -206,7 +279,7 @@ export const CreateUpdateJsonSchema = {
     },
     data: {
       type: 'object' as const,
-      description: 'The post data. Required fields depend on postType: Event (title, start_date, end_date), Venue (title or venue, address, city, country), Organizer (title or organizer), Ticket (title, event_id or event). Note: For Venue and Organizer, you can use "title" which will be converted to the appropriate field. For Tickets, sales dates default to 1 week before event (start) and event start date (end) if not specified. ⚠️ ALWAYS call tec-calendar-current-datetime tool FIRST before setting any date/time fields to ensure correct relative dates.',
+       description: 'The post data. Required fields depend on postType: Event (title, start_date, end_date), Venue (title or venue, address, city, country), Organizer (title or organizer), Ticket (title, event_id or event). Note: For Venue and Organizer, you can use "title" which will be converted to the appropriate field. For Tickets, sales dates default to 1 week before event (start) and event start date (end) if not specified. By default, ticket end_date will be capped to the event start date unless allow_end_after_event: true is provided. ⚠️ ALWAYS call tec-calendar-current-datetime tool FIRST before setting any date/time fields to ensure correct relative dates.',
       additionalProperties: true
     }
   },
@@ -228,7 +301,7 @@ For updating: provide postType, id, and data.
 
 **FREE TICKETS**: To create free tickets, omit the price field entirely. WordPress will automatically default to price 0. Do NOT set price to 0 explicitly as this triggers validation errors. Both Tickets Commerce and RSVP providers support free tickets when the price field is omitted.
 
-**TICKET AVAILABILITY DATES**: Use start_date and end_date fields to control when tickets are available for purchase. start_date is when tickets become available, end_date is when sales stop (typically the event start time). If not provided, defaults to 1 week before event (start) and event start time (end).
+**TICKET AVAILABILITY DATES**: Use start_date and end_date fields to control when tickets are available for purchase. start_date is when tickets become available, end_date is when sales stop (typically the event start time). If not provided, defaults to 1 week before event (start) and event start time (end). By default, end_date will be capped to the event start unless you pass allow_end_after_event: true.
 
 **SALE PRICING**: To offer tickets at a reduced price during specific periods:
 - price: Regular ticket price
