@@ -55,52 +55,9 @@ export async function createUpdatePost(
       // If neither is provided, that's an error we'll catch in validation
     }
 
-    // Normalize standard date formats to MySQL 'Y-m-d H:i:s' format.
-    // Pass through natural language strings (like "tomorrow 10am", "+1 day") to WordPress for parsing.
-    const isMysqlDatetime = (s: string) => /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/.test(s);
-    const isStandardFormat = (s: string) => {
-      // Match formats like "2025-08-13 08:00:00", "December 15, 2024 7:00 PM", etc.
-      // but NOT natural language like "tomorrow", "+1 day", etc.
-      const naturalLanguagePattern = /\b(tomorrow|yesterday|today|next|last|\+\d+|\-\d+|now)\b/i;
-      return !naturalLanguagePattern.test(s);
-    };
-
-    const pad = (n: number) => String(n).padStart(2, '0');
-    const formatMysql = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
-
-    const parseToMysql = (value: string): string | null => {
-      const v = value.trim();
-
-      // Already in MySQL format
-      if (isMysqlDatetime(v)) {
-        return v;
-      }
-
-      // Skip natural language - let WordPress handle these
-      if (!isStandardFormat(v)) {
-        logger.debug(`Passing natural language date to WordPress: ${v}`);
-        return null; // Return null to keep original value
-      }
-
-      // Try to parse standard formats
-      const dt = new Date(v);
-      if (Number.isNaN(dt.getTime())) {
-        logger.debug(`Failed to parse date, passing to WordPress: ${v}`);
-        return null;
-      }
-
-      return formatMysql(dt);
-    };
-
-    for (const dateKey of [ 'start_date', 'end_date', 'sale_price_start_date', 'sale_price_end_date' ]) {
-      if (Object.prototype.hasOwnProperty.call(transformedData, dateKey) && typeof transformedData[dateKey] === 'string') {
-        const parsed = parseToMysql(String(transformedData[dateKey]));
-        if (parsed !== null) {
-          transformedData[dateKey] = parsed;
-          logger.debug(`Normalized date ${dateKey}: ${String(transformedData[dateKey])} -> ${parsed}`);
-        }
-      }
-    }
+    // Detect whether the user explicitly provided an end_date for tickets
+    // This needs to be declared at function level so it's accessible later
+    let userProvidedEndDate = false;
 
     // Validate required fields for creation
     if (!id) {
@@ -120,6 +77,8 @@ export async function createUpdatePost(
       if (postType === 'ticket') {
         // Detect whether the user explicitly provided an end_date. If they did,
         // we will respect it and not apply automatic capping later.
+        userProvidedEndDate = Object.prototype.hasOwnProperty.call(data, 'end_date');
+
         // Normalize event_id to event field
         if (transformedData.event_id && !transformedData.event) {
           transformedData.event = transformedData.event_id;
@@ -133,7 +92,7 @@ export async function createUpdatePost(
         // If no sale dates provided, we need to fetch the event to set defaults
         // Note: These are soft requirements - tickets won't display/be available outside these dates
         // The start_date and end_date fields control when tickets are available for purchase
-       if (!transformedData.start_date || !transformedData.end_date) {
+        if (!transformedData.start_date || !transformedData.end_date) {
           const eventId = transformedData.event || transformedData.event_id;
           logger.debug(`Fetching event ${eventId} to calculate ticket sale dates`);
 
@@ -185,7 +144,7 @@ export async function createUpdatePost(
         if (!transformedData.provider) {
           transformedData.provider = 'Tickets Commerce';
           logger.info('Set default ticket provider to "Tickets Commerce"');
-         }
+        }
 
         // We will enforce capping after ticket creation only when the end_date
         // was not provided by the user.
@@ -261,8 +220,6 @@ export async function createUpdatePost(
     // user explicitly provided an end_date in the input.
     if (!id && postType === 'ticket') {
       try {
-        const userProvidedEndDate = Object.prototype.hasOwnProperty.call(data, 'end_date');
-
         if (!userProvidedEndDate && result && result.id && (result as any).event_id) {
           const eventIdForCap = (result as any).event_id as number;
           const event = await apiClient.getPost('event', eventIdForCap);
