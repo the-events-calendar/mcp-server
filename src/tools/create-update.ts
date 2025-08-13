@@ -12,7 +12,7 @@ import { generateToolDescription } from '../utils/example-generator.js';
 export const CreateUpdateSchema = z.object({
   postType: PostTypeSchema.describe('The type of post to create or update (event, venue, organizer, or ticket)'),
   id: z.number().optional().describe('Post ID (required for updates, omit for creation)'),
-  data: z.record(z.string(), z.any()).describe('The post data. Required fields depend on postType: Event (title, start_date, end_date), Venue (title or venue, address, city, country), Organizer (title or organizer), Ticket (title, event). Note: For Venue and Organizer, you can use "title" which will be converted to the appropriate field. For Tickets, sales dates default to 1 week before event (start) and event start date (end) if not specified. User-specified ticket end_date will always override the default capping to the event start date.'),
+  data: z.record(z.string(), z.any()).describe('The post data. Required fields depend on postType: Event (title, start_date, end_date), Venue (title or venue, address, city, country), Organizer (title or organizer), Ticket (title, event). Note: For Venue and Organizer, you can use "title" which will be converted to the appropriate field. For Tickets, all date fields must be in Y-m-d H:i:s format (e.g., "2024-12-25 15:30:00"). Sales dates default to 1 week before event (start) and event start date (end) if not specified. User-specified ticket end_date will always override the default capping to the event start date.'),
 });
 
 /**
@@ -21,7 +21,7 @@ export const CreateUpdateSchema = z.object({
 export const CreateUpdateInputSchema = {
   postType: PostTypeSchema.describe('The type of post to create or update (event, venue, organizer, or ticket)'),
   id: z.number().optional().describe('Post ID (required for updates, omit for creation)'),
-  data: z.record(z.string(), z.any()).describe('The post data. Required fields depend on postType: Event (title, start_date, end_date), Venue (title or venue, address, city, country), Organizer (title or organizer), Ticket (title, event). Note: For Venue and Organizer, you can use "title" which will be converted to the appropriate field. For Tickets, sales dates default to 1 week before event (start) and event start date (end) if not specified. User-specified ticket end_date will always override the default capping to the event start date.'),
+  data: z.record(z.string(), z.any()).describe('The post data. Required fields depend on postType: Event (title, start_date, end_date), Venue (title or venue, address, city, country), Organizer (title or organizer), Ticket (title, event). Note: For Venue and Organizer, you can use "title" which will be converted to the appropriate field. For Tickets, all date fields must be in Y-m-d H:i:s format (e.g., "2024-12-25 15:30:00"). Sales dates default to 1 week before event (start) and event start date (end) if not specified. User-specified ticket end_date will always override the default capping to the event start date.'),
 };
 
 /**
@@ -279,7 +279,7 @@ export const CreateUpdateJsonSchema = {
     },
     data: {
       type: 'object' as const,
-       description: 'The post data. Required fields depend on postType: Event (title, start_date, end_date), Venue (title or venue, address, city, country), Organizer (title or organizer), Ticket (title, event_id or event). Note: For Venue and Organizer, you can use "title" which will be converted to the appropriate field. For Tickets, sales dates default to 1 week before event (start) and event start date (end) if not specified. By default, ticket end_date will be capped to the event start date unless allow_end_after_event: true is provided. ⚠️ ALWAYS call tec-calendar-current-datetime tool FIRST before setting any date/time fields to ensure correct relative dates.',
+       description: 'The post data. Required fields depend on postType: Event (title, start_date, end_date), Venue (title or venue, address, city, country), Organizer (title or organizer), Ticket (title, event_id or event). Note: For Venue and Organizer, you can use "title" which will be converted to the appropriate field. For Tickets, all date fields must be in Y-m-d H:i:s format (e.g., "2024-12-25 15:30:00"). Sales dates default to 1 week before event (start) and event start date (end) if not specified. By default, ticket end_date will be capped to the event start date unless allow_end_after_event: true is provided. ⚠️ For Events, call tec-calendar-current-datetime tool FIRST before setting any date/time fields to ensure correct relative dates.',
       additionalProperties: true
     }
   },
@@ -301,7 +301,7 @@ For updating: provide postType, id, and data.
 
 **FREE TICKETS**: To create free tickets, omit the price field entirely. WordPress will automatically default to price 0. Do NOT set price to 0 explicitly as this triggers validation errors. Both Tickets Commerce and RSVP providers support free tickets when the price field is omitted.
 
-**TICKET AVAILABILITY DATES**: Use start_date and end_date fields to control when tickets are available for purchase. start_date is when tickets become available, end_date is when sales stop (typically the event start time). If not provided, defaults to 1 week before event (start) and event start time (end). By default, end_date will be capped to the event start unless you pass allow_end_after_event: true.
+**TICKET AVAILABILITY DATES**: Use start_date and end_date fields to control when tickets are available for purchase. start_date is when tickets become available, end_date is when sales stop (typically the event start time). All ticket date fields must be in Y-m-d H:i:s format (e.g., "2024-12-25 15:30:00"). If not provided, defaults to 1 week before event (start) and event start time (end). By default, end_date will be capped to the event start unless you pass allow_end_after_event: true.
 
 **SALE PRICING**: To offer tickets at a reduced price during specific periods:
 - price: Regular ticket price
@@ -318,6 +318,8 @@ Example: Regular $50 ticket on sale for $35 from Dec 1-15:
   "sale_price_end_date": "2024-12-15 23:59:59"
 }
 \`\`\`
+
+**NOTE**: All ticket date fields (start_date, end_date, sale_price_start_date, sale_price_end_date) must be provided in Y-m-d H:i:s format. Natural language dates like "now", "tomorrow", "+1 day" are NOT supported for tickets.
 
 **UNLIMITED TICKETS**: To create unlimited tickets, set manage_stock to false. When manage_stock is false, the stock field will automatically be set to -1 for unlimited availability.`,
     ['event', 'venue', 'organizer', 'ticket'] as PostType[]

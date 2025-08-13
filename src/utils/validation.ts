@@ -94,6 +94,12 @@ export const OrganizerDataSchema = BasePostUpdateSchema.extend({
 });
 
 /**
+ * Date format validation for tickets - only accepts Y-m-d H:i:s format
+ */
+const TicketDateSchema = z.string()
+  .regex(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/, 'Date must be in Y-m-d H:i:s format (e.g., "2024-12-25 15:30:00")');
+
+/**
  * Ticket-specific update fields
  */
 export const TicketDataSchema = BasePostUpdateSchema.extend({
@@ -109,23 +115,23 @@ export const TicketDataSchema = BasePostUpdateSchema.extend({
     .describe('Stock keeping unit for inventory tracking'),
   provider: z.string().optional()
     .describe('Ticketing provider (defaults to "Tickets Commerce" if not specified)'),
-  start_date: z.string().optional()
-    .describe('When ticket sales start (Y-m-d H:i:s format, defaults to 1 week before event). Soft requirement: tickets not visible before this date'),
-  end_date: z.string().optional()
-    .describe('When ticket sales end (Y-m-d H:i:s format, defaults to event start date). Soft requirement: tickets not available after this date'),
+  start_date: TicketDateSchema.optional()
+    .describe('When ticket sales start (must be in Y-m-d H:i:s format, e.g., "2024-12-25 15:30:00"). Defaults to 1 week before event if not provided. Tickets not visible before this date.'),
+  end_date: TicketDateSchema.optional()
+    .describe('When ticket sales end (must be in Y-m-d H:i:s format, e.g., "2024-12-25 23:59:59"). Defaults to event start date if not provided. Tickets not available after this date.'),
   manage_stock: z.boolean().optional()
     .describe('Enable inventory tracking. Set to false for unlimited tickets.'),
   show_description: z.boolean().optional()
     .describe('Display description on frontend'),
   sale_price: z.number().gte(0).optional()
     .describe('Discounted/sale price. Must be 0 or greater. Use 0 for free tickets (will be omitted from API call).'),
-  sale_price_start_date: z.string().optional()
-    .describe('When sale price starts (Y-m-d H:i:s format)'),
-  sale_price_end_date: z.string().optional()
-    .describe('When sale price ends (Y-m-d H:i:s format)'),
+  sale_price_start_date: TicketDateSchema.optional()
+    .describe('When sale price starts (must be in Y-m-d H:i:s format, e.g., "2024-12-01 00:00:00")'),
+  sale_price_end_date: TicketDateSchema.optional()
+    .describe('When sale price ends (must be in Y-m-d H:i:s format, e.g., "2024-12-15 23:59:59")'),
 }).meta({
   title: 'Ticket Update Data',
-  description: 'Fields that can be updated on a ticket post',
+  description: 'Fields that can be updated on a ticket post. All date fields must use Y-m-d H:i:s format.',
 });
 
 /**
