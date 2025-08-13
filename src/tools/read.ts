@@ -107,13 +107,13 @@ export async function readPost(
   apiClient: ApiClient
 ) {
   const logger = getLogger();
-  
+
   try {
     // Validate input
     const parsedInput = ReadSchema.parse(input);
     const { postType, id, query, page, per_page, order, orderby, status, include, exclude,
             eventFilters, venueFilters, organizerFilters, ticketFilters } = parsedInput;
-    
+
     logger.verbose(`Reading ${postType}`, { id, query, hasFilters: !!(eventFilters || venueFilters || organizerFilters || ticketFilters) });
 
     let result;
@@ -128,7 +128,7 @@ export async function readPost(
     } else {
       // Prepare filters based on post type
       let typeSpecificFilters = {};
-      
+
       switch (postType) {
         case 'event':
           typeSpecificFilters = eventFilters || {};
@@ -143,9 +143,9 @@ export async function readPost(
           typeSpecificFilters = ticketFilters || {};
           break;
       }
-      
+
       // Combine common filters with type-specific filters
-      const searchFilters = {
+      const searchFilters: any = {
         page,
         per_page,
         order,
@@ -156,7 +156,26 @@ export async function readPost(
         search: query,
         ...typeSpecificFilters,
       };
-      
+
+  // If eventFilters contain start_date/end_date provided as natural-language
+  // strings, normalize them to YYYY-MM-DD here so the REST API receives
+  // consistent values. We only accept YYYY-MM-DD for read filters.
+  if (searchFilters.eventFilters) {
+    const ef: any = searchFilters.eventFilters;
+    for (const key of [ 'start_date', 'end_date' ]) {
+      if (ef[key] && typeof ef[key] === 'string') {
+        const d = new Date(ef[key]);
+        if (!Number.isNaN(d.getTime())) {
+          const yyyy = d.getFullYear();
+          const mm = String(d.getMonth() + 1).padStart(2, '0');
+          const dd = String(d.getDate()).padStart(2, '0');
+          ef[key] = `${yyyy}-${mm}-${dd}`;
+        }
+      }
+    }
+    searchFilters.eventFilters = ef;
+  }
+
       logger.debug('Applied filters:', searchFilters);
 
       // List or search posts
@@ -165,13 +184,13 @@ export async function readPost(
       } else {
         logger.info(`Listing ${postType}s`, { filters: Object.keys(typeSpecificFilters) });
       }
-      
+
       result = await apiClient.listPosts(postType as PostType, searchFilters || {});
-      
+
       const posts = Array.isArray(result) ? result : [result];
       const count = posts.length;
       logger.debug(`Found ${count} ${postType}(s)`);
-      
+
       if (query) {
         const searchTerm = query;
         resultDescription = `Found ${count} ${postType}${count !== 1 ? 's' : ''} matching "${searchTerm}"`;

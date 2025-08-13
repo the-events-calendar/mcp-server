@@ -40,6 +40,7 @@ export async function createUpdatePost(
 
     // Transform data for venue and organizer
     const transformedData = { ...data };
+
     if (postType === 'venue' || postType === 'organizer') {
       // If title is provided, also set it as venue/organizer field
       if (transformedData.title) {
@@ -52,6 +53,53 @@ export async function createUpdatePost(
         logger.debug(`Set title from ${postType} field:`, transformedData[postType]);
       }
       // If neither is provided, that's an error we'll catch in validation
+    }
+
+    // Normalize standard date formats to MySQL 'Y-m-d H:i:s' format.
+    // Pass through natural language strings (like "tomorrow 10am", "+1 day") to WordPress for parsing.
+    const isMysqlDatetime = (s: string) => /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/.test(s);
+    const isStandardFormat = (s: string) => {
+      // Match formats like "2025-08-13 08:00:00", "December 15, 2024 7:00 PM", etc.
+      // but NOT natural language like "tomorrow", "+1 day", etc.
+      const naturalLanguagePattern = /\b(tomorrow|yesterday|today|next|last|\+\d+|\-\d+|now)\b/i;
+      return !naturalLanguagePattern.test(s);
+    };
+
+    const pad = (n: number) => String(n).padStart(2, '0');
+    const formatMysql = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+
+    const parseToMysql = (value: string): string | null => {
+      const v = value.trim();
+
+      // Already in MySQL format
+      if (isMysqlDatetime(v)) {
+        return v;
+      }
+
+      // Skip natural language - let WordPress handle these
+      if (!isStandardFormat(v)) {
+        logger.debug(`Passing natural language date to WordPress: ${v}`);
+        return null; // Return null to keep original value
+      }
+
+      // Try to parse standard formats
+      const dt = new Date(v);
+      if (Number.isNaN(dt.getTime())) {
+        logger.debug(`Failed to parse date, passing to WordPress: ${v}`);
+        return null;
+      }
+
+      return formatMysql(dt);
+    };
+
+    for (const dateKey of [ 'start_date', 'end_date', 'sale_price_start_date', 'sale_price_end_date' ]) {
+      if (Object.prototype.hasOwnProperty.call(transformedData, dateKey) && typeof transformedData[dateKey] === 'string') {
+        const parsed = parseToMysql(String(transformedData[dateKey]));
+        if (parsed !== null) {
+          transformedData[dateKey] = parsed;
+          logger.debug(`Normalized date ${dateKey}: ${String(transformedData[dateKey])} -> ${parsed}`);
+        }
+      }
     }
 
     // Validate required fields for creation
