@@ -315,12 +315,12 @@ Example: Regular $50 ticket on sale for $35 from Dec 1-15:
 {
   "price": 50,
   "sale_price": 35,
-  "sale_price_start_date": "2024-12-01 00:00:00",
-  "sale_price_end_date": "2024-12-15 23:59:59"
+  "sale_price_start_date": "2024-12-01",
+  "sale_price_end_date": "2024-12-15"
 }
 \`\`\`
 
-**NOTE**: All ticket date fields (start_date, end_date, sale_price_start_date, sale_price_end_date) must be provided in Y-m-d H:i:s format. Natural language dates like "now", "tomorrow", "+1 day" are NOT supported for tickets.
+**NOTE**: Ticket availability dates (start_date, end_date) must be provided in Y-m-d H:i:s format. Sale price dates (sale_price_start_date, sale_price_end_date) must be provided in YYYY-MM-DD format. Natural language dates like "now", "tomorrow", "+1 day" are NOT supported for tickets.
 
 **UNLIMITED TICKETS**: To create unlimited tickets, set manage_stock to false. When manage_stock is false, the stock field will automatically be set to -1 for unlimited availability.`,
     ['event', 'venue', 'organizer', 'ticket'] as PostType[]

@@ -100,6 +100,12 @@ const TicketDateSchema = z.string()
   .regex(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/, 'Date must be in Y-m-d H:i:s format (e.g., "2024-12-25 15:30:00")');
 
 /**
+ * Date format validation for sale prices - only accepts YYYY-MM-DD format
+ */
+const SalePriceDateSchema = z.string()
+  .regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be in YYYY-MM-DD format (e.g., "2024-12-01")');
+
+/**
  * Ticket-specific update fields
  */
 export const TicketDataSchema = BasePostUpdateSchema.extend({
@@ -125,10 +131,10 @@ export const TicketDataSchema = BasePostUpdateSchema.extend({
     .describe('Display description on frontend'),
   sale_price: z.number().gte(0).optional()
     .describe('Discounted/sale price. Must be 0 or greater. Use 0 for free tickets (will be omitted from API call).'),
-  sale_price_start_date: TicketDateSchema.optional()
-    .describe('When sale price starts (must be in Y-m-d H:i:s format, e.g., "2024-12-01 00:00:00")'),
-  sale_price_end_date: TicketDateSchema.optional()
-    .describe('When sale price ends (must be in Y-m-d H:i:s format, e.g., "2024-12-15 23:59:59")'),
+  sale_price_start_date: SalePriceDateSchema.optional()
+    .describe('When sale price starts (must be in YYYY-MM-DD format, e.g., "2024-12-01")'),
+  sale_price_end_date: SalePriceDateSchema.optional()
+    .describe('When sale price ends (must be in YYYY-MM-DD format, e.g., "2024-12-15")'),
 }).meta({
   title: 'Ticket Update Data',
   description: 'Fields that can be updated on a ticket post. All date fields must use Y-m-d H:i:s format.',
