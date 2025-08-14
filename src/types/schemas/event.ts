@@ -215,7 +215,7 @@ export const EventRequestSchema = BasePostRequestSchema.extend({
   tribe_events_cat: z.array(z.number().int().positive())
     .optional()
     .describe('The terms assigned to the entity in the tribe_events_cat taxonomy'),
-  
+
   // Event date/time fields (following API pattern: YYYY-MM-DD HH:MM:SS)
   start_date: z.string()
     .regex(/^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}$/, 'Date must be in YYYY-MM-DD HH:MM:SS format')
@@ -231,7 +231,7 @@ export const EventRequestSchema = BasePostRequestSchema.extend({
     .regex(/^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}$/, 'Date must be in YYYY-MM-DD HH:MM:SS format')
     .optional()
     .describe('The end date of the event in UTC'),
-  
+
   // Event properties
   timezone: z.string().optional().describe('The timezone of the event'),
   duration: z.number().int().positive().optional().describe('The duration of the event in seconds'),
@@ -239,7 +239,7 @@ export const EventRequestSchema = BasePostRequestSchema.extend({
   featured: z.boolean().optional().describe('Whether the event is featured'),
   sticky: z.boolean().optional().describe('Whether the event is sticky'),
   cost: z.string().optional().describe('The cost of the event'),
-  
+
   // Related entities (as ID arrays, not nested objects)
   organizers: z.array(z.number().int().positive())
     .optional()
@@ -247,7 +247,7 @@ export const EventRequestSchema = BasePostRequestSchema.extend({
   venues: z.array(z.number().int().positive())
     .optional()
     .describe('The venues of the event'),
-  
+
   // Pro-specific fields
   virtual: z.boolean().optional().describe('Whether the event is virtual'),
   lat: z.number().optional().describe('The latitude of the event'),
