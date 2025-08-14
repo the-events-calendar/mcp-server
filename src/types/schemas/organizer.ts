@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { BasePostSchema } from './base.js';
+import { BasePostSchema, BasePostRequestSchema } from './base.js';
 
 /**
  * Organizer post type schema
@@ -120,6 +120,41 @@ export const OrganizerSchema = BasePostSchema.extend({
 });
 
 /**
- * Type export
+ * Organizer request schema for creating/updating organizers
+ * Based on the TEC REST API Organizer_Request_Body schema
+ */
+export const OrganizerRequestSchema = BasePostRequestSchema.extend({
+  // Organizer-specific fields
+  phone: z.string().optional().describe('The organizer\'s phone number'),
+  website: z.string().url().optional().describe('The organizer\'s website'),
+  email: z.string().email().optional().describe('The organizer\'s email address'),
+}).meta({
+  title: 'Organizer Request Body',
+  description: 'Schema for creating or updating organizer posts via the REST API',
+  examples: [
+    {
+      title: 'Local Arts Council',
+      status: 'publish',
+      email: 'info@localartscouncil.org',
+      website: 'https://localartscouncil.org',
+      phone: '(555) 123-4567',
+    },
+    {
+      title: 'DJ Mike Stevens',
+      email: 'bookings@djmikestevens.com',
+      phone: '+1-555-DJ-MIKE',
+      website: 'https://djmikestevens.example.com',
+    },
+    {
+      title: 'Tech Innovators Conference Group',
+      email: 'events@techinnovators.io',
+      website: 'https://conference.techinnovators.io',
+    },
+  ],
+});
+
+/**
+ * Type exports
  */
 export type Organizer = z.infer<typeof OrganizerSchema>;
+export type OrganizerRequest = z.infer<typeof OrganizerRequestSchema>;

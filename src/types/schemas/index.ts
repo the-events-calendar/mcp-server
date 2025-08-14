@@ -10,7 +10,7 @@ export {
 } from './base.js';
 export { EventSchema } from './event.js';
 export { VenueSchema } from './venue.js';
-export { OrganizerSchema } from './organizer.js';
+export { OrganizerSchema, OrganizerRequestSchema } from './organizer.js';
 export {
   TicketSchema,
   TicketRequestSchema,
@@ -26,7 +26,7 @@ export type {
 } from './base.js';
 export type { Event } from './event.js';
 export type { Venue } from './venue.js';
-export type { Organizer } from './organizer.js';
+export type { Organizer, OrganizerRequest } from './organizer.js';
 export type {
   Ticket,
   TicketRequest,
@@ -36,7 +36,7 @@ export type {
 // Import schemas for union and utility functions
 import { EventSchema } from './event.js';
 import { VenueSchema } from './venue.js';
-import { OrganizerSchema } from './organizer.js';
+import { OrganizerSchema, OrganizerRequestSchema } from './organizer.js';
 import { TicketSchema, TicketRequestSchema } from './ticket.js';
 
 /**
@@ -93,7 +93,7 @@ export function getRequestSchemaForPostType(postType: PostType) {
     case 'venue':
       return VenueSchema; // TODO: Create VenueRequestSchema when needed
     case 'organizer':
-      return OrganizerSchema; // TODO: Create OrganizerRequestSchema when needed
+      return OrganizerRequestSchema;
     case 'ticket':
       return TicketRequestSchema;
   }
