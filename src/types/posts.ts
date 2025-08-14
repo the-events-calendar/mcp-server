@@ -8,10 +8,20 @@ export interface BasePost {
   status: 'publish' | 'draft' | 'pending' | 'private' | 'trash' | 'future';
   date: string;
   date_gmt: string;
-  modified: string;
-  modified_gmt: string;
+  modified?: string;
+  modified_gmt?: string;
   link?: string;
   type: string;
+  content?: string;
+  excerpt?: string;
+  author?: number;
+  featured_media?: number;
+  comment_status?: 'open' | 'closed';
+  ping_status?: 'open' | 'closed';
+  format?: string;
+  sticky?: boolean;
+  template?: string;
+  tags?: number[];
 }
 
 /**
@@ -95,12 +105,13 @@ export interface Organizer extends BasePost {
  * Ticket post type from Event Tickets
  */
 export interface Ticket extends BasePost {
-  type: 'tribe_rsvp_tickets' | 'tec_tc_ticket';
+  type: 'default' | 'tribe_rsvp_tickets' | 'tec_tc_ticket';
   event?: number;
   event_id?: number;
   price?: string | number;
   stock?: number;
   capacity?: number;
+  event_capacity?: number;
   availability?: {
     status: 'available' | 'sold_out' | 'unavailable';
     available: number;
@@ -117,6 +128,11 @@ export interface Ticket extends BasePost {
   sale_price?: string | number;
   sale_price_start_date?: string;
   sale_price_end_date?: string;
+  stock_mode?: 'own' | 'global' | 'capped';
+  attendee_collection?: 'allowed' | 'required' | 'disabled';
+  sold?: number;
+  on_sale?: boolean;
+  description?: string;
 }
 
 /**

@@ -1,10 +1,16 @@
 // Re-export types from schemas folder
 export type {
   BasePost,
+  BasePostRequest,
+  BasePostResponse,
   Event,
+  EventRequest,
   Venue,
+  VenueRequest,
   Organizer,
-  Ticket,
+  OrganizerRequest,
+  TicketResponse,
+  TicketRequest,
   SupportedPost,
   PostType,
   PostTypeMap,
@@ -13,13 +19,20 @@ export type {
 // Keep exporting schemas as well
 export {
   BasePostSchema,
+  BasePostRequestSchema,
+  BasePostResponseSchema,
   EventSchema,
+  EventRequestSchema,
   VenueSchema,
+  VenueRequestSchema,
   OrganizerSchema,
+  OrganizerRequestSchema,
   TicketSchema,
+  TicketRequestSchema,
   SupportedPostSchema,
   PostTypeSchema,
   getSchemaForPostType,
+  getRequestSchemaForPostType,
 } from './schemas/index.js';
 
 // Keep exporting API types

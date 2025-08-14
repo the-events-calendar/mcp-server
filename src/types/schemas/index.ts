@@ -2,24 +2,40 @@ import { z } from 'zod';
 import { PostType } from './base.js';
 
 // Re-export all schemas
-export { BasePostSchema, PostTypeSchema } from './base.js';
-export { EventSchema } from './event.js';
-export { VenueSchema } from './venue.js';
-export { OrganizerSchema } from './organizer.js';
-export { TicketSchema } from './ticket.js';
+export {
+  BasePostSchema,
+  BasePostRequestSchema,
+  BasePostResponseSchema,
+  PostTypeSchema
+} from './base.js';
+export { EventSchema, EventRequestSchema } from './event.js';
+export { VenueSchema, VenueRequestSchema } from './venue.js';
+export { OrganizerSchema, OrganizerRequestSchema } from './organizer.js';
+export {
+  TicketSchema,
+  TicketRequestSchema
+} from './ticket.js';
 
 // Re-export all types
-export type { BasePost, PostType } from './base.js';
-export type { Event } from './event.js';
-export type { Venue } from './venue.js';
-export type { Organizer } from './organizer.js';
-export type { Ticket } from './ticket.js';
+export type {
+  BasePost,
+  BasePostRequest,
+  BasePostResponse,
+  PostType
+} from './base.js';
+export type { Event, EventRequest } from './event.js';
+export type { Venue, VenueRequest } from './venue.js';
+export type { Organizer, OrganizerRequest } from './organizer.js';
+export type {
+  TicketResponse,
+  TicketRequest
+} from './ticket.js';
 
 // Import schemas for union and utility functions
-import { EventSchema } from './event.js';
-import { VenueSchema } from './venue.js';
-import { OrganizerSchema } from './organizer.js';
-import { TicketSchema } from './ticket.js';
+import { EventSchema, EventRequestSchema } from './event.js';
+import { VenueSchema, VenueRequestSchema } from './venue.js';
+import { OrganizerSchema, OrganizerRequestSchema } from './organizer.js';
+import { TicketSchema, TicketRequestSchema } from './ticket.js';git
 
 /**
  * Union schema for all supported post types
@@ -50,7 +66,7 @@ export interface PostTypeMap {
 }
 
 /**
- * Get the Zod schema for a specific post type
+ * Get the Zod schema for a specific post type (response/read operations)
  */
 export function getSchemaForPostType(postType: PostType) {
   switch (postType) {
@@ -62,5 +78,21 @@ export function getSchemaForPostType(postType: PostType) {
       return OrganizerSchema;
     case 'ticket':
       return TicketSchema;
+  }
+}
+
+/**
+ * Get the Zod request schema for a specific post type (create/update operations)
+ */
+export function getRequestSchemaForPostType(postType: PostType) {
+  switch (postType) {
+    case 'event':
+      return EventRequestSchema;
+    case 'venue':
+      return VenueRequestSchema;
+    case 'organizer':
+      return OrganizerRequestSchema;
+    case 'ticket':
+      return TicketRequestSchema;
   }
 }

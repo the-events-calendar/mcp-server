@@ -13,7 +13,7 @@ The MCP server provides three main tools:
 All tools support four post types:
 - `event` - Calendar events
 - `venue` - Event locations
-- `organizer` - Event organizers  
+- `organizer` - Event organizers
 - `ticket` - Event tickets
 
 ## Tool Usage Examples
@@ -113,8 +113,8 @@ This tool creates new posts or updates existing ones. If you provide an `id`, it
     "event_id": 123,
     "price": 150.00,
     "sale_price": 120.00,
-    "sale_price_start_date": "2025-02-01 00:00:00",
-    "sale_price_end_date": "2025-02-28 23:59:59",
+    "sale_price_start_date": "2025-02-01",
+    "sale_price_end_date": "2025-02-28",
     "description": "Premium VIP package",
     "stock": 30,
     "manage_stock": true,
@@ -126,6 +126,25 @@ This tool creates new posts or updates existing ones. If you provide an `id`, it
   }
 }
 ```
+
+**Unlimited Tickets Example**:
+```json
+{
+  "postType": "ticket",
+  "data": {
+    "title": "General Admission",
+    "event_id": 123,
+    "price": 25.00,
+    "manage_stock": false,
+    "description": "Unlimited general admission tickets",
+    "start_date": "2025-01-15 10:00:00",
+    "end_date": "2025-03-15 23:59:59",
+    "status": "publish"
+  }
+}
+```
+
+**Note**: When `manage_stock` is set to `false`, the system automatically sets `stock_mode` to "unlimited" for unlimited availability.
 
 #### Updating an Existing Post
 
@@ -458,18 +477,19 @@ These filters are available for all post types at the top level:
 - `title` (required) - Ticket type name
 - `event_id` or `event` (required) - ID of the associated event
 - `price` - Ticket price (number or string)
-- `stock` - Total number of tickets available
-- `manage_stock` - Enable inventory tracking (boolean)
+- `stock` - Total number of tickets available (use -1 for unlimited when `manage_stock` is false)
+- `manage_stock` - Enable inventory tracking (boolean, set to false for unlimited tickets)
 - `capacity` - Maximum capacity for this ticket type
 - `start_date` - When ticket sales start (soft requirement, defaults to 1 week before event) - Controls ticket visibility
 - `end_date` - When ticket sales end (soft requirement, defaults to event start date) - Controls ticket availability
 - `sale_price` - Discounted price (number or string)
-- `sale_price_start_date` - When sale price starts
-- `sale_price_end_date` - When sale price ends
+- `sale_price_start_date` - When sale price starts (YYYY-MM-DD format)
+- `sale_price_end_date` - When sale price ends (YYYY-MM-DD format)
 - `show_description` - Display description on frontend (boolean)
 - `sku` - Stock keeping unit for inventory tracking
 - `description` - Ticket description
 - `provider` - Ticketing provider (defaults to "Tickets Commerce")
+- `stock_mode` - Stock management mode ("own", "capped", "global", "unlimited") - automatically set when `manage_stock` is false
 - `status` - Publication status
 
 ## Error Handling
@@ -615,5 +635,26 @@ You can also mix existing IDs with new data to create:
   }
 }
 ```
+
+## Important Notes
+
+### Date Format Requirements
+
+**Events**: Support natural language dates and multiple formats:
+- Natural language: `"tomorrow 2pm"`, `"next Monday"`, `"+3 days"`
+- ISO 8601: `"2024-12-25T15:00:00"`
+- Standard format: `"2024-12-25 15:00:00"`
+
+**Tickets**: Require strict date formatting:
+- `start_date` and `end_date`: `"YYYY-MM-DD HH:MM:SS"` format (e.g., "2024-12-25 15:30:00")
+- `sale_price_start_date` and `sale_price_end_date`: `"YYYY-MM-DD"` format (e.g., "2024-12-01")
+- **Note**: Natural language dates are NOT supported for tickets
+
+### Unlimited Tickets
+
+To create unlimited tickets, set `manage_stock: false`. The system will automatically:
+- Set `stock_mode` to "unlimited"
+- Set `stock` to -1
+- Disable inventory tracking
 
 This guide should help you use The Events Calendar MCP tools effectively. Remember to check the responses for any errors and adjust your requests accordingly.

@@ -100,15 +100,21 @@ const TicketDateSchema = z.string()
   .regex(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/, 'Date must be in Y-m-d H:i:s format (e.g., "2024-12-25 15:30:00")');
 
 /**
+ * Date format validation for sale prices - only accepts YYYY-MM-DD format
+ */
+const SalePriceDateSchema = z.string()
+  .regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be in YYYY-MM-DD format (e.g., "2024-12-01")');
+
+/**
  * Ticket-specific update fields
  */
 export const TicketDataSchema = BasePostUpdateSchema.extend({
-  event: z.number().int().positive()
-    .describe('ID of the associated event (required for creation)'),
+  event: z.number().int().positive().optional()
+    .describe('ID of the associated event (required for creation, optional for updates)'),
   price: z.number().gte(0).optional()
     .describe('Ticket price. Must be greater than 0. For free tickets, omit this field entirely - do NOT set to 0.'),
   stock: z.number().optional()
-    .describe('Total number of tickets available. Use -1 for unlimited tickets when manage_stock is false.'),
+    .describe('Total number of tickets available. When stock_mode is set to "unlimited", stock tracking is disabled.'),
   capacity: z.number().optional()
     .describe('Maximum capacity for this ticket type.'),
   sku: z.string().optional()
@@ -120,15 +126,17 @@ export const TicketDataSchema = BasePostUpdateSchema.extend({
   end_date: TicketDateSchema.optional()
     .describe('When ticket sales end (must be in Y-m-d H:i:s format, e.g., "2024-12-25 23:59:59"). Defaults to event start date if not provided. Tickets not available after this date.'),
   manage_stock: z.boolean().optional()
-    .describe('Enable inventory tracking. Set to false for unlimited tickets.'),
+    .describe('Enable inventory tracking. Set to false for unlimited tickets (will automatically set stock_mode to "unlimited").'),
+  stock_mode: z.enum(['own', 'capped', 'global', 'unlimited']).optional()
+    .describe('Stock management mode. Use "unlimited" for unlimited tickets.'),
   show_description: z.boolean().optional()
     .describe('Display description on frontend'),
   sale_price: z.number().gte(0).optional()
     .describe('Discounted/sale price. Must be 0 or greater. Use 0 for free tickets (will be omitted from API call).'),
-  sale_price_start_date: TicketDateSchema.optional()
-    .describe('When sale price starts (must be in Y-m-d H:i:s format, e.g., "2024-12-01 00:00:00")'),
-  sale_price_end_date: TicketDateSchema.optional()
-    .describe('When sale price ends (must be in Y-m-d H:i:s format, e.g., "2024-12-15 23:59:59")'),
+  sale_price_start_date: SalePriceDateSchema.optional()
+    .describe('When sale price starts (must be in YYYY-MM-DD format, e.g., "2024-12-01")'),
+  sale_price_end_date: SalePriceDateSchema.optional()
+    .describe('When sale price ends (must be in YYYY-MM-DD format, e.g., "2024-12-15")'),
 }).meta({
   title: 'Ticket Update Data',
   description: 'Fields that can be updated on a ticket post. All date fields must use Y-m-d H:i:s format.',

@@ -167,14 +167,14 @@ npx @the-events-calendar/mcp-server https://mysite.local admin "xxxx xxxx xxxx x
 Create or update a post. If an ID is provided, it updates; otherwise, it creates.
 
 **Parameters:**
-- `postType`: "tribe_events" | "tribe_venue" | "tribe_organizer" | "tribe_rsvp_tickets" | "tec_tc_ticket"
+- `postType`: "event" | "venue" | "organizer" | "ticket"
 - `id`: (optional) Post ID for updates
 - `data`: Post data object (fields depend on post type)
 
 **Example - Create Event:**
 ```json
 {
-  "postType": "tribe_events",
+  "postType": "event",
   "data": {
     "title": "My Event",
     "start_date": "2024-12-25 10:00:00",
@@ -187,7 +187,7 @@ Create or update a post. If an ID is provided, it updates; otherwise, it creates
 **Example - Create Event with Nested Venue:**
 ```json
 {
-  "postType": "tribe_events",
+  "postType": "event",
   "data": {
     "title": "Conference 2024",
     "start_date": "2024-12-25 10:00:00",
@@ -209,7 +209,7 @@ Create or update a post. If an ID is provided, it updates; otherwise, it creates
 Read a single post by ID or list posts with filters.
 
 **Parameters:**
-- `postType`: "tribe_events" | "tribe_venue" | "tribe_organizer" | "tribe_rsvp_tickets" | "tec_tc_ticket"
+- `postType`: "event" | "venue" | "organizer" | "ticket"
 - `id`: (optional) Post ID for single post
 - `query`: (optional) Search term
 - Common filters (all post types):
@@ -229,7 +229,7 @@ Read a single post by ID or list posts with filters.
 **Example - List Events:**
 ```json
 {
-  "postType": "tribe_events",
+  "postType": "event",
   "per_page": 10,
   "status": "publish",
   "eventFilters": {
@@ -242,7 +242,7 @@ Read a single post by ID or list posts with filters.
 **Example - Search Events:**
 ```json
 {
-  "postType": "tribe_events",
+  "postType": "event",
   "query": "conference",
   "per_page": 20
 }
@@ -253,14 +253,14 @@ Read a single post by ID or list posts with filters.
 Delete a post (soft delete to trash or permanent delete).
 
 **Parameters:**
-- `postType`: "tribe_events" | "tribe_venue" | "tribe_organizer" | "tribe_rsvp_tickets" | "tec_tc_ticket"
+- `postType`: "event" | "venue" | "organizer" | "ticket"
 - `id`: Post ID to delete
 - `force`: (optional) true for permanent delete, false for trash
 
 **Example:**
 ```json
 {
-  "postType": "tribe_events",
+  "postType": "event",
   "id": 123,
   "force": false
 }
@@ -309,7 +309,7 @@ Search is integrated into the `tec-calendar-read-entities` tool using the `query
 **Example:**
 ```json
 {
-  "postType": "tribe_events",
+  "postType": "event",
   "query": "conference",
   "eventFilters": {
     "start_date": "2024-12-01",
@@ -391,11 +391,11 @@ By default, the API limits results to 100 items per page. To disable this limit:
 - Or use smaller `per_page` values in your requests
 
 ### Post Type Names
-Use the full WordPress post type names:
-- Events: `tribe_events`
-- Venues: `tribe_venue`
-- Organizers: `tribe_organizer`
-- Tickets: `tribe_rsvp_tickets` or `tec_tc_ticket`
+Use the simplified post type names:
+- Events: `event`
+- Venues: `venue`
+- Organizers: `organizer`
+- Tickets: `ticket`
 
 ## Additional Resources
 

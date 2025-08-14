@@ -89,13 +89,83 @@
     - Free tickets (price = 0)
     - Paid tickets
     - Limited quantity tickets
-    - Unlimited tickets
+    - Unlimited tickets (test `manage_stock: false` → should set `stock_mode: "unlimited"` and `stock: -1`)
+
+4. **New Ticket Fields Testing** *(Updated API Structure)*:
+    - **Schema Separation**: The MCP server now uses separate schemas for requests vs responses:
+      - `TicketRequestSchema`: Only fields that can be set/modified (excludes read-only fields)
+      - `TicketResponseSchema`: All fields including read-only ones (id, date, sold, on_sale, etc.)
+
+    - Test tickets with **standard WordPress post fields** (request format):
+
+      ```json
+      {
+        "title": "VIP Experience",
+        "content": "<p>Includes backstage access and meet & greet</p>",
+        "excerpt": "<p>Premium ticket with exclusive benefits</p>",
+        "author": 1,
+        "featured_media": 123,
+        "comment_status": "open",
+        "ping_status": "closed",
+        "format": "standard",
+        "sticky": false,
+        "template": "ticket-template.php",
+        "tags": [1, 5, 10]
+      }
+      ```
+
+    - Test tickets with **new ticket-specific fields**:
+
+      ```json
+      {
+        "event": 123,
+        "price": 75.00,
+        "sale_price": 60.00,
+        "sale_price_start_date": "2024-12-01",
+        "sale_price_end_date": "2024-12-15",
+        "on_sale": true,
+        "stock": 50,
+        "sold": 10,
+        "capacity": 50,
+        "event_capacity": 200,
+        "description": "Premium ticket with exclusive access",
+        "show_description": true,
+        "stock_mode": "own",
+        "attendee_collection": "required"
+      }
+      ```
+
+    - Verify **read-only fields** are properly handled:
+      - **IMPORTANT**: Most read-only fields should NOT be included in create/update requests
+      - **Request Schema Includes**: `id` (required for updates, optional for creates)
+      - **Request Schema Excludes**: `date`, `date_gmt`, `modified`, `modified_gmt`, `link`, `sold`, `on_sale`, `event_id`
+      - **Response Schema Includes**: All fields including read-only ones
+      - **Update Operations**: Must include `id` field to specify which ticket to update
+      - **Create Operations**: Should omit `id` field (will be assigned by WordPress)
+      - **Calculated Fields**: `sold` (automatically calculated), `on_sale` (determined by sale price dates)
+      - **WordPress-Set Fields**: `date`, `modified`, `link` (set automatically by WordPress)
 
 #### 4c. Ticket Editing *(if ET is active)*
 
-1. **Price and Quantity Changes** *(same as original)*
-2. **Add/Remove Ticket Types** *(same as original)*
-3. **Advanced Ticket Features** *(if ETP is active)*:
+1. **Update Operation Testing**:
+    - Test ticket update with **ID field included**:
+
+      ```json
+      {
+        "id": 456,
+        "title": "Updated VIP Experience",
+        "price": 85.00,
+        "stock": 40,
+        "description": "Updated description with new benefits"
+      }
+      ```
+
+    - Verify update **requires ID field** to specify which ticket to modify
+    - Test that **read-only fields are ignored** if accidentally included in update requests
+
+2. **Price and Quantity Changes** *(same as original)*
+3. **Add/Remove Ticket Types** *(same as original)*
+4. **Advanced Ticket Features** *(if ETP is active)*:
     - **Scenario: ETP is active**: Use `lando wp plugin activate event-tickets-plus`. Test any ETP-specific features available via **MCP**.
 
 ---
@@ -321,14 +391,21 @@
    - Create ticket with sale pricing using properly formatted dates:
             ```json
             {
+            "title": "Early Bird Special",
+            "event": 123,
             "price": 50,
             "sale_price": 35,
-            "sale_price_start_date": "2024-12-01 00:00:00",
-            "sale_price_end_date": "2024-12-15 23:59:59"
+            "sale_price_start_date": "2024-12-01",
+            "sale_price_end_date": "2024-12-15",
+            "stock": 100,
+            "capacity": 100,
+            "show_description": true,
+            "description": "Special early bird pricing available"
             }
             ```
-   - Verify all date fields are validated:
-     - `start_date`, `end_date`, `sale_price_start_date`, `sale_price_end_date`
+   - Verify ticket date fields use different formats:
+     - `start_date`, `end_date`: Y-m-d H:i:s format (e.g., "2024-12-25 15:30:00")
+     - `sale_price_start_date`, `sale_price_end_date`: YYYY-MM-DD format (e.g., "2024-12-01")
    - Test rejection of natural language in sale price dates:
      - `sale_price_start_date: "today"` → Should reject with validation error
      - `sale_price_end_date: "+2 days"` → Should reject with validation error
@@ -341,10 +418,13 @@
 |-------------------|-----------------|---------------|------------------|
 | `start_date` | Y-m-d H:i:s | `"2024-12-25 15:30:00"` | `"now"`, `"today"`, `"tomorrow"` |
 | `end_date` | Y-m-d H:i:s | `"2024-12-25 23:59:59"` | `"+1 day"`, `"Friday 6pm"` |
-| `sale_price_start_date` | Y-m-d H:i:s | `"2024-12-01 00:00:00"` | `"today"`, `"next Monday"` |
-| `sale_price_end_date` | Y-m-d H:i:s | `"2024-12-15 23:59:59"` | `"+2 days"`, `"tomorrow"` |
+| `sale_price_start_date` | YYYY-MM-DD | `"2024-12-01"` | `"today"`, `"next Monday"`, `"2024-12-01 00:00:00"` |
+| `sale_price_end_date` | YYYY-MM-DD | `"2024-12-15"` | `"+2 days"`, `"tomorrow"`, `"2024-12-15 23:59:59"` |
 
-**Note**: Events continue to support natural language dates, but tickets require strict Y-m-d H:i:s format.
+**Note**: Events continue to support natural language dates, but tickets require strict formatting:
+
+- **Ticket availability dates** (`start_date`, `end_date`): Y-m-d H:i:s format with time component
+- **Sale pricing dates** (`sale_price_start_date`, `sale_price_end_date`): YYYY-MM-DD format (date only)
 
 **6d. Ticket Date Validation Error Handling**:
 
@@ -385,6 +465,178 @@
 - Date validation should work consistently across all creation pathways (MCP, REST API)
 - Sale price date fields should be validated with same strictness as basic date fields
 - Events continue to support natural language dates while tickets require formatted dates
+
+---
+
+## **Test 7: Unlimited Tickets Testing** *(Critical for Stock Management)*
+
+**7a. Unlimited Ticket Creation Testing:**
+
+1. **Basic Unlimited Ticket Creation**:
+   - Create ticket with `manage_stock: false` → Should automatically set `stock_mode: "unlimited"`
+   - Verify response shows `manage_stock: false` and `stock: -1`
+   - Test that ticket appears as unlimited in WordPress admin
+
+2. **Unlimited Ticket with All Fields**:
+   ```json
+   {
+     "postType": "ticket",
+     "data": {
+       "title": "Unlimited VIP",
+       "event": 123,
+       "price": 100,
+       "manage_stock": false,
+       "description": "Unlimited VIP tickets available",
+       "start_date": "2025-01-01 00:00:00",
+       "end_date": "2025-12-31 23:59:59"
+     }
+   }
+   ```
+   - Verify `stock_mode` is set to "unlimited"
+   - Verify `stock` is set to -1
+   - Verify `manage_stock` is false
+
+3. **Unlimited Ticket Edge Cases**:
+   - Test creating unlimited ticket without specifying stock/capacity
+   - Test creating unlimited ticket with explicit stock/capacity values (should be overridden)
+   - Test creating unlimited ticket with sale pricing
+
+**7b. Unlimited Ticket Validation Testing:**
+
+1. **Schema Validation**:
+   - Verify `manage_stock: false` triggers automatic `stock_mode: "unlimited"` setting
+   - Test that stock/capacity enforcement logic is skipped for unlimited tickets
+   - Verify `manage_stock` field is removed from API request (not part of WordPress API)
+
+2. **API Response Validation**:
+   - Check that WordPress returns `stock: -1` for unlimited tickets
+   - Verify `manage_stock: false` in response
+   - Test that unlimited tickets show as available for purchase
+
+**7c. Unlimited Ticket Update Testing:**
+
+1. **Convert Limited to Unlimited**:
+   - Create limited ticket with `stock: 50`
+   - Update to `manage_stock: false` → Should convert to unlimited
+   - Verify `stock` changes to -1 and `stock_mode` to "unlimited"
+
+2. **Convert Unlimited to Limited**:
+   - Create unlimited ticket with `manage_stock: false`
+   - Update to `manage_stock: true` with `stock: 25` → Should convert to limited
+   - Verify `stock` changes to 25 and `stock_mode` to "own"
+
+**7d. Unlimited Ticket Database Consistency:**
+
+1. **Database Storage Verification**:
+   - After creating unlimited ticket, verify `_ticket_stock` meta is -1
+   - Check that `_ticket_manage_stock` meta is false
+   - Verify `_ticket_stock_mode` meta is "unlimited"
+
+2. **API Read Consistency**:
+   - Create unlimited ticket via MCP
+   - Read ticket back via MCP → Should show unlimited status
+   - Read ticket via WordPress REST API → Should show unlimited status
+   - Verify both APIs return consistent unlimited ticket data
+
+**7e. Unlimited Ticket Plugin Compatibility:**
+
+1. **Event Tickets Plugin**:
+   - Test unlimited tickets with Event Tickets (ET) active
+   - Verify unlimited tickets work with Tickets Commerce provider
+   - Test unlimited tickets with RSVP provider
+
+2. **Event Tickets Plus Plugin**:
+   - Test unlimited tickets with Event Tickets Plus (ETP) active
+   - Verify unlimited tickets work with WooCommerce integration
+   - Test unlimited tickets with advanced features
+
+**Expected Unlimited Ticket Behavior:**
+
+- **Creation**: `manage_stock: false` → automatic `stock_mode: "unlimited"` + `stock: -1`
+- **Response**: WordPress returns `stock: -1` and `manage_stock: false`
+- **Database**: Meta fields properly set for unlimited status
+- **Functionality**: Tickets show as available for unlimited purchase
+- **Updates**: Can convert between limited and unlimited status
+
+**Production Readiness Criteria for Unlimited Tickets:**
+
+- **NO stock validation errors** should occur when creating unlimited tickets
+- Unlimited tickets should be properly recognized by WordPress admin
+- Stock mode should be correctly set to "unlimited" in database
+- MCP and WordPress APIs should return consistent unlimited ticket data
+- Conversion between limited and unlimited should work reliably
+
+---
+
+## **Test 8: Schema Naming Consistency Testing** *(Critical for Developer Experience)*
+
+**8a. Schema Export Consistency:**
+
+1. **Verify All Post Types Have Consistent Naming**:
+   - Check that all post types export both request and response schemas
+   - Verify naming pattern: `{PostType}Schema` + `{PostType}RequestSchema`
+   - Test that `TicketSchema` (not `TicketResponseSchema`) is exported
+
+2. **Schema Naming Pattern Validation**:
+   ```typescript
+   // Expected exports from schemas/index.ts
+   export {
+     EventSchema, EventRequestSchema,        // ✅ Consistent
+     VenueSchema, VenueRequestSchema,        // ✅ Consistent
+     OrganizerSchema, OrganizerRequestSchema, // ✅ Consistent
+     TicketSchema, TicketRequestSchema,      // ✅ Consistent (was TicketResponseSchema)
+   }
+   ```
+
+3. **Type Export Consistency**:
+   ```typescript
+   // Expected type exports
+   export type {
+     Event, EventRequest,                    // ✅ Consistent
+     Venue, VenueRequest,                    // ✅ Consistent
+     Organizer, OrganizerRequest,            // ✅ Consistent
+     TicketResponse, TicketRequest,          // ✅ Consistent
+   }
+   ```
+
+**8b. Schema Usage Testing:**
+
+1. **MCP Tool Schema Usage**:
+   - Verify `getSchemaForPostType()` returns correct schemas
+   - Test that `getRequestSchemaForPostType()` returns request schemas
+   - Ensure no references to old `TicketResponseSchema` exist
+
+2. **API Client Schema Usage**:
+   - Test that API client uses correct schemas for validation
+   - Verify create/update operations use request schemas
+   - Verify read operations use response schemas
+
+**8c. Backward Compatibility Testing:**
+
+1. **Legacy Code References**:
+   - Search codebase for any remaining `TicketResponseSchema` references
+   - Verify no `TicketSchema` alias exists in ticket.ts
+   - Check that all imports use correct schema names
+
+2. **Type System Consistency**:
+   - Test that `PostTypeMap` interface uses correct schemas
+   - Verify `SupportedPostSchema` union uses correct schemas
+   - Ensure utility functions reference correct schema names
+
+**Expected Schema Naming Results:**
+
+- **All post types follow same pattern**: `{PostType}Schema` + `{PostType}RequestSchema`
+- **No legacy naming**: `TicketResponseSchema` should not exist anywhere
+- **Consistent exports**: All schemas exported from main index.ts
+- **Proper type mapping**: Request/response schemas properly mapped to types
+
+**Production Readiness Criteria for Schema Naming:**
+
+- **NO legacy schema names** should exist in codebase
+- All post types should follow consistent naming pattern
+- Schema exports should be consistent across all files
+- Type system should use correct schema references
+- Developer experience should be consistent across all post types
 
 **Architecture Verification:**
 
