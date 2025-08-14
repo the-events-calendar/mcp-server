@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { BasePostSchema } from './base.js';
+import { BasePostResponseSchema, BasePostRequestSchema } from './base.js';
 
 /**
  * Ticket availability schema
@@ -16,9 +16,9 @@ const TicketAvailabilitySchema = z.object({
 });
 
 /**
- * Ticket post type schema
+ * Ticket response schema (includes read-only fields)
  */
-export const TicketSchema = BasePostSchema.extend({
+export const TicketResponseSchema = BasePostResponseSchema.extend({
   type: z.union([
     z.literal('tribe_rsvp_tickets'),
     z.literal('tec_tc_ticket'),
@@ -49,8 +49,8 @@ export const TicketSchema = BasePostSchema.extend({
   event_id: z.number().optional().describe('ID of the associated event (alternative to event field)'),
   description: z.string().optional().describe('Ticket description text'),
 }).meta({
-  title: 'Ticket',
-  description: 'Event ticket type with pricing and date range availability, RSVPs and other providers should only be used when specifically requested.',
+  title: 'Ticket Response',
+  description: 'Event ticket as returned by the API, including read-only fields like sold count and calculated values.',
   examples: [
     {
       id: 101,
@@ -258,6 +258,45 @@ export const TicketSchema = BasePostSchema.extend({
 });
 
 /**
- * Type export
+ * Ticket request schema (only fields that can be set/modified)
  */
-export type Ticket = z.infer<typeof TicketSchema>;
+export const TicketRequestSchema = BasePostRequestSchema.extend({
+  // Ticket-specific fields that can be set
+  type: z.union([
+    z.literal('tribe_rsvp_tickets'),
+    z.literal('tec_tc_ticket'),
+    z.literal('default'), // For the new API
+  ]).describe('Ticket post type identifier (RSVP or paid ticket)').optional(),
+  event: z.number().optional().describe('ID of the associated event'),
+  price: z.union([z.string(), z.number()]).optional().describe('Ticket price (formatted with currency or number)'),
+  regular_price: z.union([z.string(), z.number()]).optional().describe('Regular price before any sale discounts'),
+  sale_price: z.union([z.string(), z.number()]).optional().describe('Discounted/sale price'),
+  sale_price_start_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be in YYYY-MM-DD format (e.g., "2024-12-01")').optional().describe('When sale price starts (must be in YYYY-MM-DD format)'),
+  sale_price_end_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be in YYYY-MM-DD format (e.g., "2024-12-15")').optional().describe('When sale price ends (must be in YYYY-MM-DD format)'),
+  stock: z.number().optional().describe('Total number of tickets available'),
+  capacity: z.number().optional().describe('Maximum capacity for this ticket type'),
+  event_capacity: z.number().optional().describe('Maximum capacity for the entire event'),
+  sku: z.string().optional().describe('Stock keeping unit for inventory tracking'),
+  start_date: z.string().regex(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/, 'Date must be in Y-m-d H:i:s format (e.g., "2024-12-25 15:30:00")').optional().describe('When ticket sales start (must be in Y-m-d H:i:s format) - tickets not visible before this'),
+  end_date: z.string().regex(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/, 'Date must be in Y-m-d H:i:s format (e.g., "2024-12-25 23:59:59")').optional().describe('When ticket sales end (must be in Y-m-d H:i:s format) - tickets not available after this'),
+  manage_stock: z.boolean().optional().describe('Enable inventory tracking'),
+  show_description: z.boolean().optional().describe('Display description on frontend'),
+  description: z.string().optional().describe('Ticket description text'),
+  stock_mode: z.enum(['own', 'global', 'capped']).optional().describe('Stock management mode for the ticket'),
+  attendee_collection: z.enum(['allowed', 'required', 'disabled']).optional().describe('Whether attendee information collection is allowed/required'),
+}).meta({
+  title: 'Ticket Request',
+  description: 'Event ticket data for create/update operations. Read-only fields like sold count and on_sale status are calculated by the API.',
+});
+
+/**
+ * Legacy schema export for backward compatibility
+ */
+export const TicketSchema = TicketResponseSchema;
+
+/**
+ * Type exports
+ */
+export type TicketResponse = z.infer<typeof TicketResponseSchema>;
+export type TicketRequest = z.infer<typeof TicketRequestSchema>;
+export type Ticket = TicketResponse; // Backward compatibility

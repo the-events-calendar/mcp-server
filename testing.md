@@ -92,7 +92,11 @@
     - Unlimited tickets
 
 4. **New Ticket Fields Testing** *(Updated API Structure)*:
-    - Test tickets with **standard WordPress post fields**:
+    - **Schema Separation**: The MCP server now uses separate schemas for requests vs responses:
+      - `TicketRequestSchema`: Only fields that can be set/modified (excludes read-only fields)
+      - `TicketResponseSchema`: All fields including read-only ones (id, date, sold, on_sale, etc.)
+    
+    - Test tickets with **standard WordPress post fields** (request format):
       ```json
       {
         "title": "VIP Experience",
@@ -129,9 +133,11 @@
       }
       ```
     - Verify **read-only fields** are properly handled:
-      - `sold`: Should be calculated automatically
-      - `on_sale`: Should be determined by sale price dates
-      - `id`, `date`, `date_gmt`, `modified`, `modified_gmt`: Should be set by WordPress
+      - **IMPORTANT**: Read-only fields should NOT be included in create/update requests
+      - **Request Schema Excludes**: `id`, `date`, `date_gmt`, `modified`, `modified_gmt`, `link`, `sold`, `on_sale`, `event_id`
+      - **Response Schema Includes**: All fields including read-only ones
+      - **Calculated Fields**: `sold` (automatically calculated), `on_sale` (determined by sale price dates)
+      - **WordPress-Set Fields**: `id`, `date`, `modified`, `link` (set automatically by WordPress)
 
 #### 4c. Ticket Editing *(if ET is active)*
 

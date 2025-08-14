@@ -2,24 +2,42 @@ import { z } from 'zod';
 import { PostType } from './base.js';
 
 // Re-export all schemas
-export { BasePostSchema, PostTypeSchema } from './base.js';
+export { 
+  BasePostSchema, 
+  BasePostRequestSchema, 
+  BasePostResponseSchema, 
+  PostTypeSchema 
+} from './base.js';
 export { EventSchema } from './event.js';
 export { VenueSchema } from './venue.js';
 export { OrganizerSchema } from './organizer.js';
-export { TicketSchema } from './ticket.js';
+export { 
+  TicketSchema, 
+  TicketRequestSchema, 
+  TicketResponseSchema 
+} from './ticket.js';
 
 // Re-export all types
-export type { BasePost, PostType } from './base.js';
+export type { 
+  BasePost, 
+  BasePostRequest, 
+  BasePostResponse, 
+  PostType 
+} from './base.js';
 export type { Event } from './event.js';
 export type { Venue } from './venue.js';
 export type { Organizer } from './organizer.js';
-export type { Ticket } from './ticket.js';
+export type { 
+  Ticket, 
+  TicketRequest, 
+  TicketResponse 
+} from './ticket.js';
 
 // Import schemas for union and utility functions
 import { EventSchema } from './event.js';
 import { VenueSchema } from './venue.js';
 import { OrganizerSchema } from './organizer.js';
-import { TicketSchema } from './ticket.js';
+import { TicketSchema, TicketRequestSchema } from './ticket.js';
 
 /**
  * Union schema for all supported post types
@@ -50,7 +68,7 @@ export interface PostTypeMap {
 }
 
 /**
- * Get the Zod schema for a specific post type
+ * Get the Zod schema for a specific post type (response/read operations)
  */
 export function getSchemaForPostType(postType: PostType) {
   switch (postType) {
@@ -61,6 +79,22 @@ export function getSchemaForPostType(postType: PostType) {
     case 'organizer':
       return OrganizerSchema;
     case 'ticket':
-      return TicketSchema;
+      return TicketSchema; // This is TicketResponseSchema
+  }
+}
+
+/**
+ * Get the Zod request schema for a specific post type (create/update operations)
+ */
+export function getRequestSchemaForPostType(postType: PostType) {
+  switch (postType) {
+    case 'event':
+      return EventSchema; // TODO: Create EventRequestSchema when needed
+    case 'venue':
+      return VenueSchema; // TODO: Create VenueRequestSchema when needed
+    case 'organizer':
+      return OrganizerSchema; // TODO: Create OrganizerRequestSchema when needed
+    case 'ticket':
+      return TicketRequestSchema;
   }
 }
