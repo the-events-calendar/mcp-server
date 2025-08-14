@@ -25,7 +25,7 @@ export type {
   PostType
 } from './base.js';
 export type { Event, EventRequest } from './event.js';
-export type { Venue } from './venue.js';
+export type { Venue, VenueRequest } from './venue.js';
 export type { Organizer, OrganizerRequest } from './organizer.js';
 export type {
   Ticket,

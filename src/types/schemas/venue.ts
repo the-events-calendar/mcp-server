@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { BasePostSchema } from './base.js';
+import { BasePostSchema, BasePostRequestSchema } from './base.js';
 
 /**
  * Venue post type schema
@@ -167,6 +167,60 @@ export const VenueSchema = BasePostSchema.extend({
 });
 
 /**
- * Type export
+ * Venue request schema for creating/updating venues
+ * Based on the TEC REST API Venue_Request_Body schema
+ */
+export const VenueRequestSchema = BasePostRequestSchema.extend({
+  // Venue-specific fields
+  address: z.string().optional().describe('The venue address'),
+  country: z.string().optional().describe('The venue country'),
+  city: z.string().optional().describe('The venue city'),
+  state_province: z.string().optional().describe('The venue state/province'),
+  state: z.string().optional().describe('The venue state'),
+  province: z.string().optional().describe('The venue province'),
+  zip: z.string().optional().describe('The venue zip code'),
+  phone: z.string().optional().describe('The venue phone number'),
+  website: z.string().url().optional().describe('The venue website'),
+
+  // Pro-specific geolocation fields
+  lat: z.number().optional().describe('The latitude of the venue'),
+  lng: z.number().optional().describe('The longitude of the venue'),
+}).meta({
+  title: 'Venue Request Body',
+  description: 'Schema for creating or updating venue posts via the REST API',
+  examples: [
+    {
+      title: 'The Grand Ballroom',
+      status: 'publish',
+      address: '456 Park Avenue',
+      city: 'New York',
+      state: 'NY',
+      zip: '10022',
+      country: 'USA',
+      phone: '+1 (212) 555-0123',
+      website: 'https://grandballroom.example.com',
+    },
+    {
+      title: 'Beachside Resort',
+      address: '1000 Coastal Highway',
+      city: 'Miami Beach',
+      state: 'FL',
+      zip: '33139',
+      country: 'US',
+      phone: '305-555-BEACH',
+      website: 'https://sunsetbeachresort.example.com',
+      lat: 25.7906,
+      lng: -80.13,
+    },
+    {
+      title: 'Virtual Event Space',
+      website: 'https://zoom.us/meeting',
+    },
+  ],
+});
+
+/**
+ * Type exports
  */
 export type Venue = z.infer<typeof VenueSchema>;
+export type VenueRequest = z.infer<typeof VenueRequestSchema>;
