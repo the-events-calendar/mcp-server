@@ -1,5 +1,6 @@
 import { z } from 'zod';
-import { PostTypeSchema, getSchemaForPostType } from '../utils/validation.js';
+import { PostTypeSchema } from '../utils/validation.js';
+import { getRequestSchemaForPostType } from '../types/schemas/index.js';
 import { formatError } from '../utils/error-handling.js';
 import { ApiClient } from '../api/client.js';
 import { PostType } from '../types/index.js';
@@ -194,9 +195,9 @@ export async function createUpdatePost(
       }
     }
 
-    // Get the appropriate schema for the post type
-    const dataSchema = getSchemaForPostType(postType as PostType);
-    logger.silly('Using schema for validation:', postType);
+    // Get the appropriate request schema for the post type (for create/update operations)
+    const dataSchema = getRequestSchemaForPostType(postType as PostType);
+    logger.silly('Using request schema for validation:', postType);
 
     // Validate the data against the schema
     logger.debug('About to validate data:', transformedData);
