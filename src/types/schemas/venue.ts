@@ -181,7 +181,7 @@ export const VenueRequestSchema = BasePostRequestSchema.extend({
   zip: z.string().optional().describe('The venue zip code'),
   phone: z.string().optional().describe('The venue phone number'),
   website: z.string().url().optional().describe('The venue website'),
-  
+
   // Pro-specific geolocation fields
   lat: z.number().optional().describe('The latitude of the venue'),
   lng: z.number().optional().describe('The longitude of the venue'),
