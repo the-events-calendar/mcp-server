@@ -2,35 +2,35 @@ import { z } from 'zod';
 import { PostType } from './base.js';
 
 // Re-export all schemas
-export { 
-  BasePostSchema, 
-  BasePostRequestSchema, 
-  BasePostResponseSchema, 
-  PostTypeSchema 
+export {
+  BasePostSchema,
+  BasePostRequestSchema,
+  BasePostResponseSchema,
+  PostTypeSchema
 } from './base.js';
 export { EventSchema } from './event.js';
 export { VenueSchema } from './venue.js';
 export { OrganizerSchema } from './organizer.js';
-export { 
-  TicketSchema, 
-  TicketRequestSchema, 
-  TicketResponseSchema 
+export {
+  TicketSchema,
+  TicketRequestSchema,
+  TicketResponseSchema
 } from './ticket.js';
 
 // Re-export all types
-export type { 
-  BasePost, 
-  BasePostRequest, 
-  BasePostResponse, 
-  PostType 
+export type {
+  BasePost,
+  BasePostRequest,
+  BasePostResponse,
+  PostType
 } from './base.js';
 export type { Event } from './event.js';
 export type { Venue } from './venue.js';
 export type { Organizer } from './organizer.js';
-export type { 
-  Ticket, 
-  TicketRequest, 
-  TicketResponse 
+export type {
+  Ticket,
+  TicketRequest,
+  TicketResponse
 } from './ticket.js';
 
 // Import schemas for union and utility functions

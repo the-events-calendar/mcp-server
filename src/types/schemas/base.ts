@@ -34,6 +34,7 @@ export const BasePostResponseSchema = z.object({
  * Base post request schema (only fields that can be set/modified)
  */
 export const BasePostRequestSchema = z.object({
+  id: z.number().int().positive().optional().describe('Post ID (required for updates, omit for creation)'),
   title: z.string().describe('The title of the post').optional(),
   slug: z.string().describe('URL-friendly version of the title').optional(),
   status: z.enum(['publish', 'draft', 'pending', 'private', 'trash'])
