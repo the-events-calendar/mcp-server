@@ -97,6 +97,7 @@
       - `TicketResponseSchema`: All fields including read-only ones (id, date, sold, on_sale, etc.)
 
     - Test tickets with **standard WordPress post fields** (request format):
+
       ```json
       {
         "title": "VIP Experience",
@@ -112,7 +113,9 @@
         "tags": [1, 5, 10]
       }
       ```
+
     - Test tickets with **new ticket-specific fields**:
+
       ```json
       {
         "event": 123,
@@ -132,6 +135,7 @@
         "attendee_collection": "required"
       }
       ```
+
     - Verify **read-only fields** are properly handled:
       - **IMPORTANT**: Most read-only fields should NOT be included in create/update requests
       - **Request Schema Includes**: `id` (required for updates, optional for creates)
@@ -146,22 +150,24 @@
 
 1. **Update Operation Testing**:
     - Test ticket update with **ID field included**:
+
       ```json
       {
         "id": 456,
-        "title": "Updated VIP Experience", 
+        "title": "Updated VIP Experience",
         "price": 85.00,
         "regular_price": 85.00,
         "stock": 40,
         "description": "Updated description with new benefits"
       }
       ```
+
     - Verify update **requires ID field** to specify which ticket to modify
     - Test that **read-only fields are ignored** if accidentally included in update requests
 
 2. **Price and Quantity Changes** *(same as original)*
 3. **Add/Remove Ticket Types** *(same as original)*
-3. **Advanced Ticket Features** *(if ETP is active)*:
+4. **Advanced Ticket Features** *(if ETP is active)*:
     - **Scenario: ETP is active**: Use `lando wp plugin activate event-tickets-plus`. Test any ETP-specific features available via **MCP**.
 
 ---
@@ -419,6 +425,7 @@
 | `sale_price_end_date` | YYYY-MM-DD | `"2024-12-15"` | `"+2 days"`, `"tomorrow"`, `"2024-12-15 23:59:59"` |
 
 **Note**: Events continue to support natural language dates, but tickets require strict formatting:
+
 - **Ticket availability dates** (`start_date`, `end_date`): Y-m-d H:i:s format with time component
 - **Sale pricing dates** (`sale_price_start_date`, `sale_price_end_date`): YYYY-MM-DD format (date only)
 

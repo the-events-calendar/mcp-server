@@ -103,8 +103,8 @@ const TicketDateSchema = z.string()
  * Ticket-specific update fields
  */
 export const TicketDataSchema = BasePostUpdateSchema.extend({
-  event: z.number().int().positive()
-    .describe('ID of the associated event (required for creation)'),
+  event: z.number().int().positive().optional()
+    .describe('ID of the associated event (required for creation, optional for updates)'),
   price: z.number().gte(0).optional()
     .describe('Ticket price. Must be greater than 0. For free tickets, omit this field entirely - do NOT set to 0.'),
   stock: z.number().optional()

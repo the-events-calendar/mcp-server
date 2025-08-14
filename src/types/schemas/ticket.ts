@@ -261,9 +261,6 @@ export const TicketResponseSchema = BasePostResponseSchema.extend({
  * Ticket request schema (only fields that can be set/modified)
  */
 export const TicketRequestSchema = BasePostRequestSchema.extend({
-  // ID field for update operations (optional for create, required for update)
-  id: z.number().int().positive().optional().describe('Ticket ID (required for updates, omit for creation)'),
-  
   // Ticket-specific fields that can be set
   type: z.union([
     z.literal('tribe_rsvp_tickets'),
