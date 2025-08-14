@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { BasePostSchema } from './base.js';
+import { BasePostSchema, BasePostRequestSchema } from './base.js';
 import { VenueSchema } from './venue.js';
 import { OrganizerSchema } from './organizer.js';
 
@@ -207,6 +207,88 @@ export const EventSchema = BasePostSchema.extend({
 });
 
 /**
- * Type export
+ * Event request schema for creating/updating events
+ * Based on the TEC REST API Event_Request_Body schema
+ */
+export const EventRequestSchema = BasePostRequestSchema.extend({
+  // Event category taxonomy
+  tribe_events_cat: z.array(z.number().int().positive())
+    .optional()
+    .describe('The terms assigned to the entity in the tribe_events_cat taxonomy'),
+
+  // Event date/time fields (following API pattern: YYYY-MM-DD HH:MM:SS)
+  start_date: z.string()
+    .regex(/^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}$/, 'Date must be in YYYY-MM-DD HH:MM:SS format')
+    .describe('The start date of the event'),
+  start_date_utc: z.string()
+    .regex(/^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}$/, 'Date must be in YYYY-MM-DD HH:MM:SS format')
+    .optional()
+    .describe('The start date of the event in UTC'),
+  end_date: z.string()
+    .regex(/^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}$/, 'Date must be in YYYY-MM-DD HH:MM:SS format')
+    .describe('The end date of the event'),
+  end_date_utc: z.string()
+    .regex(/^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}$/, 'Date must be in YYYY-MM-DD HH:MM:SS format')
+    .optional()
+    .describe('The end date of the event in UTC'),
+
+  // Event properties
+  timezone: z.string().optional().describe('The timezone of the event'),
+  duration: z.number().int().positive().optional().describe('The duration of the event in seconds'),
+  all_day: z.boolean().optional().describe('Whether the event is all day'),
+  featured: z.boolean().optional().describe('Whether the event is featured'),
+  sticky: z.boolean().optional().describe('Whether the event is sticky'),
+  cost: z.string().optional().describe('The cost of the event'),
+
+  // Related entities (as ID arrays, not nested objects)
+  organizers: z.array(z.number().int().positive())
+    .optional()
+    .describe('The organizers of the event'),
+  venues: z.array(z.number().int().positive())
+    .optional()
+    .describe('The venues of the event'),
+
+  // Pro-specific fields
+  virtual: z.boolean().optional().describe('Whether the event is virtual'),
+  lat: z.number().optional().describe('The latitude of the event'),
+  lng: z.number().optional().describe('The longitude of the event'),
+}).meta({
+  title: 'Event Request Body',
+  description: 'Schema for creating or updating event posts via the REST API',
+  examples: [
+    {
+      title: 'Summer Music Festival',
+      status: 'publish',
+      start_date: '2025-07-15 18:00:00',
+      end_date: '2025-07-15 23:00:00',
+      all_day: false,
+      timezone: 'America/Los_Angeles',
+      cost: '$25',
+      venues: [456],
+      organizers: [789],
+    },
+    {
+      title: 'All Day Workshop',
+      start_date: '2025-08-20 00:00:00',
+      end_date: '2025-08-20 23:59:59',
+      all_day: true,
+      timezone: 'Europe/London',
+      cost: 'Free',
+    },
+    {
+      title: 'Virtual Conference',
+      start_date: '2025-09-10 09:00:00',
+      end_date: '2025-09-10 17:00:00',
+      timezone: 'America/New_York',
+      virtual: true,
+      featured: true,
+      tribe_events_cat: [1, 5, 12],
+    },
+  ],
+});
+
+/**
+ * Type exports
  */
 export type Event = z.infer<typeof EventSchema>;
+export type EventRequest = z.infer<typeof EventRequestSchema>;
