@@ -18,7 +18,7 @@ const TicketAvailabilitySchema = z.object({
 /**
  * Ticket response schema (includes read-only fields)
  */
-export const TicketResponseSchema = BasePostResponseSchema.extend({
+export const TicketSchema = BasePostResponseSchema.extend({
   type: z.union([
     z.literal('default'),
     z.literal('tribe_rsvp_tickets'), // Legacy support
@@ -314,14 +314,10 @@ export const TicketRequestSchema = BasePostRequestSchema.extend({
   description: 'Event ticket data for create/update operations. Read-only fields like sold count and on_sale status are calculated by the API.',
 });
 
-/**
- * Legacy schema export for backward compatibility
- */
-export const TicketSchema = TicketResponseSchema;
+// TicketSchema is now the main schema for ticket responses
 
 /**
  * Type exports
  */
-export type TicketResponse = z.infer<typeof TicketResponseSchema>;
+export type TicketResponse = z.infer<typeof TicketSchema>;
 export type TicketRequest = z.infer<typeof TicketRequestSchema>;
-export type Ticket = TicketResponse; // Backward compatibility
