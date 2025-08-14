@@ -35,7 +35,7 @@ export type {
 import { EventSchema, EventRequestSchema } from './event.js';
 import { VenueSchema, VenueRequestSchema } from './venue.js';
 import { OrganizerSchema, OrganizerRequestSchema } from './organizer.js';
-import { TicketSchema, TicketRequestSchema } from './ticket.js';git
+import { TicketSchema, TicketRequestSchema } from './ticket.js';
 
 /**
  * Union schema for all supported post types
