@@ -10,7 +10,7 @@ export {
 } from './base.js';
 export { EventSchema, EventRequestSchema } from './event.js';
 export { VenueSchema } from './venue.js';
-export { OrganizerSchema } from './organizer.js';
+export { OrganizerSchema, OrganizerRequestSchema } from './organizer.js';
 export {
   TicketSchema,
   TicketRequestSchema,
@@ -26,7 +26,7 @@ export type {
 } from './base.js';
 export type { Event, EventRequest } from './event.js';
 export type { Venue } from './venue.js';
-export type { Organizer } from './organizer.js';
+export type { Organizer, OrganizerRequest } from './organizer.js';
 export type {
   Ticket,
   TicketRequest,
