@@ -105,7 +105,7 @@ export interface Organizer extends BasePost {
  * Ticket post type from Event Tickets
  */
 export interface Ticket extends BasePost {
-  type: 'tribe_rsvp_tickets' | 'tec_tc_ticket' | 'default';
+  type: 'default' | 'tribe_rsvp_tickets' | 'tec_tc_ticket';
   event?: number;
   event_id?: number;
   price?: string | number;
