@@ -91,6 +91,48 @@
     - Limited quantity tickets
     - Unlimited tickets
 
+4. **New Ticket Fields Testing** *(Updated API Structure)*:
+    - Test tickets with **standard WordPress post fields**:
+      ```json
+      {
+        "title": "VIP Experience",
+        "content": "<p>Includes backstage access and meet & greet</p>",
+        "excerpt": "<p>Premium ticket with exclusive benefits</p>",
+        "author": 1,
+        "featured_media": 123,
+        "comment_status": "open",
+        "ping_status": "closed",
+        "format": "standard",
+        "sticky": false,
+        "template": "ticket-template.php",
+        "tags": [1, 5, 10]
+      }
+      ```
+    - Test tickets with **new ticket-specific fields**:
+      ```json
+      {
+        "event": 123,
+        "price": 75.00,
+        "regular_price": 75.00,
+        "sale_price": 60.00,
+        "sale_price_start_date": "2024-12-01",
+        "sale_price_end_date": "2024-12-15",
+        "on_sale": true,
+        "stock": 50,
+        "sold": 10,
+        "capacity": 50,
+        "event_capacity": 200,
+        "description": "Premium ticket with exclusive access",
+        "show_description": true,
+        "stock_mode": "own",
+        "attendee_collection": "required"
+      }
+      ```
+    - Verify **read-only fields** are properly handled:
+      - `sold`: Should be calculated automatically
+      - `on_sale`: Should be determined by sale price dates
+      - `id`, `date`, `date_gmt`, `modified`, `modified_gmt`: Should be set by WordPress
+
 #### 4c. Ticket Editing *(if ET is active)*
 
 1. **Price and Quantity Changes** *(same as original)*
@@ -321,14 +363,22 @@
    - Create ticket with sale pricing using properly formatted dates:
             ```json
             {
+            "title": "Early Bird Special",
+            "event": 123,
             "price": 50,
+            "regular_price": 50,
             "sale_price": 35,
-            "sale_price_start_date": "2024-12-01 00:00:00",
-            "sale_price_end_date": "2024-12-15 23:59:59"
+            "sale_price_start_date": "2024-12-01",
+            "sale_price_end_date": "2024-12-15",
+            "stock": 100,
+            "capacity": 100,
+            "show_description": true,
+            "description": "Special early bird pricing available"
             }
             ```
-   - Verify all date fields are validated:
-     - `start_date`, `end_date`, `sale_price_start_date`, `sale_price_end_date`
+   - Verify ticket date fields use different formats:
+     - `start_date`, `end_date`: Y-m-d H:i:s format (e.g., "2024-12-25 15:30:00")
+     - `sale_price_start_date`, `sale_price_end_date`: YYYY-MM-DD format (e.g., "2024-12-01")
    - Test rejection of natural language in sale price dates:
      - `sale_price_start_date: "today"` → Should reject with validation error
      - `sale_price_end_date: "+2 days"` → Should reject with validation error
@@ -341,10 +391,12 @@
 |-------------------|-----------------|---------------|------------------|
 | `start_date` | Y-m-d H:i:s | `"2024-12-25 15:30:00"` | `"now"`, `"today"`, `"tomorrow"` |
 | `end_date` | Y-m-d H:i:s | `"2024-12-25 23:59:59"` | `"+1 day"`, `"Friday 6pm"` |
-| `sale_price_start_date` | Y-m-d H:i:s | `"2024-12-01 00:00:00"` | `"today"`, `"next Monday"` |
-| `sale_price_end_date` | Y-m-d H:i:s | `"2024-12-15 23:59:59"` | `"+2 days"`, `"tomorrow"` |
+| `sale_price_start_date` | YYYY-MM-DD | `"2024-12-01"` | `"today"`, `"next Monday"`, `"2024-12-01 00:00:00"` |
+| `sale_price_end_date` | YYYY-MM-DD | `"2024-12-15"` | `"+2 days"`, `"tomorrow"`, `"2024-12-15 23:59:59"` |
 
-**Note**: Events continue to support natural language dates, but tickets require strict Y-m-d H:i:s format.
+**Note**: Events continue to support natural language dates, but tickets require strict formatting:
+- **Ticket availability dates** (`start_date`, `end_date`): Y-m-d H:i:s format with time component
+- **Sale pricing dates** (`sale_price_start_date`, `sale_price_end_date`): YYYY-MM-DD format (date only)
 
 **6d. Ticket Date Validation Error Handling**:
 
