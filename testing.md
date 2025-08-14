@@ -120,7 +120,6 @@
       {
         "event": 123,
         "price": 75.00,
-        "regular_price": 75.00,
         "sale_price": 60.00,
         "sale_price_start_date": "2024-12-01",
         "sale_price_end_date": "2024-12-15",
@@ -156,7 +155,6 @@
         "id": 456,
         "title": "Updated VIP Experience",
         "price": 85.00,
-        "regular_price": 85.00,
         "stock": 40,
         "description": "Updated description with new benefits"
       }
@@ -396,7 +394,6 @@
             "title": "Early Bird Special",
             "event": 123,
             "price": 50,
-            "regular_price": 50,
             "sale_price": 35,
             "sale_price_start_date": "2024-12-01",
             "sale_price_end_date": "2024-12-15",

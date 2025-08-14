@@ -131,7 +131,6 @@ export interface Ticket extends BasePost {
   stock_mode?: 'own' | 'global' | 'capped';
   attendee_collection?: 'allowed' | 'required' | 'disabled';
   sold?: number;
-  regular_price?: string | number;
   on_sale?: boolean;
   description?: string;
 }

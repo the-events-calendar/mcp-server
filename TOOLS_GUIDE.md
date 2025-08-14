@@ -13,7 +13,7 @@ The MCP server provides three main tools:
 All tools support four post types:
 - `event` - Calendar events
 - `venue` - Event locations
-- `organizer` - Event organizers  
+- `organizer` - Event organizers
 - `ticket` - Event tickets
 
 ## Tool Usage Examples
@@ -113,8 +113,8 @@ This tool creates new posts or updates existing ones. If you provide an `id`, it
     "event_id": 123,
     "price": 150.00,
     "sale_price": 120.00,
-    "sale_price_start_date": "2025-02-01 00:00:00",
-    "sale_price_end_date": "2025-02-28 23:59:59",
+    "sale_price_start_date": "2025-02-01",
+    "sale_price_end_date": "2025-02-28",
     "description": "Premium VIP package",
     "stock": 30,
     "manage_stock": true,
