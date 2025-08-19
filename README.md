@@ -60,7 +60,6 @@ This server requires WordPress Application Passwords for authentication. To crea
 - `WP_IGNORE_SSL_ERRORS`: (optional) Set to "true" for local development with self-signed certificates
 - `WP_ENFORCE_PER_PAGE_LIMIT`: (optional) Set to "false" to disable the 100 item per_page limit
 - `MCP_SERVER_NAME`: (optional) Server name, defaults to "tec-mcp-server"
-- `MCP_SERVER_VERSION`: (optional) Server version, defaults to "1.0.0"
 
 ## Development
 

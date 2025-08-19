@@ -6,12 +6,11 @@
   "main": "dist/index.js",
   "type": "module",
   "bin": {
-    "mcp-server": "./dist/index.js",
-    "tec-mcp-server": "./dist/index.js"
+    "mcp-server": "./dist/index.js"
   },
   "scripts": {
     "dev": "tsx --watch src/index.ts",
-    "build": "tsc",
+    "build": "node scripts/inject-version.js && tsc && node scripts/inject-version.js",
     "build:wp:angie": "tsx src/wordpress-integrations/angie/build.ts",
     "start": "node dist/index.js",
     "start:bun": "bun run dist/index.js",
