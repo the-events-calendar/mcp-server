@@ -21,9 +21,12 @@ export interface ApiClientConfig {
 export class ApiClient {
   private authHeader: string;
   private dispatcher?: Agent;
-  private logger = getLogger();
+  private logger;
 
   constructor(private config: ApiClientConfig) {
+    // Get logger instance in constructor to ensure it's properly configured
+    this.logger = getLogger();
+    
     // Create Basic Auth header
     const credentials = Buffer.from(`${config.username}:${config.appPassword}`).toString('base64');
     this.authHeader = `Basic ${credentials}`;
