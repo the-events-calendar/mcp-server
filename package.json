@@ -6,14 +6,11 @@
   "type": "module",
   "bin": {
     "tec-mcp-server": "./dist/index.js",
-    "tec-mcp-build-wp": "./dist/wordpress-integrations/ai-service/build.js",
     "tec-mcp-build-wp-angie": "./dist/wordpress-integrations/angie/build.js"
   },
   "scripts": {
     "dev": "tsx --watch src/index.ts",
     "build": "tsc",
-    "build:wp": "npm run build:wp:ai-service",
-    "build:wp:ai-service": "tsx src/wordpress-integrations/ai-service/build.ts",
     "build:wp:angie": "tsx src/wordpress-integrations/angie/build.ts",
     "build:all": "npm run build && npm run build:wp",
     "start": "node dist/index.js",
