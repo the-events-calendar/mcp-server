@@ -27,6 +27,7 @@ async function main() {
   let wpIgnoreSslErrors: boolean = false;
   let logLevel: string = 'info';
   let logFile: string | undefined;
+  let consoleLog: boolean = false; // For debugging only
   
   // Parse command-line arguments
   const args = process.argv.slice(2);
@@ -70,6 +71,9 @@ async function main() {
     } else if (arg === '--log-file' && nextArg) {
       // Already parsed above
       i++;
+    } else if (arg === '--console-log') {
+      // WARNING: This breaks MCP protocol - only use for debugging
+      consoleLog = true;
     } else if (arg === '--help' || arg === '-h') {
       // Show help and exit
       if (!logFile) {
@@ -82,6 +86,7 @@ async function main() {
         console.log('  --ignore-ssl-errors     Ignore SSL certificate errors (for local dev)');
         console.log('  --log-level <level>     Set log level (error, warn, info, http, verbose, debug, silly)');
         console.log('  --log-file <path>       Write logs to file');
+        console.log('  --console-log           Enable console logging (WARNING: breaks MCP protocol)');
         console.log('  --help, -h              Show this help message');
         console.log('');
         console.log('Environment variables (as fallback):');
@@ -116,8 +121,8 @@ async function main() {
   logLevel = logLevel || process.env.LOG_LEVEL || 'info';
   
   // Initialize logger BEFORE any logging calls
-  // This ensures that if a log file is specified, nothing goes to console
-  initializeLogger({ level: logLevel, logFile });
+  // By default, no output to preserve MCP protocol integrity
+  initializeLogger({ level: logLevel, logFile, consoleLog });
   const logger = getLogger();
   
   const serverName = process.env.MCP_SERVER_NAME || 'tec-mcp-server';
