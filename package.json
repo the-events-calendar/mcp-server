@@ -1,5 +1,6 @@
 {
   "name": "@the-events-calendar/mcp-server",
+  "private": false,
   "version": "0.1.0",
   "description": "MCP server for The Events Calendar and Event Tickets",
   "main": "dist/index.js",
