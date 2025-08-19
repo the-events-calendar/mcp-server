@@ -30,10 +30,6 @@
   ],
   "author": "The Events Calendar",
   "license": "ISC",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/the-events-calendar/mcp-server.git"
-  },
   "bugs": {
     "url": "https://github.com/the-events-calendar/mcp-server/issues"
   },
