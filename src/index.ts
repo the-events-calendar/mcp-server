@@ -27,6 +27,7 @@ async function main() {
   let wpIgnoreSslErrors: boolean = false;
   let logLevel: string = 'info';
   let logFile: string | undefined;
+  let consoleLog: boolean = false; // For debugging only
   
   // Parse command-line arguments
   const args = process.argv.slice(2);
@@ -39,54 +40,89 @@ async function main() {
       break;
     }
   }
-  // Also check environment variable
+  // Also check environment variable if not set
   if (!logFile) {
     logFile = process.env.LOG_FILE;
   }
   
-  // Parse command-line arguments
-  if (args.length >= 3) {
-    wpUrl = args[0];
-    wpUsername = args[1];
-    wpAppPassword = args[2];
+  // Parse named command-line arguments
+  let hasCliArgs = false;
+  for (let i = 0; i < args.length; i++) {
+    const arg = args[i];
+    const nextArg = args[i + 1];
     
-    // Parse additional options
-    for (let i = 3; i < args.length; i++) {
-      if (args[i] === '--ignore-ssl-errors') {
-        wpIgnoreSslErrors = true;
-      } else if (args[i] === '--log-level' && args[i + 1]) {
-        logLevel = args[i + 1];
-        i++; // Skip next arg
-      } else if (args[i] === '--log-file' && args[i + 1]) {
-        // Already parsed above
-        i++; // Skip next arg
+    if (arg === '--url' && nextArg) {
+      wpUrl = nextArg;
+      hasCliArgs = true;
+      i++;
+    } else if (arg === '--username' && nextArg) {
+      wpUsername = nextArg;
+      hasCliArgs = true;
+      i++;
+    } else if (arg === '--password' && nextArg) {
+      wpAppPassword = nextArg;
+      hasCliArgs = true;
+      i++;
+    } else if (arg === '--ignore-ssl-errors') {
+      wpIgnoreSslErrors = true;
+    } else if (arg === '--log-level' && nextArg) {
+      logLevel = nextArg;
+      i++;
+    } else if (arg === '--log-file' && nextArg) {
+      // Already parsed above
+      i++;
+    } else if (arg === '--console-log') {
+      // WARNING: This breaks MCP protocol - only use for debugging
+      consoleLog = true;
+    } else if (arg === '--help' || arg === '-h') {
+      // Show help and exit
+      if (!logFile) {
+        console.log('Usage: npx @the-events-calendar/mcp-server [options]');
+        console.log('');
+        console.log('Options:');
+        console.log('  --url <url>             WordPress site URL');
+        console.log('  --username <username>   WordPress username');
+        console.log('  --password <password>   WordPress application password');
+        console.log('  --ignore-ssl-errors     Ignore SSL certificate errors (for local dev)');
+        console.log('  --log-level <level>     Set log level (error, warn, info, http, verbose, debug, silly)');
+        console.log('  --log-file <path>       Write logs to file');
+        console.log('  --console-log           Enable console logging (WARNING: breaks MCP protocol)');
+        console.log('  --help, -h              Show this help message');
+        console.log('');
+        console.log('Environment variables (as fallback):');
+        console.log('  WP_URL                  WordPress site URL');
+        console.log('  WP_USERNAME             WordPress username');
+        console.log('  WP_APP_PASSWORD         WordPress application password');
+        console.log('  WP_IGNORE_SSL_ERRORS    Set to "true" to ignore SSL errors');
+        console.log('  WP_ENFORCE_PER_PAGE_LIMIT  Set to "false" to disable 100 item limit');
+        console.log('  LOG_LEVEL               Set log level');
+        console.log('  LOG_FILE                Write logs to file');
+        console.log('');
+        console.log('Example:');
+        console.log('  npx -y @the-events-calendar/mcp-server --url https://mysite.local --username admin --password "xxxx xxxx xxxx xxxx xxxx xxxx" --log-level debug');
+      }
+      process.exit(0);
+    } else if (arg.startsWith('--')) {
+      // Unknown option
+      if (!logFile && arg !== '--log-file') {
+        console.error(`Unknown option: ${arg}`);
+        console.error('Use --help to see available options');
       }
     }
-  } else if (args.length > 0 && args.length < 3) {
-    // Only show errors to console if no log file is specified
-    if (!logFile) {
-      console.error('Error: Incomplete command-line arguments.');
-      console.error('Usage: npx @the-events-calendar/mcp-server <url> <username> <application-password> [options]');
-      console.error('Options:');
-      console.error('  --ignore-ssl-errors   Ignore SSL certificate errors');
-      console.error('  --log-level <level>   Set log level (error, warn, info, http, verbose, debug, silly)');
-      console.error('  --log-file <path>     Write logs to file');
-      console.error('Or set environment variables: WP_URL, WP_USERNAME, WP_APP_PASSWORD, WP_IGNORE_SSL_ERRORS, WP_ENFORCE_PER_PAGE_LIMIT, LOG_LEVEL, LOG_FILE');
-    }
-    process.exit(1);
-  } else {
-    // Fall back to environment variables
-    wpUrl = process.env.WP_URL;
-    wpUsername = process.env.WP_USERNAME;
-    wpAppPassword = process.env.WP_APP_PASSWORD;
-    wpIgnoreSslErrors = process.env.WP_IGNORE_SSL_ERRORS === 'true';
-    logLevel = process.env.LOG_LEVEL || logLevel;
-    // logFile already set above
   }
   
+  // Fall back to environment variables if not set via CLI
+  if (!wpUrl) wpUrl = process.env.WP_URL;
+  if (!wpUsername) wpUsername = process.env.WP_USERNAME;
+  if (!wpAppPassword) wpAppPassword = process.env.WP_APP_PASSWORD;
+  if (!hasCliArgs && process.env.WP_IGNORE_SSL_ERRORS === 'true') {
+    wpIgnoreSslErrors = true;
+  }
+  logLevel = logLevel || process.env.LOG_LEVEL || 'info';
+  
   // Initialize logger BEFORE any logging calls
-  // This ensures that if a log file is specified, nothing goes to console
-  initializeLogger({ level: logLevel, logFile });
+  // By default, no output to preserve MCP protocol integrity
+  initializeLogger({ level: logLevel, logFile, consoleLog });
   const logger = getLogger();
   
   const serverName = process.env.MCP_SERVER_NAME || 'tec-mcp-server';
@@ -113,16 +149,19 @@ async function main() {
     // Only show errors to console if no log file is specified
     if (!logFile) {
       console.error('Missing required configuration.');
-      console.error('\nOption 1: Use command-line arguments:');
-      console.error('  npx @the-events-calendar/mcp-server <url> <username> <application-password> [--ignore-ssl-errors]');
-      console.error('\nOption 2: Set environment variables:');
-      console.error('  - WP_URL: WordPress site URL');
-      console.error('  - WP_USERNAME: WordPress username');
-      console.error('  - WP_APP_PASSWORD: WordPress application password');
-      console.error('  - WP_IGNORE_SSL_ERRORS: Set to "true" to ignore SSL errors (optional)');
+      console.error('');
+      console.error('Option 1: Use named command-line arguments:');
+      console.error('  npx -y @the-events-calendar/mcp-server --url <url> --username <user> --password <pass>');
+      console.error('');
+      console.error('Option 2: Set environment variables:');
+      console.error('  WP_URL=<url>');
+      console.error('  WP_USERNAME=<username>');
+      console.error('  WP_APP_PASSWORD=<password>');
+      console.error('');
+      console.error('Run with --help for more options');
     } else {
       // Log to file instead
-      logger.error('Missing required configuration. WP_URL, WP_USERNAME, and WP_APP_PASSWORD are required.');
+      logger.error('Missing required configuration. --url, --username, and --password (or WP_URL, WP_USERNAME, and WP_APP_PASSWORD env vars) are required.');
     }
     process.exit(1);
   }

@@ -46,9 +46,9 @@ You can also modify the configuration to pass arguments directly:
       "command": "bun",
       "args": [
         "/path/to/your/project/dist/index.js",
-        "https://your-wordpress-site.com",
-        "your-username",
-        "your-application-password"
+        "--url", "https://your-wordpress-site.com",
+        "--username", "your-username",
+        "--password", "your-application-password"
       ]
     }
   }
@@ -63,9 +63,9 @@ For local sites with SSL certificate issues, add the flag:
       "command": "bun",
       "args": [
         "/path/to/your/project/dist/index.js",
-        "https://your-site.local",
-        "your-username",
-        "your-application-password",
+        "--url", "https://your-site.local",
+        "--username", "your-username",
+        "--password", "your-application-password",
         "--ignore-ssl-errors",
         "--log-level", "debug",
         "--log-file", "/path/to/logfile.log"
@@ -169,9 +169,9 @@ For local WordPress sites with self-signed certificates, you'll see "unable to v
    {
      "args": [
        "/path/to/dist/index.js",
-       "https://mysite.local",
-       "admin",
-       "password",
+       "--url", "https://mysite.local",
+       "--username", "admin",
+       "--password", "password",
        "--ignore-ssl-errors"
      ]
    }
