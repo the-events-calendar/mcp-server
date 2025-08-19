@@ -2,6 +2,16 @@
 
 This directory contains configuration examples for various AI-powered code editors that support the Model Context Protocol (MCP).
 
+
+## Getting WordPress Application Password
+
+1. Log in to your WordPress admin dashboard
+2. Navigate to Users → Your Profile
+3. Scroll to "Application Passwords" section
+4. Enter a name for the application (e.g., "MCP Server")
+5. Click "Add New Application Password"
+6. Copy the generated password (spaces can be included)
+
 ## Configuration Files
 
 ### Cursor
@@ -60,12 +70,3 @@ Use the `-with-args` configuration files when:
 - Use strong application passwords generated from WordPress
 - Consider using environment variables for production environments
 - Regularly rotate your application passwords
-
-## Getting WordPress Application Password
-
-1. Log in to your WordPress admin dashboard
-2. Navigate to Users → Your Profile
-3. Scroll to "Application Passwords" section
-4. Enter a name for the application (e.g., "MCP Server")
-5. Click "Add New Application Password"
-6. Copy the generated password (spaces can be included)
