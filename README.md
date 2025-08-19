@@ -18,28 +18,54 @@ An MCP (Model Context Protocol) server that provides unified CRUD operations for
 ## Usage
 
 Run directly with npx or bunx (no installation required):
+
+### Named Parameters (Recommended)
 ```bash
-npx -y @the-events-calendar/mcp-server <url> <username> "<app-password>"
-# or
-bunx -y @the-events-calendar/mcp-server <url> <username> "<app-password>"
+npx -y @the-events-calendar/mcp-server \
+  --url https://mysite.local \
+  --username admin \
+  --password "xxxx xxxx xxxx xxxx xxxx xxxx"
 ```
 
-### Options
+### Command-Line Options
 
-When running the server via command line, you can use these options:
+| Option | Description |
+|--------|-------------|
+| `--url <url>` | WordPress site URL (required) |
+| `--username <username>` | WordPress username (required) |
+| `--password <password>` | WordPress application password (required) |
+| `--ignore-ssl-errors` | Ignore SSL certificate errors (for local development) |
+| `--log-level <level>` | Set logging level (error, warn, info, http, verbose, debug, silly) |
+| `--log-file <path>` | Write logs to file (suppresses console output for clean MCP protocol) |
+| `--help`, `-h` | Show help message |
 
+### Examples
+
+**Basic usage:**
 ```bash
-npx -y @the-events-calendar/mcp-server <url> <username> <app-password> [options]
+npx -y @the-events-calendar/mcp-server \
+  --url https://mysite.com \
+  --username admin \
+  --password "xxxx xxxx xxxx xxxx xxxx xxxx"
 ```
 
-**Options:**
-- `--ignore-ssl-errors` - Ignore SSL certificate errors (for local development)
-- `--log-level <level>` - Set logging level (error, warn, info, http, verbose, debug, silly)
-- `--log-file <path>` - Write logs to a file in addition to console
-
-**Example:**
+**Local development with self-signed certificate:**
 ```bash
-npx -y @the-events-calendar/mcp-server https://mysite.local admin "xxxx xxxx xxxx xxxx xxxx xxxx" --log-level debug --log-file ./mcp.log
+npx -y @the-events-calendar/mcp-server \
+  --url https://mysite.local \
+  --username admin \
+  --password "xxxx xxxx xxxx xxxx xxxx xxxx" \
+  --ignore-ssl-errors
+```
+
+**With debugging and log file:**
+```bash
+npx -y @the-events-calendar/mcp-server \
+  --url https://mysite.local \
+  --username admin \
+  --password "xxxx xxxx xxxx xxxx xxxx xxxx" \
+  --log-level debug \
+  --log-file ./mcp.log
 ```
 
 ### Authentication
