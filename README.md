@@ -19,9 +19,9 @@ An MCP (Model Context Protocol) server that provides unified CRUD operations for
 
 Run directly with npx or bunx (no installation required):
 ```bash
-npx @the-events-calendar/mcp-server <url> <username> "<app-password>"
+npx -y @the-events-calendar/mcp-server <url> <username> "<app-password>"
 # or
-bunx @the-events-calendar/mcp-server <url> <username> "<app-password>"
+bunx -y @the-events-calendar/mcp-server <url> <username> "<app-password>"
 ```
 
 ### Options
@@ -29,7 +29,7 @@ bunx @the-events-calendar/mcp-server <url> <username> "<app-password>"
 When running the server via command line, you can use these options:
 
 ```bash
-npx @the-events-calendar/mcp-server <url> <username> <app-password> [options]
+npx -y @the-events-calendar/mcp-server <url> <username> <app-password> [options]
 ```
 
 **Options:**
@@ -39,7 +39,7 @@ npx @the-events-calendar/mcp-server <url> <username> <app-password> [options]
 
 **Example:**
 ```bash
-npx @the-events-calendar/mcp-server https://mysite.local admin "xxxx xxxx xxxx xxxx xxxx xxxx" --log-level debug --log-file ./mcp.log
+npx -y @the-events-calendar/mcp-server https://mysite.local admin "xxxx xxxx xxxx xxxx xxxx xxxx" --log-level debug --log-file ./mcp.log
 ```
 
 ### Authentication
@@ -104,7 +104,7 @@ For different MCP clients, add to your configuration file:
   "mcpServers": {
     "tec-mcp": {
       "command": "npx",
-      "args": ["@the-events-calendar/mcp-server"],
+      "args": ["-y", "@the-events-calendar/mcp-server"],
       "env": {
         "WP_URL": "https://your-wordpress-site.com",
         "WP_USERNAME": "your-username",
@@ -121,7 +121,7 @@ For different MCP clients, add to your configuration file:
   "mcpServers": {
     "tec-mcp": {
       "command": "npx",
-      "args": ["@the-events-calendar/mcp-server", "--ignore-ssl-errors"],
+      "args": ["-y", "@the-events-calendar/mcp-server", "--ignore-ssl-errors"],
       "env": {
         "WP_URL": "https://your-local-site.test",
         "WP_USERNAME": "your-username",

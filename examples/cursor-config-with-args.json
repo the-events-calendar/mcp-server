@@ -3,6 +3,7 @@
     "events-mcp": {
       "command": "npx",
       "args": [
+        "-y",
         "@the-events-calendar/mcp-server",
         "https://your-wordpress-site.com",
         "your-username",
