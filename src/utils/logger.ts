@@ -34,17 +34,12 @@ const logFormat = winston.format.combine(
   winston.format.json()
 );
 
-// Console format with colors
-const consoleFormat = winston.format.combine(
-  winston.format.colorize({ all: true }),
+// JSON format for MCP console output
+const jsonConsoleFormat = winston.format.combine(
   winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss.SSS' }),
-  winston.format.printf(({ timestamp, level, message, ...metadata }) => {
-    let msg = `${timestamp} [${level}]: ${message}`;
-    if (Object.keys(metadata).length > 0) {
-      msg += ` ${JSON.stringify(metadata, null, 2)}`;
-    }
-    return msg;
-  })
+  winston.format.errors({ stack: true }),
+  winston.format.splat(),
+  winston.format.json()
 );
 
 interface LoggerConfig {
@@ -58,20 +53,23 @@ interface LoggerConfig {
 export function createLogger(config: LoggerConfig = {}): winston.Logger {
   const { level = 'info', logFile } = config;
   
-  const transports: winston.transport[] = [
-    // Console transport - always enabled
-    new winston.transports.Console({
-      format: consoleFormat,
-      level: level
-    })
-  ];
+  const transports: winston.transport[] = [];
   
-  // File transport - only if logFile is specified
+  // If log file is specified, only log to file
+  // Otherwise, log to console in JSON format for MCP
   if (logFile) {
     transports.push(
       new winston.transports.File({
         filename: logFile,
         format: logFormat,
+        level: level
+      })
+    );
+  } else {
+    // Console transport - only if no log file is specified
+    transports.push(
+      new winston.transports.Console({
+        format: jsonConsoleFormat,
         level: level
       })
     );

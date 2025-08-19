@@ -7,8 +7,8 @@ import { DebugTransport } from './debug-transport.js';
 import { initializeLogger, getLogger } from './utils/logger.js';
 import dotenv from 'dotenv';
 
-// Load environment variables
-dotenv.config();
+// Load environment variables quietly (suppress console output)
+dotenv.config({ quiet: true } as any);
 
 // Check for SSL ignore early
 if (process.env.WP_IGNORE_SSL_ERRORS === 'true' || process.argv.includes('--ignore-ssl-errors')) {
