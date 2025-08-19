@@ -5,8 +5,11 @@
       "args": [
         "-y",
         "@the-events-calendar/mcp-server",
+        "--url",
         "https://your-wordpress-site.com",
+        "--username",
         "your-username",
+        "--password",
         "your-application-password"
       ]
     }
