@@ -35,6 +35,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Never manually edit `src/version.ts` or `dist/version.js` - they are auto-generated
 - The `MCP_SERVER_VERSION` environment variable is no longer used
 - Version is always read from `package.json` to ensure consistency
+- **IMPORTANT**: Never use `v` prefix for version tags (use `0.1.3` not `v0.1.3`)
 
 ### Environment Setup
 
