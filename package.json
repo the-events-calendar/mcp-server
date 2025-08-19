@@ -41,6 +41,7 @@
     "src/wordpress-integrations/**/*"
   ],
   "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.17.0",
     "dotenv": "^17.2.0",
     "undici": "^7.11.0",
     "winston": "^3.17.0",
@@ -48,7 +49,6 @@
   },
   "devDependencies": {
     "@elementor/angie-sdk": "^1.0.1",
-    "@modelcontextprotocol/sdk": "^1.17.0",
     "@types/node": "^24.0.14",
     "esbuild": "^0.25.8",
     "tsx": "^4.20.3",
