@@ -62,7 +62,8 @@ export function createLogger(config: LoggerConfig = {}): winston.Logger {
     // Console transport - always enabled
     new winston.transports.Console({
       format: consoleFormat,
-      level: level
+      level: level,
+      stderrLevels: ['error', 'warn', 'info', 'http', 'verbose', 'debug', 'silly']
     })
   ];
   
