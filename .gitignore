@@ -21,3 +21,7 @@ npm-debug.log*
 
 # TypeScript
 *.tsbuildinfo
+
+# Auto-generated files
+src/version.ts
+dist/version.js

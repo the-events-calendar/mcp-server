@@ -11,6 +11,31 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Run compiled server**: `npm start`
 - **Quick start**: `npx @the-events-calendar/mcp-server`
 
+### Version Management
+
+**IMPORTANT**: The server version is automatically derived from `package.json` during the build process.
+
+#### To bump the version:
+
+1. Update the version in `package.json`:
+   ```bash
+   npm version patch  # For bug fixes (0.1.2 -> 0.1.3)
+   npm version minor  # For new features (0.1.2 -> 0.2.0)
+   npm version major  # For breaking changes (0.1.2 -> 1.0.0)
+   ```
+
+2. Build the project to inject the new version:
+   ```bash
+   npm run build
+   ```
+
+3. The version will be automatically injected into `src/version.ts` and `dist/version.js`
+
+**Note**: 
+- Never manually edit `src/version.ts` or `dist/version.js` - they are auto-generated
+- The `MCP_SERVER_VERSION` environment variable is no longer used
+- Version is always read from `package.json` to ensure consistency
+
 ### Environment Setup
 
 Before development, copy `.env.example` to `.env` and configure:

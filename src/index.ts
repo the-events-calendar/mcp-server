@@ -5,6 +5,7 @@ import { ApiClient } from './api/client.js';
 import { createServer } from './server.js';
 import { DebugTransport } from './debug-transport.js';
 import { initializeLogger, getLogger } from './utils/logger.js';
+import { VERSION } from './version.js';
 import dotenv from 'dotenv';
 
 // Load environment variables quietly (suppress console output)
@@ -89,7 +90,7 @@ async function main() {
   const logger = getLogger();
   
   const serverName = process.env.MCP_SERVER_NAME || 'tec-mcp-server';
-  const serverVersion = process.env.MCP_SERVER_VERSION || '1.0.0';
+  const serverVersion = VERSION;
 
   // Enable debug logging if DEBUG env var is set
   const debug = process.env.DEBUG || logLevel === 'debug' || logLevel === 'silly';
