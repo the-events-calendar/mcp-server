@@ -47,10 +47,11 @@ Pasting the following configuration into your Cursor `~/.cursor/mcp.json` file i
         "--url",
         "https://your-wordpress-site.com",
         "--username",
-        "your-username",
-        "--password",
-        "your-application-password"
-      ]
+        "your-username"
+      ],
+      "env": {
+        "WP_APP_PASSWORD": "your-application-password"
+      }
     }
   }
 }
@@ -67,7 +68,7 @@ Run this command. See [Claude Code MCP docs](https://docs.anthropic.com/en/docs/
 #### Claude Code Local Server Connection
 
 ```sh
-claude mcp add tec-mcp -- npx -y @the-events-calendar/mcp-server --url https://your-wordpress-site.com --username your-username --password your-application-password
+WP_APP_PASSWORD="your-application-password" claude mcp add tec-mcp -- npx -y @the-events-calendar/mcp-server --url https://your-wordpress-site.com --username your-username
 ```
 
 </details>
@@ -92,10 +93,11 @@ Add this to your Windsurf MCP config file. See [Windsurf MCP docs](https://docs.
         "--url",
         "https://your-wordpress-site.com",
         "--username",
-        "your-username",
-        "--password",
-        "your-application-password"
-      ]
+        "your-username"
+      ],
+      "env": {
+        "WP_APP_PASSWORD": "your-application-password"
+      }
     }
   }
 }
@@ -127,10 +129,11 @@ Add this to your VS Code MCP config file. See [VS Code MCP docs](https://code.vi
         "--url",
         "https://your-wordpress-site.com",
         "--username",
-        "your-username",
-        "--password",
-        "your-application-password"
-      ]
+        "your-username"
+      ],
+      "env": {
+        "WP_APP_PASSWORD": "your-application-password"
+      }
     }
   }
 }
@@ -155,11 +158,10 @@ It can be installed via [Zed Extensions](https://zed.dev/extensions?query=The%20
           "--url",
           "https://your-wordpress-site.com",
           "--username",
-          "your-username",
-          "--password",
-          "your-application-password"
+          "your-username"
         ]
       },
+      "env": {"WP_APP_PASSWORD": "your-application-password"},
       "settings": {}
     }
   }
@@ -182,7 +184,7 @@ To configure TEC MCP in Augment Code, you can use either the graphical interface
 5. Enter the following command:
 
    ```
-   npx -y @the-events-calendar/mcp-server@latest --url https://your-wordpress-site.com --username your-username --password your-application-password
+   WP_APP_PASSWORD="your-application-password" npx -y @the-events-calendar/mcp-server@latest --url https://your-wordpress-site.com --username your-username
    ```
 
 6. Name the MCP: **TEC MCP**.
@@ -211,10 +213,9 @@ Once the MCP server is added, you can start using the TEC MCP tools directly wit
         "--url",
         "https://your-wordpress-site.com",
         "--username",
-        "your-username",
-        "--password",
-        "your-application-password"
-      ]
+        "your-username"
+      ],
+      "env": {"WP_APP_PASSWORD": "your-application-password"}
     }
   ]
 }
@@ -243,10 +244,9 @@ Add this to your Roo Code MCP configuration file. See [Roo Code MCP docs](https:
         "--url",
         "https://your-wordpress-site.com",
         "--username",
-        "your-username",
-        "--password",
-        "your-application-password"
-      ]
+        "your-username"
+      ],
+      "env": {"WP_APP_PASSWORD": "your-application-password"}
     }
   }
 }
@@ -273,10 +273,9 @@ See [Gemini CLI Configuration](https://google-gemini.github.io/gemini-cli/docs/t
         "--url",
         "https://your-wordpress-site.com",
         "--username",
-        "your-username",
-        "--password",
-        "your-application-password"
-      ]
+        "your-username"
+      ],
+      "env": {"WP_APP_PASSWORD": "your-application-password"}
     }
   }
 }
@@ -329,10 +328,9 @@ Add this to your Opencode configuration file. See [Opencode MCP docs](https://op
         "--url",
         "https://your-wordpress-site.com",
         "--username",
-        "your-username",
-        "--password",
-        "your-application-password"
+        "your-username"
       ],
+      "env": {"WP_APP_PASSWORD": "your-application-password"},
       "enabled": true
     }
   }
@@ -355,9 +353,7 @@ args = [
 "--url",
 "https://your-wordpress-site.com",
 "--username",
-"your-username",
-"--password",
-"your-application-password"
+"your-username"
 ]
 command = "npx"
 ```
@@ -385,10 +381,9 @@ See [JetBrains AI Assistant Documentation](https://www.jetbrains.com/help/ai-ass
         "--url",
         "https://your-wordpress-site.com",
         "--username",
-        "your-username",
-        "--password",
-        "your-application-password"
-      ]
+        "your-username"
+      ],
+      "env": {"WP_APP_PASSWORD": "your-application-password"}
     }
   }
 }
@@ -420,11 +415,9 @@ See [Kiro Model Context Protocol Documentation](https://kiro.dev/docs/mcp/config
         "--url",
         "https://your-wordpress-site.com",
         "--username",
-        "your-username",
-        "--password",
-        "your-application-password"
+        "your-username"
       ],
-      "env": {},
+      "env": {"WP_APP_PASSWORD": "your-application-password"},
       "disabled": false,
       "autoApprove": []
     }
@@ -457,10 +450,9 @@ For more details, visit the [Trae documentation](https://docs.trae.ai/ide/model-
         "--url",
         "https://your-wordpress-site.com",
         "--username",
-        "your-username",
-        "--password",
-        "your-application-password"
-      ]
+        "your-username"
+      ],
+      "env": {"WP_APP_PASSWORD": "your-application-password"}
     }
   }
 }
@@ -486,10 +478,9 @@ Use these alternatives to run the local TEC MCP server with other runtimes. Thes
         "--url",
         "https://your-wordpress-site.com",
         "--username",
-        "your-username",
-        "--password",
-        "your-application-password"
-      ]
+        "your-username"
+      ],
+      "env": {"WP_APP_PASSWORD": "your-application-password"}
     }
   }
 }
@@ -510,10 +501,9 @@ Use these alternatives to run the local TEC MCP server with other runtimes. Thes
         "--url",
         "https://your-wordpress-site.com",
         "--username",
-        "your-username",
-        "--password",
-        "your-application-password"
-      ]
+        "your-username"
+      ],
+      "env": {"WP_APP_PASSWORD": "your-application-password"}
     }
   }
 }
@@ -606,10 +596,9 @@ The configuration on Windows is slightly different compared to Linux or macOS (_
         "--url",
         "https://your-wordpress-site.com",
         "--username",
-        "your-username",
-        "--password",
-        "your-application-password"
+        "your-username"
       ],
+      "env": {"WP_APP_PASSWORD": "your-application-password"},
       "disabled": false,
       "autoApprove": []
     }
@@ -635,10 +624,9 @@ Add this to your Amazon Q Developer CLI configuration file. See [Amazon Q Develo
         "--url",
         "https://your-wordpress-site.com",
         "--username",
-        "your-username",
-        "--password",
-        "your-application-password"
-      ]
+        "your-username"
+      ],
+      "env": {"WP_APP_PASSWORD": "your-application-password"}
     }
   }
 }
@@ -665,11 +653,9 @@ See [Warp Model Context Protocol Documentation](https://docs.warp.dev/knowledge-
       "--url",
       "https://your-wordpress-site.com",
       "--username",
-      "your-username",
-      "--password",
-      "your-application-password"
+      "your-username"
     ],
-    "env": {},
+    "env": {"WP_APP_PASSWORD": "your-application-password"},
     "working_directory": null,
     "start_on_launch": true
   }
@@ -700,10 +686,9 @@ Add the following configuration to the `mcp` section of your Copilot Coding Agen
         "--url",
         "https://your-wordpress-site.com",
         "--username",
-        "your-username",
-        "--password",
-        "your-application-password"
-      ]
+        "your-username"
+      ],
+      "env": {"WP_APP_PASSWORD": "your-application-password"}
     }
   }
 }
@@ -738,10 +723,9 @@ See [LM Studio MCP Support](https://lmstudio.ai/blog/lmstudio-v0.3.17) for more 
         "--url",
         "https://your-wordpress-site.com",
         "--username",
-        "your-username",
-        "--password",
-        "your-application-password"
-      ]
+        "your-username"
+      ],
+      "env": {"WP_APP_PASSWORD": "your-application-password"}
     }
   }
 }
@@ -766,23 +750,15 @@ Add this to your Visual Studio MCP config file (see the [Visual Studio docs](htt
       "tec-mcp": {
         "type": "stdio",
         "command": "npx",
-        "args": ["-y", "@the-events-calendar/mcp-server"]
-      }
-    }
-  }
-}
-```
-
-Or, for a local server:
-
-```json
-{
-  "mcp": {
-    "servers": {
-      "tec-mcp": {
-        "type": "stdio",
-        "command": "npx",
-        "args": ["-y", "@the-events-calendar/mcp-server"]
+        "args": [
+          "-y",
+          "@the-events-calendar/mcp-server",
+          "--url",
+          "https://your-wordpress-site.com",
+          "--username",
+          "your-username"
+        ],
+        "env": {"WP_APP_PASSWORD": "your-application-password"}
       }
     }
   }
@@ -817,10 +793,9 @@ Add this to your Crush configuration file. See [Crush MCP docs](https://github.c
         "--url",
         "https://your-wordpress-site.com",
         "--username",
-        "your-username",
-        "--password",
-        "your-application-password"
-      ]
+        "your-username"
+      ],
+      "env": {"WP_APP_PASSWORD": "your-application-password"}
     }
   }
 }
@@ -844,10 +819,9 @@ Open the "Settings" page of the app, navigate to "Plugins," and enter the follow
         "--url",
         "https://your-wordpress-site.com",
         "--username",
-        "your-username",
-        "--password",
-        "your-application-password"
-      ]
+        "your-username"
+      ],
+      "env": {"WP_APP_PASSWORD": "your-application-password"}
     }
   }
 }
@@ -883,10 +857,9 @@ Example config -
         "--url",
         "https://your-wordpress-site.com",
         "--username",
-        "your-username",
-        "--password",
-        "your-application-password"
-      ]
+        "your-username"
+      ],
+      "env": {"WP_APP_PASSWORD": "your-application-password"}
     }
   }
 }
@@ -913,10 +886,9 @@ To configure TEC MCP in Zencoder, follow these steps:
     "--url",
     "https://your-wordpress-site.com",
     "--username",
-    "your-username",
-    "--password",
-    "your-application-password"
-  ]
+    "your-username"
+  ],
+  "env": {"WP_APP_PASSWORD": "your-application-password"}
 }
 ```
 
@@ -947,37 +919,14 @@ See [Qodo Gen docs](https://docs.qodo.ai/qodo-documentation/qodo-gen/qodo-gen-ch
         "--url",
         "https://your-wordpress-site.com",
         "--username",
-        "your-username",
+        "your-username"
         "--password",
-        "your-application-password"
+        "your-password"
       ]
     }
   }
 }
 ```
-
-#### Qodo Gen Remote Server Connection
-
-```json
-{
-  "mcpServers": {
-    "tec-mcp": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "@the-events-calendar/mcp-server",
-        "--url",
-        "https://your-wordpress-site.com",
-        "--username",
-        "your-username",
-        "--password",
-        "your-application-password"
-      ]
-    }
-  }
-}
-```
-
 </details>
 
 <details>
@@ -994,18 +943,16 @@ See [Local and Remote MCPs for Perplexity](https://www.perplexity.ai/help-center
 
 ```json
 {
+  "command": "npx"
   "args": [
     "-y",
     "@the-events-calendar/mcp-server",
     "--url",
     "https://your-wordpress-site.com",
     "--username",
-    "your-username",
-    "--password",
-    "your-application-password"
-  ],
-  "command": "npx",
-  "env": {}
+    "your-username"
+  ],,
+  "env": {"WP_APP_PASSWORD": "your-application-password"}
 }
 ```
 
