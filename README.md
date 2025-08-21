@@ -26,7 +26,7 @@ An MCP (Model Context Protocol) server that provides unified CRUD operations for
 <details>
 <summary><b>Installing via Smithery</b></summary>
 
-To install Context7 MCP Server for any client automatically via [Smithery](https://smithery.ai/server/@the-events-calendar/mcp-server):
+To install The Events Calendar MCP Server for any client automatically via [Smithery](https://smithery.ai/server/@the-events-calendar/mcp-server):
 
 ```bash
 npx -y @smithery/cli@latest install @the-events-calendar/mcp-server --client <CLIENT_NAME> --key <YOUR_SMITHERY_KEY>
@@ -148,20 +148,6 @@ Add this to your VS Code MCP config file. See [VS Code MCP docs](https://code.vi
   }
 }
 ```
-
-</details>
-
-<details>
-<summary>
-<b>Install in Cline</b>
-</summary>
-
-You can easily install Context7 through the [Cline MCP Server Marketplace](https://cline.bot/mcp-marketplace) by following these instructions:
-
-1. Open **Cline**.
-2. Click the hamburger menu icon (☰) to enter the **MCP Servers** section.
-3. Use the search bar within the **Marketplace** tab to find _Context7_.
-4. Click the **Install** button.
 
 </details>
 

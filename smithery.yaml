@@ -1,0 +1,188 @@
+name: "@the-events-calendar/mcp-server"
+description: "MCP server for managing The Events Calendar and Event Tickets WordPress plugins"
+author: "The Events Calendar"
+license: "ISC"
+homepage: "https://github.com/the-events-calendar/mcp-server"
+repository: "https://github.com/the-events-calendar/mcp-server"
+issues: "https://github.com/the-events-calendar/mcp-server/issues"
+keywords:
+  - wordpress
+  - events
+  - calendar
+  - tickets
+  - mcp
+  - the-events-calendar
+  - event-tickets
+  - tribe-events
+categories:
+  - cms
+  - productivity
+  - development-tools
+icon: "📅"
+
+# Server configuration
+server:
+  command: "npx"
+  args:
+    - "-y"
+    - "@the-events-calendar/mcp-server"
+  env:
+    WP_URL:
+      description: "WordPress site URL"
+      required: true
+      placeholder: "https://your-wordpress-site.com"
+    WP_USERNAME:
+      description: "WordPress username"
+      required: true
+      placeholder: "admin"
+    WP_APP_PASSWORD:
+      description: "WordPress application password"
+      required: true
+      placeholder: "xxxx xxxx xxxx xxxx xxxx xxxx"
+      secret: true
+    WP_IGNORE_SSL_ERRORS:
+      description: "Ignore SSL certificate errors (for local development)"
+      required: false
+      default: "false"
+      options:
+        - "true"
+        - "false"
+    WP_ENFORCE_PER_PAGE_LIMIT:
+      description: "Enforce 100 item per_page limit"
+      required: false
+      default: "true"
+      options:
+        - "true"
+        - "false"
+    LOG_LEVEL:
+      description: "Logging level"
+      required: false
+      default: "info"
+      options:
+        - "error"
+        - "warn"
+        - "info"
+        - "http"
+        - "verbose"
+        - "debug"
+        - "silly"
+    LOG_FILE:
+      description: "Log output file path (optional)"
+      required: false
+      placeholder: "/path/to/logfile.log"
+
+# Alternative configurations for different scenarios
+configurations:
+  local-development:
+    description: "Configuration for local WordPress development with self-signed certificates"
+    args:
+      - "-y"
+      - "@the-events-calendar/mcp-server"
+      - "--ignore-ssl-errors"
+    env:
+      WP_IGNORE_SSL_ERRORS: "true"
+      LOG_LEVEL: "debug"
+  
+  production:
+    description: "Production configuration with minimal logging"
+    args:
+      - "-y"
+      - "@the-events-calendar/mcp-server"
+    env:
+      LOG_LEVEL: "error"
+      WP_ENFORCE_PER_PAGE_LIMIT: "true"
+
+# MCP tools provided by this server
+tools:
+  - name: "tec-calendar-create-update-entities"
+    description: "Create or update events, venues, organizers, or tickets"
+    parameters:
+      postType:
+        type: "string"
+        description: "Type of post to create/update"
+        enum: ["event", "venue", "organizer", "ticket"]
+      id:
+        type: "number"
+        description: "Post ID for updates (optional)"
+      data:
+        type: "object"
+        description: "Post data object"
+  
+  - name: "tec-calendar-read-entities"
+    description: "Read posts by ID or list with filters"
+    parameters:
+      postType:
+        type: "string"
+        description: "Type of post to read"
+        enum: ["event", "venue", "organizer", "ticket"]
+      id:
+        type: "number"
+        description: "Post ID for single read (optional)"
+      query:
+        type: "string"
+        description: "Search query (optional)"
+  
+  - name: "tec-calendar-delete-entities"
+    description: "Delete posts (soft or permanent)"
+    parameters:
+      postType:
+        type: "string"
+        description: "Type of post to delete"
+        enum: ["event", "venue", "organizer", "ticket"]
+      id:
+        type: "number"
+        description: "Post ID to delete"
+      force:
+        type: "boolean"
+        description: "Force permanent deletion"
+  
+  - name: "tec-calendar-current-datetime"
+    description: "Get current date/time for local and server timezones"
+
+# Requirements and compatibility
+requirements:
+  node: ">=18.0.0"
+  wordpress: ">=5.0.0"
+  plugins:
+    - "The Events Calendar"
+
+# Documentation
+documentation:
+  installation: "https://github.com/the-events-calendar/mcp-server#installation"
+  configuration: "https://github.com/the-events-calendar/mcp-server#configuration"
+  tools_guide: "https://github.com/the-events-calendar/mcp-server/blob/main/TOOLS_GUIDE.md"
+  examples: "https://github.com/the-events-calendar/mcp-server/tree/main/examples"
+
+# Tags for discoverability
+tags:
+  - wordpress
+  - events-management
+  - calendar
+  - ticket-sales
+  - content-management
+  - rest-api
+  - crud-operations
+  - mcp-server
+  - automation
+  - scheduling
+
+# Supported clients (for documentation)
+supported_clients:
+  - cursor
+  - claude-desktop
+  - claude-code
+  - vscode
+  - windsurf
+  - cline
+  - zed
+  - augment-code
+  - roo-code
+  - jetbrains
+  - lm-studio
+  - warp
+  - perplexity
+  - boltai
+
+# Version info
+version: "0.1.3"
+mcp_version: "1.0.0"
