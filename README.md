@@ -23,11 +23,6 @@ An MCP (Model Context Protocol) server that provides unified CRUD operations for
 
 ## Installation
 
-### Requirements
-
-- Node.js >= v18.0.0
-- Cursor, Claude Code, VSCode, Windsurf or another MCP Client
-
 <details>
 <summary><b>Installing via Smithery</b></summary>
 
