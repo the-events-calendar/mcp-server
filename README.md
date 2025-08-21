@@ -572,13 +572,6 @@ If you prefer to run the MCP server in a Docker container:
 </details>
 
 <details>
-<summary><b>Install Using the Desktop Extension</b></summary>
-
-Install the [tec-mcp.dxt](dxt/tec-mcp.dxt) file under the dxt folder and add it to your client. For more information please check out [the desktop extensions docs](https://github.com/anthropics/dxt#desktop-extensions-dxt).
-
-</details>
-
-<details>
 <summary><b>Install in Windows</b></summary>
 
 The configuration on Windows is slightly different compared to Linux or macOS (_`Cline` is used in the example_). The same principle applies to other editors; refer to the configuration of `command` and `args`.
@@ -701,11 +694,7 @@ For more information, see the [official GitHub documentation](https://docs.githu
 <details>
 <summary><b>Install in LM Studio</b></summary>
 
-See [LM Studio MCP Support](https://lmstudio.ai/blog/lmstudio-v0.3.17) for more information.
-
-#### One-click install:
-
-[![Add MCP Server TEC MCP to LM Studio](https://files.lmstudio.ai/deeplink/mcp-install-light.svg)](https://lmstudio.ai/install-mcp?name=tec-mcp)
+See [LM Studio MCP Support](https://lmstudio.ai/blog/lmstudio-v0.3.17) for more information.q
 
 #### Manual set-up:
 
@@ -888,7 +877,9 @@ To configure TEC MCP in Zencoder, follow these steps:
     "--username",
     "your-username"
   ],
-  "env": {"WP_APP_PASSWORD": "your-application-password"}
+  "env": {
+    "WP_APP_PASSWORD": "your-application-password"
+  }
 }
 ```
 
@@ -951,8 +942,10 @@ See [Local and Remote MCPs for Perplexity](https://www.perplexity.ai/help-center
     "https://your-wordpress-site.com",
     "--username",
     "your-username"
-  ],,
-  "env": {"WP_APP_PASSWORD": "your-application-password"}
+  ],
+  "env": {
+    "WP_APP_PASSWORD": "your-application-password"
+  }
 }
 ```
 
