@@ -15,17 +15,1034 @@ An MCP (Model Context Protocol) server that provides unified CRUD operations for
 - **Type Safety**: Full TypeScript support with proper type definitions
 - **DateTime Tool**: Get current local and server time with timezone information
 
-## Usage
+## Requirements
 
-Run directly with npx or bunx (no installation required):
+- Node.js >= v18.0.0
+- WordPress site with The Events Calendar plugin
+- WordPress Application Password for authenticationd
 
-### Named Parameters (Recommended)
+## Installation
+
+### Requirements
+
+- Node.js >= v18.0.0
+- Cursor, Claude Code, VSCode, Windsurf or another MCP Client
+
+<details>
+<summary><b>Installing via Smithery</b></summary>
+
+To install Context7 MCP Server for any client automatically via [Smithery](https://smithery.ai/server/@the-events-calendar/mcp-server):
+
 ```bash
-npx -y @the-events-calendar/mcp-server \
-  --url https://mysite.local \
-  --username admin \
-  --password "xxxx xxxx xxxx xxxx xxxx xxxx"
+npx -y @smithery/cli@latest install @the-events-calendar/mcp-server --client <CLIENT_NAME> --key <YOUR_SMITHERY_KEY>
 ```
+
+You can find your Smithery key in the [Smithery.ai webpage](https://smithery.ai/server/@the-events-calendar/mcp-server).
+
+</details>
+
+<details>
+<summary><b>Install in Cursor</b></summary>
+
+Go to: `Settings` -> `Cursor Settings` -> `MCP` -> `Add new global MCP server`
+
+Pasting the following configuration into your Cursor `~/.cursor/mcp.json` file is the recommended approach. You may also install in a specific project by creating `.cursor/mcp.json` in your project folder. See [Cursor MCP docs](https://docs.cursor.com/context/model-context-protocol) for more info.
+
+> Since Cursor 1.0, you can click the install button below for instant one-click installation.
+
+#### Cursor Local Server Connection
+
+[![Install MCP Server](https://cursor.com/deeplink/mcp-install-dark.svg)](https://cursor.com/en/install-mcp?name=events-mcp&config=eyJjb21tYW5kIjoibnB4IC15IEB0aGUtZXZlbnRzLWNhbGVuZGFyL21jcC1zZXJ2ZXIifQ%3D%3D)
+
+```json
+{
+  "mcpServers": {
+    "tec-mcp": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@the-events-calendar/mcp-server",
+        "--url",
+        "https://your-wordpress-site.com",
+        "--username",
+        "your-username",
+        "--password",
+        "your-application-password"
+      ]
+    }
+  }
+}
+```
+
+</details>
+
+<details>
+<summary><b>Install in Claude Code</b></summary>
+
+Run this command. See [Claude Code MCP docs](https://docs.anthropic.com/en/docs/agents-and-tools/claude-code/tutorials#set-up-model-context-protocol-mcp) for more info.
+
+ 
+#### Claude Code Local Server Connection
+
+```sh
+claude mcp add tec-mcp -- npx -y @the-events-calendar/mcp-server --url https://your-wordpress-site.com --username your-username --password your-application-password
+```
+
+</details>
+
+<details>
+<summary><b>Install in Windsurf</b></summary>
+
+Add this to your Windsurf MCP config file. See [Windsurf MCP docs](https://docs.windsurf.com/windsurf/cascade/mcp) for more info.
+
+ 
+
+#### Windsurf Local Server Connection
+
+```json
+{
+  "mcpServers": {
+    "tec-mcp": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@the-events-calendar/mcp-server",
+        "--url",
+        "https://your-wordpress-site.com",
+        "--username",
+        "your-username",
+        "--password",
+        "your-application-password"
+      ]
+    }
+  }
+}
+```
+
+</details>
+
+<details>
+<summary><b>Install in VS Code</b></summary>
+
+[<img alt="Install in VS Code (npx)" src="https://img.shields.io/badge/VS_Code-VS_Code?style=flat-square&label=Install%20TEC%20MCP&color=0098FF">](https://insiders.vscode.dev/redirect?url=vscode%3Amcp%2Finstall%3F%7B%22name%22%3A%22tec-mcp%22%2C%22command%22%3A%22npx%22%2C%22args%22%3A%5B%22-y%22%2C%22%40the-events-calendar%2Fmcp-server%40latest%22%5D%7D)
+[<img alt="Install in VS Code Insiders (npx)" src="https://img.shields.io/badge/VS_Code_Insiders-VS_Code_Insiders?style=flat-square&label=Install%20TEC%20MCP&color=24bfa5">](https://insiders.vscode.dev/redirect?url=vscode-insiders%3Amcp%2Finstall%3F%7B%22name%22%3A%22tec-mcp%22%2C%22command%22%3A%22npx%22%2C%22args%22%3A%5B%22-y%22%2C%22%40the-events-calendar%2Fmcp-server%40latest%22%5D%7D)
+
+Add this to your VS Code MCP config file. See [VS Code MCP docs](https://code.visualstudio.com/docs/copilot/chat/mcp-servers) for more info.
+
+ 
+
+#### VS Code Local Server Connection
+
+```json
+"mcp": {
+  "servers": {
+    "tec-mcp": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@the-events-calendar/mcp-server",
+        "--url",
+        "https://your-wordpress-site.com",
+        "--username",
+        "your-username",
+        "--password",
+        "your-application-password"
+      ]
+    }
+  }
+}
+```
+
+</details>
+
+<details>
+<summary>
+<b>Install in Cline</b>
+</summary>
+
+You can easily install Context7 through the [Cline MCP Server Marketplace](https://cline.bot/mcp-marketplace) by following these instructions:
+
+1. Open **Cline**.
+2. Click the hamburger menu icon (☰) to enter the **MCP Servers** section.
+3. Use the search bar within the **Marketplace** tab to find _Context7_.
+4. Click the **Install** button.
+
+</details>
+
+<details>
+<summary><b>Install in Zed</b></summary>
+
+It can be installed via [Zed Extensions](https://zed.dev/extensions?query=The%20Events%20Calendar) or you can add this to your Zed `settings.json`. See [Zed Context Server docs](https://zed.dev/docs/assistant/context-servers) for more info.
+
+```json
+{
+  "context_servers": {
+    "TEC MCP": {
+      "command": {
+        "path": "npx",
+        "args": [
+          "-y",
+          "@the-events-calendar/mcp-server",
+          "--url",
+          "https://your-wordpress-site.com",
+          "--username",
+          "your-username",
+          "--password",
+          "your-application-password"
+        ]
+      },
+      "settings": {}
+    }
+  }
+}
+```
+
+</details>
+
+<details>
+<summary><b>Install in Augment Code</b></summary>
+
+To configure TEC MCP in Augment Code, you can use either the graphical interface or manual configuration.
+
+### **A. Using the Augment Code UI**
+
+1. Click the hamburger menu.
+2. Select **Settings**.
+3. Navigate to the **Tools** section.
+4. Click the **+ Add MCP** button.
+5. Enter the following command:
+
+   ```
+   npx -y @the-events-calendar/mcp-server@latest --url https://your-wordpress-site.com --username your-username --password your-application-password
+   ```
+
+6. Name the MCP: **TEC MCP**.
+7. Click the **Add** button.
+
+Once the MCP server is added, you can start using the TEC MCP tools directly within Augment Code.
+
+---
+
+### **B. Manual Configuration**
+
+1. Press Cmd/Ctrl Shift P or go to the hamburger menu in the Augment panel
+2. Select Edit Settings
+3. Under Advanced, click Edit in settings.json
+4. Add the server configuration to the `mcpServers` array in the `augment.advanced` object
+
+```json
+"augment.advanced": {
+  "mcpServers": [
+    {
+      "name": "tec-mcp",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@the-events-calendar/mcp-server",
+        "--url",
+        "https://your-wordpress-site.com",
+        "--username",
+        "your-username",
+        "--password",
+        "your-application-password"
+      ]
+    }
+  ]
+}
+```
+
+Once the MCP server is added, restart your editor. If you receive any errors, check the syntax to make sure closing brackets or commas are not missing.
+
+</details>
+
+<details>
+<summary><b>Install in Roo Code</b></summary>
+
+Add this to your Roo Code MCP configuration file. See [Roo Code MCP docs](https://docs.roocode.com/features/mcp/using-mcp-in-roo) for more info.
+
+
+#### Roo Code Local Server Connection
+
+```json
+{
+  "mcpServers": {
+    "tec-mcp": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@the-events-calendar/mcp-server",
+        "--url",
+        "https://your-wordpress-site.com",
+        "--username",
+        "your-username",
+        "--password",
+        "your-application-password"
+      ]
+    }
+  }
+}
+```
+
+</details>
+
+<details>
+<summary><b>Install in Gemini CLI</b></summary>
+
+See [Gemini CLI Configuration](https://google-gemini.github.io/gemini-cli/docs/tools/mcp-server.html) for details.
+
+1.  Open the Gemini CLI settings file. The location is `~/.gemini/settings.json` (where `~` is your home directory).
+2.  Add the following to the `mcpServers` object in your `settings.json` file:
+
+```json
+{
+  "mcpServers": {
+    "tec-mcp": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@the-events-calendar/mcp-server",
+        "--url",
+        "https://your-wordpress-site.com",
+        "--username",
+        "your-username",
+        "--password",
+        "your-application-password"
+      ]
+    }
+  }
+}
+```
+
+If the `mcpServers` object does not exist, create it.
+
+</details>
+
+<details>
+<summary><b>Install in Claude Desktop</b></summary>
+
+Open Claude Desktop and navigate to Settings > Connectors > Add Custom Connector. Enter the name as `TEC MCP` and configure it to launch via `npx`.
+
+#### Local Server Connection
+
+Open Claude Desktop developer settings and edit your `claude_desktop_config.json` file to add the following configuration. See [Claude Desktop MCP docs](https://modelcontextprotocol.io/quickstart/user) for more info.
+
+```json
+{
+  "mcpServers": {
+    "tec-mcp": {
+      "command": "npx",
+      "args": ["-y", "@the-events-calendar/mcp-server"]
+    }
+  }
+}
+```
+
+</details>
+
+<details>
+<summary><b>Install in Opencode</b></summary>
+
+Add this to your Opencode configuration file. See [Opencode MCP docs](https://opencode.ai/docs/mcp-servers) docs for more info.
+
+ 
+
+#### Opencode Local Server Connection
+
+```json
+{
+  "mcp": {
+    "tec-mcp": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "@the-events-calendar/mcp-server",
+        "--url",
+        "https://your-wordpress-site.com",
+        "--username",
+        "your-username",
+        "--password",
+        "your-application-password"
+      ],
+      "enabled": true
+    }
+  }
+}
+```
+
+</details>
+<details>
+<summary><b>Install in OpenAI Codex</b></summary>
+
+See [OpenAI Codex](https://github.com/openai/codex) for more information.
+
+Add the following configuration to your OpenAI Codex MCP server settings:
+
+```toml
+[mcp_servers.tec-mcp]
+args = [
+"-y",
+"@the-events-calendar/mcp-server",
+"--url",
+"https://your-wordpress-site.com",
+"--username",
+"your-username",
+"--password",
+"your-application-password"
+]
+command = "npx"
+```
+
+</details>
+
+<details>
+<summary><b>Install in JetBrains AI Assistant</b></summary>
+
+See [JetBrains AI Assistant Documentation](https://www.jetbrains.com/help/ai-assistant/configure-an-mcp-server.html) for more details.
+
+1. In JetBrains IDEs go to `Settings` -> `Tools` -> `AI Assistant` -> `Model Context Protocol (MCP)`
+2. Click `+ Add`.
+3. Click on `Command` in the top-left corner of the dialog and select the As JSON option from the list
+4. Add this configuration and click `OK`
+
+```json
+{
+  "mcpServers": {
+    "tec-mcp": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@the-events-calendar/mcp-server",
+        "--url",
+        "https://your-wordpress-site.com",
+        "--username",
+        "your-username",
+        "--password",
+        "your-application-password"
+      ]
+    }
+  }
+}
+```
+
+5. Click `Apply` to save changes.
+6. The same way TEC MCP could be added for JetBrains Junie in `Settings` -> `Tools` -> `Junie` -> `MCP Settings`
+
+</details>
+
+<details>
+  
+<summary><b>Install in Kiro</b></summary>
+
+See [Kiro Model Context Protocol Documentation](https://kiro.dev/docs/mcp/configuration/) for details.
+
+1. Navigate `Kiro` > `MCP Servers`
+2. Add a new MCP server by clicking the `+ Add` button.
+3. Paste the configuration given below:
+
+```json
+{
+  "mcpServers": {
+    "TEC MCP": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@the-events-calendar/mcp-server",
+        "--url",
+        "https://your-wordpress-site.com",
+        "--username",
+        "your-username",
+        "--password",
+        "your-application-password"
+      ],
+      "env": {},
+      "disabled": false,
+      "autoApprove": []
+    }
+  }
+}
+```
+
+4. Click `Save` to apply the changes.
+
+</details>
+
+<details>
+<summary><b>Install in Trae</b></summary>
+
+Use the Add manually feature and fill in the JSON configuration information for that MCP server.
+For more details, visit the [Trae documentation](https://docs.trae.ai/ide/model-context-protocol?_lang=en).
+
+ 
+
+#### Trae Local Server Connection
+
+```json
+{
+  "mcpServers": {
+    "tec-mcp": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@the-events-calendar/mcp-server",
+        "--url",
+        "https://your-wordpress-site.com",
+        "--username",
+        "your-username",
+        "--password",
+        "your-application-password"
+      ]
+    }
+  }
+}
+```
+
+</details>
+
+<details>
+<summary><b>Using Bun or Deno</b></summary>
+
+Use these alternatives to run the local TEC MCP server with other runtimes. These examples work for any client that supports launching a local MCP server via command + args.
+
+#### Bun
+
+```json
+{
+  "mcpServers": {
+    "tec-mcp": {
+      "command": "bunx",
+      "args": [
+        "-y",
+        "@the-events-calendar/mcp-server",
+        "--url",
+        "https://your-wordpress-site.com",
+        "--username",
+        "your-username",
+        "--password",
+        "your-application-password"
+      ]
+    }
+  }
+}
+```
+
+#### Deno
+
+```json
+{
+  "mcpServers": {
+    "tec-mcp": {
+      "command": "deno",
+      "args": [
+        "run",
+        "--allow-env=NO_DEPRECATION,TRACE_DEPRECATION",
+        "--allow-net",
+        "npm:@the-events-calendar/mcp-server",
+        "--url",
+        "https://your-wordpress-site.com",
+        "--username",
+        "your-username",
+        "--password",
+        "your-application-password"
+      ]
+    }
+  }
+}
+```
+
+</details>
+
+<details>
+<summary><b>Using Docker</b></summary>
+
+If you prefer to run the MCP server in a Docker container:
+
+1. **Build the Docker Image:**
+
+   First, create a `Dockerfile` in the project root (or anywhere you prefer):
+
+   <details>
+   <summary>Click to see Dockerfile content</summary>
+
+   ```Dockerfile
+   FROM node:18-alpine
+
+   WORKDIR /app
+
+   # Install the latest version globally
+   RUN npm install -g @the-events-calendar/mcp-server
+
+   # Expose default port if needed (optional, depends on MCP client interaction)
+   # EXPOSE 3000
+
+   # Default command to run the server
+   CMD ["mcp-server"]
+   ```
+
+   </details>
+
+   Then, build the image using a tag (e.g., `tec-mcp`). **Make sure Docker Desktop (or the Docker daemon) is running.** Run the following command in the same directory where you saved the `Dockerfile`:
+
+   ```bash
+   docker build -t tec-mcp .
+   ```
+
+2. **Configure Your MCP Client:**
+
+   Update your MCP client's configuration to use the Docker command.
+
+   _Example for a cline_mcp_settings.json:_
+
+   ```json
+   {
+     "mcpServers": {
+       "TEC MCP": {
+         "autoApprove": [],
+         "disabled": false,
+         "timeout": 60,
+         "command": "docker",
+         "args": ["run", "-i", "--rm", "tec-mcp"],
+         "transportType": "stdio"
+       }
+     }
+   }
+   ```
+
+   _Note: This is an example configuration. Please refer to the specific examples for your MCP client (like Cursor, VS Code, etc.) earlier in this README to adapt the structure (e.g., `mcpServers` vs `servers`). Also, ensure the image name in `args` matches the tag used during the `docker build` command._
+
+</details>
+
+<details>
+<summary><b>Install Using the Desktop Extension</b></summary>
+
+Install the [tec-mcp.dxt](dxt/tec-mcp.dxt) file under the dxt folder and add it to your client. For more information please check out [the desktop extensions docs](https://github.com/anthropics/dxt#desktop-extensions-dxt).
+
+</details>
+
+<details>
+<summary><b>Install in Windows</b></summary>
+
+The configuration on Windows is slightly different compared to Linux or macOS (_`Cline` is used in the example_). The same principle applies to other editors; refer to the configuration of `command` and `args`.
+
+```json
+{
+  "mcpServers": {
+    "github.com/the-events-calendar/mcp-server": {
+      "command": "cmd",
+      "args": [
+        "/c",
+        "npx",
+        "-y",
+        "@the-events-calendar/mcp-server",
+        "--url",
+        "https://your-wordpress-site.com",
+        "--username",
+        "your-username",
+        "--password",
+        "your-application-password"
+      ],
+      "disabled": false,
+      "autoApprove": []
+    }
+  }
+}
+```
+
+</details>
+
+<details>
+<summary><b>Install in Amazon Q Developer CLI</b></summary>
+
+Add this to your Amazon Q Developer CLI configuration file. See [Amazon Q Developer CLI docs](https://docs.aws.amazon.com/amazonq/latest/qdeveloper-ug/command-line-mcp-configuration.html) for more details.
+
+```json
+{
+  "mcpServers": {
+    "tec-mcp": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@the-events-calendar/mcp-server",
+        "--url",
+        "https://your-wordpress-site.com",
+        "--username",
+        "your-username",
+        "--password",
+        "your-application-password"
+      ]
+    }
+  }
+}
+```
+
+</details>
+
+<details>
+<summary><b>Install in Warp</b></summary>
+
+See [Warp Model Context Protocol Documentation](https://docs.warp.dev/knowledge-and-collaboration/mcp#adding-an-mcp-server) for details.
+
+1. Navigate `Settings` > `AI` > `Manage MCP servers`.
+2. Add a new MCP server by clicking the `+ Add` button.
+3. Paste the configuration given below:
+
+```json
+{
+  "TEC MCP": {
+    "command": "npx",
+    "args": [
+      "-y",
+      "@the-events-calendar/mcp-server",
+      "--url",
+      "https://your-wordpress-site.com",
+      "--username",
+      "your-username",
+      "--password",
+      "your-application-password"
+    ],
+    "env": {},
+    "working_directory": null,
+    "start_on_launch": true
+  }
+}
+```
+
+4. Click `Save` to apply the changes.
+
+</details>
+
+<details>
+
+<summary><b>Install in Copilot Coding Agent</b></summary>
+
+## Using TEC MCP with Copilot Coding Agent
+
+Add the following configuration to the `mcp` section of your Copilot Coding Agent configuration file Repository->Settings->Copilot->Coding agent->MCP configuration:
+
+```json
+{
+  "mcpServers": {
+    "tec-mcp": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@the-events-calendar/mcp-server",
+        "--url",
+        "https://your-wordpress-site.com",
+        "--username",
+        "your-username",
+        "--password",
+        "your-application-password"
+      ]
+    }
+  }
+}
+```
+
+For more information, see the [official GitHub documentation](https://docs.github.com/en/enterprise-cloud@latest/copilot/how-tos/agents/copilot-coding-agent/extending-copilot-coding-agent-with-mcp).
+
+</details>
+
+<details>
+<summary><b>Install in LM Studio</b></summary>
+
+See [LM Studio MCP Support](https://lmstudio.ai/blog/lmstudio-v0.3.17) for more information.
+
+#### One-click install:
+
+[![Add MCP Server TEC MCP to LM Studio](https://files.lmstudio.ai/deeplink/mcp-install-light.svg)](https://lmstudio.ai/install-mcp?name=tec-mcp)
+
+#### Manual set-up:
+
+1. Navigate to `Program` (right side) > `Install` > `Edit mcp.json`.
+2. Paste the configuration given below:
+
+```json
+{
+  "mcpServers": {
+    "TEC MCP": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@the-events-calendar/mcp-server",
+        "--url",
+        "https://your-wordpress-site.com",
+        "--username",
+        "your-username",
+        "--password",
+        "your-application-password"
+      ]
+    }
+  }
+}
+```
+
+3. Click `Save` to apply the changes.
+4. Toggle the MCP server on/off from the right hand side, under `Program`, or by clicking the plug icon at the bottom of the chat box.
+
+</details>
+
+<details>
+<summary><b>Install in Visual Studio 2022</b></summary>
+
+You can configure TEC MCP in Visual Studio 2022 by following the [Visual Studio MCP Servers documentation](https://learn.microsoft.com/visualstudio/ide/mcp-servers?view=vs-2022).
+
+Add this to your Visual Studio MCP config file (see the [Visual Studio docs](https://learn.microsoft.com/visualstudio/ide/mcp-servers?view=vs-2022) for details):
+
+```json
+{
+  "mcp": {
+    "servers": {
+      "tec-mcp": {
+        "type": "stdio",
+        "command": "npx",
+        "args": ["-y", "@the-events-calendar/mcp-server"]
+      }
+    }
+  }
+}
+```
+
+Or, for a local server:
+
+```json
+{
+  "mcp": {
+    "servers": {
+      "tec-mcp": {
+        "type": "stdio",
+        "command": "npx",
+        "args": ["-y", "@the-events-calendar/mcp-server"]
+      }
+    }
+  }
+}
+```
+
+For more information and troubleshooting, refer to the [Visual Studio MCP Servers documentation](https://learn.microsoft.com/visualstudio/ide/mcp-servers?view=vs-2022).
+
+</details>
+
+<details>
+<summary><b>Install in Crush</b></summary>
+
+Add this to your Crush configuration file. See [Crush MCP docs](https://github.com/charmbracelet/crush#mcps) for more info.
+
+ 
+
+
+
+#### Crush Local Server Connection
+
+```json
+{
+  "$schema": "https://charm.land/crush.json",
+  "mcp": {
+    "tec-mcp": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@the-events-calendar/mcp-server",
+        "--url",
+        "https://your-wordpress-site.com",
+        "--username",
+        "your-username",
+        "--password",
+        "your-application-password"
+      ]
+    }
+  }
+}
+```
+
+</details>
+
+<details>
+<summary><b>Install in BoltAI</b></summary>
+
+Open the "Settings" page of the app, navigate to "Plugins," and enter the following JSON:
+
+```json
+{
+  "mcpServers": {
+    "tec-mcp": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@the-events-calendar/mcp-server",
+        "--url",
+        "https://your-wordpress-site.com",
+        "--username",
+        "your-username",
+        "--password",
+        "your-application-password"
+      ]
+    }
+  }
+}
+```
+
+Once saved, you can start using the TEC MCP tools. More information is available on [BoltAI's Documentation site](https://docs.boltai.com/docs/plugins/mcp-servers). For BoltAI on iOS, [see this guide](https://docs.boltai.com/docs/boltai-mobile/mcp-servers).
+
+</details>
+
+<details>
+<summary><b>Install in Rovo Dev CLI</b></summary>
+
+Edit your Rovo Dev CLI MCP config by running the command below -
+
+```bash
+acli rovodev mcp
+```
+
+Example config -
+
+ 
+
+#### Local Server Connection
+
+```json
+{
+  "mcpServers": {
+    "tec-mcp": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@the-events-calendar/mcp-server",
+        "--url",
+        "https://your-wordpress-site.com",
+        "--username",
+        "your-username",
+        "--password",
+        "your-application-password"
+      ]
+    }
+  }
+}
+```
+
+</details>
+
+<details>
+<summary><b>Install in Zencoder</b></summary>
+
+To configure TEC MCP in Zencoder, follow these steps:
+
+1. Go to the Zencoder menu (...)
+2. From the dropdown menu, select Agent tools
+3. Click on the Add custom MCP
+4. Add the name and server configuration from below, and make sure to hit the Install button
+
+```json
+{
+  "command": "npx",
+  "args": [
+    "-y",
+    "@the-events-calendar/mcp-server",
+    "--url",
+    "https://your-wordpress-site.com",
+    "--username",
+    "your-username",
+    "--password",
+    "your-application-password"
+  ]
+}
+```
+
+Once the MCP server is added, you can easily continue using it.
+
+</details>
+
+<details>
+<summary><b>Install in Qodo Gen</b></summary>
+
+See [Qodo Gen docs](https://docs.qodo.ai/qodo-documentation/qodo-gen/qodo-gen-chat/agentic-mode/agentic-tools-mcps) for more details.
+
+1. Open Qodo Gen chat panel in VSCode or IntelliJ.
+2. Click Connect more tools.
+3. Click + Add new MCP.
+4. Add the following configuration:
+
+#### Qodo Gen Local Server Connection
+
+```json
+{
+  "mcpServers": {
+    "tec-mcp": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@the-events-calendar/mcp-server",
+        "--url",
+        "https://your-wordpress-site.com",
+        "--username",
+        "your-username",
+        "--password",
+        "your-application-password"
+      ]
+    }
+  }
+}
+```
+
+#### Qodo Gen Remote Server Connection
+
+```json
+{
+  "mcpServers": {
+    "tec-mcp": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@the-events-calendar/mcp-server",
+        "--url",
+        "https://your-wordpress-site.com",
+        "--username",
+        "your-username",
+        "--password",
+        "your-application-password"
+      ]
+    }
+  }
+}
+```
+
+</details>
+
+<details>
+<summary><b>Install in Perplexity Desktop</b></summary>
+
+See [Local and Remote MCPs for Perplexity](https://www.perplexity.ai/help-center/en/articles/11502712-local-and-remote-mcps-for-perplexity) for more information.
+
+1. Navigate `Perplexity` > `Settings`
+2. Select `Connectors`.
+3. Click `Add Connector`.
+4. Select `Advanced`.
+5. Enter Server Name: `TEC MCP`
+6. Paste the following JSON in the text area:
+
+```json
+{
+  "args": [
+    "-y",
+    "@the-events-calendar/mcp-server",
+    "--url",
+    "https://your-wordpress-site.com",
+    "--username",
+    "your-username",
+    "--password",
+    "your-application-password"
+  ],
+  "command": "npx",
+  "env": {}
+}
+```
+
+7. Click `Save`.
+</details>
 
 ### Command-Line Options
 
@@ -39,156 +1056,25 @@ npx -y @the-events-calendar/mcp-server \
 | `--log-file <path>` | Write logs to file (suppresses console output for clean MCP protocol) |
 | `--help`, `-h` | Show help message |
 
-### Examples
+### Authentication Setup
 
-**Basic usage:**
-```bash
-npx -y @the-events-calendar/mcp-server \
-  --url https://mysite.com \
-  --username admin \
-  --password "xxxx xxxx xxxx xxxx xxxx xxxx"
-```
+#### Creating a WordPress Application Password
 
-**Local development with self-signed certificate:**
-```bash
-npx -y @the-events-calendar/mcp-server \
-  --url https://mysite.local \
-  --username admin \
-  --password "xxxx xxxx xxxx xxxx xxxx xxxx" \
-  --ignore-ssl-errors
-```
+1. Log in to your WordPress admin dashboard
+2. Navigate to Users → Your Profile
+3. Scroll down to "Application Passwords" section
+4. Enter a name for this application (e.g., "MCP Server")
+5. Click "Add New Application Password"
+6. Copy the generated password (spaces can be included)
 
-**With debugging and log file:**
-```bash
-npx -y @the-events-calendar/mcp-server \
-  --url https://mysite.local \
-  --username admin \
-  --password "xxxx xxxx xxxx xxxx xxxx xxxx" \
-  --log-level debug \
-  --log-file ./mcp.log
-```
+#### Security Best Practices
 
-### Authentication
+- Never commit passwords to version control
+- Use environment variables or secure configuration files
+- Rotate application passwords regularly
+- Use SSL/HTTPS for production sites
+- Restrict application password permissions when possible
 
-This server requires WordPress Application Passwords for authentication. To create one:
-
-1. Log in to your WordPress admin
-2. Go to Users → Your Profile
-3. Scroll to "Application Passwords"
-4. Enter a name and click "Add New Application Password"
-5. Copy the generated password (spaces can be included)
-
-### Environment Variables
-
-- `WP_URL`: Your WordPress site URL
-- `WP_USERNAME`: WordPress username
-- `WP_APP_PASSWORD`: Application password
-- `WP_IGNORE_SSL_ERRORS`: (optional) Set to "true" for local development with self-signed certificates
-- `WP_ENFORCE_PER_PAGE_LIMIT`: (optional) Set to "false" to disable the 100 item per_page limit
-- `MCP_SERVER_NAME`: (optional) Server name, defaults to "tec-mcp-server"
-
-## Development
-
-1. Install dependencies:
-```bash
-npm install
-```
-
-2. Run the server:
-```bash
-npm run dev
-```
-
-3. Configure the server using one of these methods:
-
-### Option 1: Environment Variables (for development)
-
-Copy `.env.example` to `.env` and configure:
-```bash
-cp .env.example .env
-```
-
-Edit `.env` with your WordPress credentials:
-```env
-WP_URL=https://your-wordpress-site.com
-WP_USERNAME=your-username
-WP_APP_PASSWORD=your-application-password
-
-# Optional logging configuration
-LOG_LEVEL=info  # Options: error, warn, info, http, verbose, debug, silly
-LOG_FILE=/path/to/logfile.log  # Optional: write logs to file
-```
-
-### Option 2: MCP Configuration File
-
-For different MCP clients, add to your configuration file:
-
-**Claude Desktop** (`~/Library/Application Support/Claude/claude_desktop_config.json`):
-```json
-{
-  "mcpServers": {
-    "tec-mcp": {
-      "command": "npx",
-      "args": ["-y", "@the-events-calendar/mcp-server"],
-      "env": {
-        "WP_URL": "https://your-wordpress-site.com",
-        "WP_USERNAME": "your-username",
-        "WP_APP_PASSWORD": "your-application-password"
-      }
-    }
-  }
-}
-```
-
-**For local development with SSL issues**, add:
-```json
-{
-  "mcpServers": {
-    "tec-mcp": {
-      "command": "npx",
-      "args": ["-y", "@the-events-calendar/mcp-server", "--ignore-ssl-errors"],
-      "env": {
-        "WP_URL": "https://your-local-site.test",
-        "WP_USERNAME": "your-username",
-        "WP_APP_PASSWORD": "your-application-password"
-      }
-    }
-  }
-}
-```
-
-See the `examples/` directory for configuration examples for Cursor, Windsurf, and other MCP clients.
-
-### Development Mode
-
-Run the server in watch mode:
-
-```bash
-npm run dev
-```
-
-### Production Mode
-
-Build and run:
-
-```bash
-npm run build
-npm start
-```
-
-### Alternative Runtimes
-
-Run with Bun:
-
-```bash
-npm run start:bun
-```
-
-Run with debug output:
-
-```bash
-npm run start:debug
-```
 
 ## Available Tools
 
@@ -342,22 +1228,61 @@ Get current date and time information for both local and WordPress server timezo
 }
 ```
 
-### 5. Search Functionality
+## Development
 
-Search is integrated into the `tec-calendar-read-entities` tool using the `query` parameter.
+### Setting Up for Development
 
-**Example:**
-
-```json
-{
-  "postType": "event",
-  "query": "conference",
-  "eventFilters": {
-    "start_date": "2024-12-01",
-    "end_date": "2024-12-31"
-  }
-}
+1. Clone the repository:
+```bash
+git clone https://github.com/the-events-calendar/mcp-server.git
+cd mcp-server
 ```
+
+2. Install dependencies:
+```bash
+npm install
+```
+
+3. Copy environment template:
+```bash
+cp .env.example .env
+```
+
+4. Configure `.env` with your credentials:
+```env
+WP_URL=https://your-wordpress-site.com
+WP_USERNAME=your-username
+WP_APP_PASSWORD=your-application-password
+LOG_LEVEL=info
+```
+
+5. Run in development mode:
+```bash
+npm run dev
+```
+
+### Build Commands
+
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Run in watch mode with hot reload |
+| `npm run build` | Build TypeScript to JavaScript |
+| `npm start` | Run the compiled server |
+| `npm run start:bun` | Run with Bun runtime |
+| `npm run start:debug` | Run with debug logging |
+
+### Environment Variables Reference
+
+| Variable | Description | Default |
+|----------|-------------|---------|  
+| `WP_URL` | WordPress site URL | Required |
+| `WP_USERNAME` | WordPress username | Required |
+| `WP_APP_PASSWORD` | Application password | Required |
+| `WP_IGNORE_SSL_ERRORS` | Ignore SSL errors | `false` |
+| `WP_ENFORCE_PER_PAGE_LIMIT` | Enforce 100 item limit | `true` |
+| `MCP_SERVER_NAME` | Server identifier | `tec-mcp-server` |
+| `LOG_LEVEL` | Logging verbosity | `info` |
+| `LOG_FILE` | Log output file | Console output |
 
 ## Important Notes
 
