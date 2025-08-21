@@ -24,19 +24,6 @@ An MCP (Model Context Protocol) server that provides unified CRUD operations for
 ## Installation
 
 <details>
-<summary><b>Installing via Smithery</b></summary>
-
-To install The Events Calendar MCP Server for any client automatically via [Smithery](https://smithery.ai/server/@the-events-calendar/mcp-server):
-
-```bash
-npx -y @smithery/cli@latest install @the-events-calendar/mcp-server --client <CLIENT_NAME> --key <YOUR_SMITHERY_KEY>
-```
-
-You can find your Smithery key in the [Smithery.ai webpage](https://smithery.ai/server/@the-events-calendar/mcp-server).
-
-</details>
-
-<details>
 <summary><b>Install in Cursor</b></summary>
 
 Go to: `Settings` -> `Cursor Settings` -> `MCP` -> `Add new global MCP server`
