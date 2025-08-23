@@ -180,11 +180,59 @@ async function main() {
   }
 
   // Create MCP server
+  // Perform initial health check and fetch site info to enrich instructions
+  let siteInfo: any | undefined;
+  try {
+    siteInfo = await apiClient.getSiteInfo();
+  } catch (e) {
+    // getSiteInfo already logs details; keep startup resilient
+    siteInfo = undefined;
+  }
+
+  // Enforce startup health checks: fail fast on REST or auth failures unless explicitly allowed
+  const allowWeakStart = process.env.MCP_ALLOW_WEAK_START === 'true';
+  const isDebugLogging = (logLevel === 'debug' || logLevel === 'silly' || !!process.env.DEBUG);
+  if (!siteInfo) {
+    const message = 'Startup health check failed: WordPress REST API not reachable at /wp-json/.';
+    if (allowWeakStart) {
+      logger.error(`${message} Continuing due to MCP_ALLOW_WEAK_START=true.`);
+    } else {
+      // Also emit to stderr so MCP clients surface the reason
+      console.error(`MCP startup failed: ${message}`);
+      if (isDebugLogging) {
+        console.error('Details: root /wp-json/ unreachable');
+        console.error('Site Info:', JSON.stringify(siteInfo, null, 2));
+      }
+      logger.error(message);
+      if (isDebugLogging) {
+        logger.debug('Startup health check details', { siteInfo });
+      }
+      process.exit(1);
+    }
+  } else if (siteInfo.authValid === false || siteInfo.authStatusCode === 401 || siteInfo.authStatusCode === 403) {
+    const status = siteInfo.authStatusCode || '401/403';
+    const failed = Array.isArray(siteInfo.failedChecks) ? siteInfo.failedChecks : [];
+    const detail = failed.map((c: any) => `${c.step} ${c.endpoint} -> ${c.statusCode || 'n/a'} ${c.message ? '- ' + c.message : ''}`).join('; ');
+    const base = `Startup health check failed: Authentication to WordPress REST API failed (status ${status}). Check username/app password.`;
+    const message = isDebugLogging ? `${base} Details: ${detail}` : base;
+    // Always fail fast on 401/403 to avoid exposing tools with bad credentials
+    console.error(`MCP startup failed: ${message}`);
+    if (isDebugLogging) {
+      console.error('Site Info:', JSON.stringify(siteInfo, null, 2));
+    }
+    logger.error(base);
+    if (isDebugLogging) {
+      logger.debug('Startup health check details', { siteInfo, failedChecks: failed });
+    }
+    process.exit(1);
+  }
+
   const server = createServer({
     name: serverName,
     version: serverVersion,
     apiClient,
     baseUrl: wpUrl,
+    siteInfo,
   });
 
   // Create and connect transport

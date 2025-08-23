@@ -6,7 +6,7 @@ import { getToolHandlers, getToolDefinitions } from './tools/index.js';
 import { getLogger } from './utils/logger.js';
 import { getLocalTimeInfo, getDateOffsets } from './utils/time.js';
 
-function buildInstructions(baseUrl?: string): string {
+function buildInstructions(baseUrl?: string, siteInfo?: any): string {
   const timeInfo = getLocalTimeInfo();
   const dateOffsets = getDateOffsets();
 
@@ -17,12 +17,55 @@ function buildInstructions(baseUrl?: string): string {
     '',
   ];
 
+  if (baseUrl || siteInfo) {
+   lines.push( '### Site Information' )
+  }
+
   if (baseUrl) {
     lines.push(
-      '### Target Site',
-      `- Site URL: ${baseUrl}.`,
+      `- URL: ${baseUrl}.`,
+    );
+    if (!siteInfo) {
+      lines.push( '' );
+    }
+  }
+
+  if (siteInfo) {
+    const siteTitle = siteInfo.title || siteInfo.name || 'Unknown';
+    const tz = siteInfo.timezone_string || (typeof siteInfo.gmt_offset === 'number' ? `UTC${siteInfo.gmt_offset >= 0 ? '+' : ''}${siteInfo.gmt_offset}` : 'Unknown');
+    lines.push(
+      `- Title: ${siteTitle}.`,
+      `- Timezone: ${tz}.`,
       ''
     );
+
+    // Permissions note for settings endpoint
+    if (siteInfo.settingsAccessible === false) {
+      const status = siteInfo.settingsStatusCode || '403';
+      lines.push(
+        '**Permissions Notice**: Limited access to `/wp/v2/settings` (status ' + status + ').',
+        ''
+      );
+    }
+
+    // Operational summary line
+    const restOk = siteInfo.restReachable !== false;
+    const authOk = siteInfo.authValid === true;
+    lines.push(
+      `- Operational (REST): ${restOk ? 'Yes' : 'No'}.`,
+      `- Authentication: ${authOk ? 'Valid' : 'Invalid or insufficient permissions'}.`,
+      ''
+    );
+
+    // Only include detailed failed checks when debug logging is active
+    const debugActive = process.env.DEBUG || process.env.LOG_LEVEL === 'debug' || process.env.LOG_LEVEL === 'silly';
+    if (debugActive && Array.isArray(siteInfo.failedChecks) && siteInfo.failedChecks.length) {
+      lines.push('Failed checks (debug):');
+      siteInfo.failedChecks.forEach((c: any) => {
+        lines.push(`- ${c.step} ${c.endpoint}: ${c.statusCode || 'n/a'}${c.message ? ' - ' + c.message : ''}`);
+      });
+      lines.push('');
+    }
   }
 
   lines.push(
@@ -67,6 +110,7 @@ export interface ServerConfig {
   version: string;
   apiClient: ApiClient;
   baseUrl?: string;
+  siteInfo?: any;
 }
 
 /**
@@ -79,7 +123,7 @@ export function createServer(config: ServerConfig): McpServer {
     name: config.name,
     version: config.version,
   }, {
-    instructions: buildInstructions(config.baseUrl || config.apiClient.getBaseUrl?.()),
+    instructions: buildInstructions(config.baseUrl || config.apiClient.getBaseUrl?.(), config.siteInfo),
     capabilities: {
       tools: {}
     }
