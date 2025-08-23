@@ -4,6 +4,49 @@ import { ListToolsRequestSchema, CallToolRequestSchema } from '@modelcontextprot
 import { ApiClient } from './api/client.js';
 import { getToolHandlers, getToolDefinitions } from './tools/index.js';
 import { getLogger } from './utils/logger.js';
+import { getLocalTimeInfo, getDateOffsets } from './utils/time.js';
+
+function buildInstructions(): string {
+  const timeInfo = getLocalTimeInfo();
+  const dateOffsets = getDateOffsets();
+  
+  return [
+    '### The Events Calendar MCP Server Instructions',
+    '',
+    '**Purpose**: Interact with WordPress posts for Events, Venues, Organizers, and Tickets using the provided tools.',
+    '',
+    '### Time Context (precomputed to avoid extra calls)',
+    `- **Local time**: ${timeInfo.datetime} (${timeInfo.timezone}, UTC offset ${timeInfo.timezone_offset})`,
+    `- **ISO**: ${timeInfo.iso8601}`,
+    '- **Usage hints**:',
+    `  - **today_3pm**: ${dateOffsets.todayAt3pm}`,
+    `  - **tomorrow_10am**: ${dateOffsets.tomorrowAt10am}`,
+    `  - **next_week**: ${dateOffsets.nextWeek}`,
+    '',
+    '### Date and Time Handling',
+    '- **Events**: Use dates in `YYYY-MM-DD HH:MM:SS` format (e.g., "2025-01-15 14:30:00")',
+    '- **Tickets**: All availability dates must be in `YYYY-MM-DD HH:MM:SS` format',
+    '- **Sale price dates**: Use `YYYY-MM-DD` format',
+    '- When creating events, ensure dates are specified in the site\'s timezone',
+    '',
+    '### Available Tools',
+    '- **tec-calendar-read-entities**: Read, list, or search posts with filters (events/venues/organizers/tickets)',
+    '- **tec-calendar-create-update-entities**: Create or update posts with proper date formatting',
+    '- **tec-calendar-delete-entities**: Trash or permanently delete posts',
+    '',
+    '### Important Notes',
+    '- **Free tickets**: Omit `price` entirely (do not set it to 0)',
+    '- **Unlimited tickets**: Set `manage_stock` to false',
+    '- **Response format**: Return concise JSON objects with IDs and essential fields',
+    '',
+    '### Post Types',
+    '- **tribe_events**: Events',
+    '- **tribe_venue**: Event venues',
+    '- **tribe_organizer**: Event organizers',
+    '- **tec_tc_ticket**: Event tickets (Commerce)',
+    '- **tribe_rsvp_tickets**: RSVP tickets',
+  ].join('\n');
+}
 
 export interface ServerConfig {
   name: string;
@@ -21,6 +64,7 @@ export function createServer(config: ServerConfig): McpServer {
     name: config.name,
     version: config.version,
   }, {
+    instructions: buildInstructions(),
     capabilities: {
       tools: {}
     }

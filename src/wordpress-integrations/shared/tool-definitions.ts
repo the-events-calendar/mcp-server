@@ -7,7 +7,6 @@
 import { createUpdateTool } from '../../tools/create-update.js';
 import { readTool } from '../../tools/read.js';
 import { deleteTool } from '../../tools/delete.js';
-import { dateTimeTool } from '../../tools/datetime.js';
 
 // The previous zodToJsonSchema function has been removed as we're now
 // extracting schemas directly from the tool definitions
@@ -32,7 +31,7 @@ export interface ToolDefinition {
  * Get all tool definitions in a format compatible with WordPress integrations
  */
 export function getToolDefinitions(): ToolDefinition[] {
-  const tools = [createUpdateTool, readTool, deleteTool, dateTimeTool];
+  const tools = [createUpdateTool, readTool, deleteTool];
   
   return tools.map(tool => {
     // Use the jsonSchema property if available, otherwise fall back to empty schema
@@ -69,15 +68,6 @@ export function getToolDefinitions(): ToolDefinition[] {
           title: 'Delete Calendar Entities',
           readOnlyHint: false,
           destructiveHint: true,
-          idempotentHint: false,
-          openWorldHint: false
-        };
-        break;
-      case 'tec-calendar-current-datetime':
-        annotations = {
-          title: 'Get Current Date and Time',
-          readOnlyHint: true,
-          destructiveHint: false,
           idempotentHint: false,
           openWorldHint: false
         };
