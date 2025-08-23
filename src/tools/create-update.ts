@@ -224,6 +224,49 @@ export async function createUpdatePost(
     const dataSchema = getRequestSchemaForPostType(postType as PostType);
     logger.silly('Using request schema for validation:', postType);
 
+    // Normalize any flexible date formats into the API-preferred format.
+    // We accept flexible inputs (e.g., "next monday", "+2 days", ISO with T, etc.)
+    // but transform them into `YYYY-MM-DD HH:MM:SS` before validation/send.
+    const { formatDateTime, parseFlexibleDate } = await import('../utils/time.js');
+
+    function normalizeField(fieldName: string) {
+      if (!transformedData[fieldName] || typeof transformedData[fieldName] !== 'string') return;
+      const raw = String(transformedData[fieldName]).trim();
+      // Try to parse flexible date.
+      const parsed = parseFlexibleDate(raw);
+      if (parsed) {
+        transformedData[fieldName] = formatDateTime(parsed);
+        return;
+      }
+      // If parsing failed but the string already matches the preferred pattern,
+      // leave it as-is. Otherwise, we'll allow validation to fail and return
+      // a descriptive error to the client.
+      const prefRegex = /^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}$/;
+      if (prefRegex.test(raw)) {
+        transformedData[fieldName] = raw;
+        return;
+      }
+      // Attempt ISO parse (with T) as a last resort.
+      const isoAttempt = new Date(raw.replace(' ', 'T'));
+      if (Number.isFinite(isoAttempt.getTime())) {
+        transformedData[fieldName] = formatDateTime(isoAttempt);
+        return;
+      }
+      // Mark invalid format for clearer error handling later.
+      transformedData[`_invalid_${fieldName}`] = raw;
+    }
+
+    ['start_date', 'end_date', 'start_date_utc', 'end_date_utc', 'sale_price_start_date', 'sale_price_end_date', 'start_date', 'end_date'].forEach(normalizeField);
+
+    // If any invalid date markers exist, return a clean error to the client.
+    const invalidDateFields = Object.keys(transformedData)
+      .filter(k => k.startsWith('_invalid_'))
+      .map(k => ({ field: k.replace('_invalid_', ''), value: transformedData[k] }));
+    if (invalidDateFields.length > 0) {
+      const message = `One or more date fields are invalid. Please use a valid date or the preferred format YYYY-MM-DD HH:MM:SS.`;
+      throw new (await import('../utils/error-handling.js')).ApiError(message, 400, 'invalid_date_format', { invalid_fields: invalidDateFields });
+    }
+
     // Validate the data against the schema
     logger.debug('About to validate data:', transformedData);
     const validatedData = dataSchema.parse(transformedData);

@@ -8,6 +8,7 @@
 /// <reference lib="dom" />
 
 import { AngieMcpSdk } from '@elementor/angie-sdk';
+import * as chrono from 'chrono-node';
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { 
   CallToolRequestSchema, 
@@ -54,6 +55,7 @@ function buildInstructions(): string {
 
   const datetime = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
   const iso8601 = now.toISOString();
+  const iso8601Space = iso8601.replace('T', ' ').replace('Z', '');
 
   const today = `${year}-${month}-${day}`;
   const tomorrowDate = new Date(now.getTime() + 24 * 60 * 60 * 1000);
@@ -71,7 +73,7 @@ function buildInstructions(): string {
     '',
     '### Time Context (precomputed to avoid extra calls)',
     `- **Local time**: ${datetime} (${timezone}, UTC offset ${timezoneOffset})`,
-    `- **ISO**: ${iso8601}`,
+    `- **ISO (UTC)**: ${iso8601Space}`,
     '- **Usage hints**:',
     `  - **today_3pm**: ${todayAt3pm}`,
     `  - **tomorrow_10am**: ${tomorrowAt10am}`,
@@ -100,6 +102,58 @@ function buildInstructions(): string {
     '- **tec_tc_ticket**: Event tickets (Commerce)',
     '- **tribe_rsvp_tickets**: RSVP tickets',
   ].join('\n');
+}
+
+// ---- Date utilities (browser-side) ----
+function pad2(n: number): string { return String(n).padStart(2, '0'); }
+function formatDate(date: Date): string {
+  return `${date.getFullYear()}-${pad2(date.getMonth() + 1)}-${pad2(date.getDate())}`;
+}
+function formatDateTime(date: Date): string {
+  return `${formatDate(date)} ${pad2(date.getHours())}:${pad2(date.getMinutes())}:${pad2(date.getSeconds())}`;
+}
+function parseFlexibleDate(input: string): Date | null {
+  try {
+    const s = String(input).trim();
+    const d = chrono.casual.parseDate(s, new Date(), { forwardDate: true });
+    if (d && Number.isFinite(d.getTime())) return d;
+  } catch {}
+  try {
+    const results = chrono.parse(String(input));
+    if (results && results.length > 0) {
+      const d = results[0].date();
+      if (Number.isFinite(d.getTime())) return d;
+    }
+  } catch {}
+  const iso = new Date(String(input).replace(' ', 'T'));
+  if (Number.isFinite(iso.getTime())) return iso;
+  const plain = new Date(String(input));
+  if (Number.isFinite(plain.getTime())) return plain;
+  return null;
+}
+function normalizeDateFields(data: Record<string, any>) {
+  if (!data || typeof data !== 'object') return { invalids: [] as { field: string; value: string }[] };
+  const invalids: { field: string; value: string }[] = [];
+  const dateTimeFields = ['start_date', 'end_date', 'start_date_utc', 'end_date_utc'];
+  const dateOnlyFields = ['sale_price_start_date', 'sale_price_end_date'];
+  const prefRegex = /^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}$/;
+  const dateOnlyRegex = /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/;
+
+  for (const field of dateTimeFields) {
+    if (typeof data[field] !== 'string') continue;
+    const raw = String(data[field]).trim();
+    const parsed = parseFlexibleDate(raw);
+    if (parsed) { data[field] = formatDateTime(parsed); continue; }
+    if (!prefRegex.test(raw)) invalids.push({ field, value: raw });
+  }
+  for (const field of dateOnlyFields) {
+    if (typeof data[field] !== 'string') continue;
+    const raw = String(data[field]).trim();
+    const parsed = parseFlexibleDate(raw);
+    if (parsed) { data[field] = formatDate(parsed); continue; }
+    if (!dateOnlyRegex.test(raw)) invalids.push({ field, value: raw });
+  }
+  return { invalids };
 }
 
 // Extend window interface for WordPress API settings
@@ -294,6 +348,15 @@ function createTecMcpServer(): Server {
     try {
       // No local handling for deprecated current-datetime tool
       
+      // Normalize flexible dates for create/update before building the endpoint
+      if (toolName === 'tec-calendar-create-update-entities' && args && args.data && typeof args.data === 'object') {
+        const { invalids } = normalizeDateFields(args.data);
+        if (invalids.length > 0) {
+          const details = JSON.stringify({ invalid_fields: invalids });
+          throw new Error(`Invalid date format. Prefer 'YYYY-MM-DD HH:MM:SS'. Details: ${details}`);
+        }
+      }
+
       // Build the endpoint URL
       const endpoint = buildEndpointForTool(toolName, args);
       const url = `${root}${endpoint}`;

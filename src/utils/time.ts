@@ -15,6 +15,7 @@ export interface TimeInfo {
 }
 
 import type { ApiClient } from '../api/client.js';
+import * as chrono from 'chrono-node';
 import { getLogger } from './logger.js';
 
 /**
@@ -141,6 +142,50 @@ export function formatDateTime(date: Date): string {
   const minutes = String(date.getMinutes()).padStart(2, '0');
   const seconds = String(date.getSeconds()).padStart(2, '0');
   return `${dateStr} ${hours}:${minutes}:${seconds}`;
+}
+
+/**
+ * Parse a variety of flexible date strings into a Date object where possible.
+ * Supports:
+ * - Preferred formats: "YYYY-MM-DD HH:MM:SS" and ISO with `T`.
+ * - Relative formats like "+2 days", "+3 hours".
+ * - "tomorrow", "today" (optionally with time).
+ * - "next <weekday>" optionally with a time (e.g., "next monday 9am").
+ * Returns null when parsing is not possible.
+ */
+export function parseFlexibleDate(input: string): Date | null {
+  if (!input || typeof input !== 'string') return null;
+  const s = input.trim();
+
+  // Prefer chrono for natural language and common formats.
+  try {
+    // Use casual parser for broad phrases like "next monday 9am", "tomorrow 2pm", "+2 days".
+    const d = chrono.casual.parseDate(s, new Date(), { forwardDate: true });
+    if (d && Number.isFinite(d.getTime())) return d;
+  } catch {
+    // ignore and fall back
+  }
+
+  // Try strict parser as a fallback.
+  try {
+    const results = chrono.parse(s);
+    if (results && results.length > 0) {
+      const d = results[0].date();
+      if (Number.isFinite(d.getTime())) return d;
+    }
+  } catch {
+    // ignore
+  }
+
+  // Try ISO/Date constructor last.
+  const isoLike = s.replace(' ', 'T').replace('Z', '');
+  const tryIso = new Date(isoLike);
+  if (Number.isFinite(tryIso.getTime())) return tryIso;
+
+  const fallback = new Date(s);
+  if (Number.isFinite(fallback.getTime())) return fallback;
+
+  return null;
 }
 
 /**
