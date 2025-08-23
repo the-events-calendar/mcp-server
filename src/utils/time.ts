@@ -2,10 +2,25 @@
  * Time utilities for formatting dates and times
  */
 
+export interface TimeInfo {
+  datetime: string;
+  timestamp: number;
+  timezone: string;
+  timezone_offset: string;
+  date: string;
+  time: string;
+  iso8601: string;
+  utc_datetime: string;
+  utc_offset_seconds: number;
+}
+
+import type { ApiClient } from '../api/client.js';
+import { getLogger } from './logger.js';
+
 /**
  * Get current local time information
  */
-export function getLocalTimeInfo() {
+export function getLocalTimeInfo(): TimeInfo {
   const now = new Date();
   const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
   const offset = -now.getTimezoneOffset();
@@ -13,7 +28,7 @@ export function getLocalTimeInfo() {
   const offsetMinutes = Math.abs(offset) % 60;
   const offsetSign = offset >= 0 ? '+' : '-';
   const timezoneOffset = `${offsetSign}${String(offsetHours).padStart(2, '0')}:${String(offsetMinutes).padStart(2, '0')}`;
-  
+
   // Format current datetime
   const year = now.getFullYear();
   const month = String(now.getMonth() + 1).padStart(2, '0');
@@ -21,16 +36,90 @@ export function getLocalTimeInfo() {
   const hours = String(now.getHours()).padStart(2, '0');
   const minutes = String(now.getMinutes()).padStart(2, '0');
   const seconds = String(now.getSeconds()).padStart(2, '0');
-  
+
   return {
     datetime: `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`,
-    date: `${year}-${month}-${day}`,
-    time: `${hours}:${minutes}:${seconds}`,
+    timestamp: Math.floor(now.getTime() / 1000),
     timezone,
     timezone_offset: timezoneOffset,
+    date: `${year}-${month}-${day}`,
+    time: `${hours}:${minutes}:${seconds}`,
     iso8601: now.toISOString(),
-    timestamp: Math.floor(now.getTime() / 1000),
+    utc_datetime: now.toISOString().replace('T', ' ').replace('Z', ''),
+    utc_offset_seconds: offset * 60,
   };
+}
+
+/**
+ * Get WordPress server time information with timezone details.
+ */
+export async function getServerTimeInfo(apiClient: ApiClient): Promise<TimeInfo> {
+  try {
+    const siteInfo = await apiClient.getSiteInfo();
+    const serverDate = new Date();
+
+    let timezone = 'UTC';
+    let timezone_offset = '+00:00';
+
+    if (siteInfo?.timezone_string) {
+      timezone = siteInfo.timezone_string;
+
+      // Calculate offset for the server timezone
+      const serverTz = new Date().toLocaleString('en-US', { timeZone: timezone });
+      const serverTime = new Date(serverTz);
+      const utcTime = new Date(serverDate.toISOString());
+      const offsetMs = serverTime.getTime() - utcTime.getTime();
+      const offsetMinutes = Math.round(offsetMs / 60000);
+      const offsetHours = Math.floor(Math.abs(offsetMinutes) / 60);
+      const offsetMins = Math.abs(offsetMinutes) % 60;
+      const offsetSign = offsetMinutes >= 0 ? '+' : '-';
+      timezone_offset = `${offsetSign}${offsetHours.toString().padStart(2, '0')}:${offsetMins.toString().padStart(2, '0')}`;
+    } else if (siteInfo?.gmt_offset !== undefined) {
+      const offset = parseFloat(siteInfo.gmt_offset);
+      const offsetHours = Math.floor(Math.abs(offset));
+      const offsetMins = Math.round((Math.abs(offset) - offsetHours) * 60);
+      const offsetSign = offset >= 0 ? '+' : '-';
+      timezone_offset = `${offsetSign}${offsetHours.toString().padStart(2, '0')}:${offsetMins.toString().padStart(2, '0')}`;
+      timezone = `GMT${timezone_offset}`;
+    }
+
+    // Format server time
+    const serverDateFormatted = serverDate.toLocaleString('en-US', {
+      timeZone: timezone === 'UTC' ? 'UTC' : timezone,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false
+    });
+
+    const [datePart, timePart] = serverDateFormatted.split(', ');
+    const [month, day, year] = datePart.split('/');
+    const date = `${year}-${month}-${day}`;
+    const time = timePart;
+    const datetime = `${date} ${time}`;
+
+    return {
+      datetime,
+      timestamp: Math.floor(serverDate.getTime() / 1000),
+      timezone,
+      timezone_offset,
+      date,
+      time,
+      iso8601: serverDate.toISOString(),
+      utc_datetime: serverDate.toISOString().replace('T', ' ').replace('Z', ''),
+      utc_offset_seconds: siteInfo?.gmt_offset ? parseFloat(siteInfo.gmt_offset) * 3600 : 0
+    };
+  } catch (error) {
+    getLogger().warn('Failed to get server time, using local time as fallback:', error);
+    const localTime = getLocalTimeInfo();
+    return {
+      ...localTime,
+      timezone: 'Server timezone unavailable (using local time as fallback)'
+    };
+  }
 }
 
 /**

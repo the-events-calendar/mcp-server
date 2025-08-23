@@ -19,6 +19,7 @@ import {
 
 // Import tool definitions
 import toolsData from './tools-data.json' with { type: 'json' };
+import { VERSION } from '../../version.js';
 
 // Type for our tool definitions
 interface ToolDefinition {
@@ -32,6 +33,73 @@ interface ToolDefinition {
     idempotentHint?: boolean;
     openWorldHint?: boolean;
   };
+}
+
+// Build default MCP instructions (browser-safe: no server imports needed)
+function buildInstructions(): string {
+  const now = new Date();
+  const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const offsetMinutes = -now.getTimezoneOffset();
+  const offsetHours = Math.floor(Math.abs(offsetMinutes) / 60);
+  const offsetMins = Math.abs(offsetMinutes) % 60;
+  const offsetSign = offsetMinutes >= 0 ? '+' : '-';
+  const timezoneOffset = `${offsetSign}${String(offsetHours).padStart(2, '0')}:${String(offsetMins).padStart(2, '0')}`;
+
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  const hours = String(now.getHours()).padStart(2, '0');
+  const minutes = String(now.getMinutes()).padStart(2, '0');
+  const seconds = String(now.getSeconds()).padStart(2, '0');
+
+  const datetime = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+  const iso8601 = now.toISOString();
+
+  const today = `${year}-${month}-${day}`;
+  const tomorrowDate = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+  const nextWeekDate = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+  const tomorrow = `${tomorrowDate.getFullYear()}-${String(tomorrowDate.getMonth() + 1).padStart(2, '0')}-${String(tomorrowDate.getDate()).padStart(2, '0')}`;
+  const nextWeek = `${nextWeekDate.getFullYear()}-${String(nextWeekDate.getMonth() + 1).padStart(2, '0')}-${String(nextWeekDate.getDate()).padStart(2, '0')}`;
+
+  const todayAt3pm = `${today} 15:00:00`;
+  const tomorrowAt10am = `${tomorrow} 10:00:00`;
+
+  return [
+    '### The Events Calendar MCP Server Instructions',
+    '',
+    '**Purpose**: Interact with WordPress posts for Events, Venues, Organizers, and Tickets using the provided tools.',
+    '',
+    '### Time Context (precomputed to avoid extra calls)',
+    `- **Local time**: ${datetime} (${timezone}, UTC offset ${timezoneOffset})`,
+    `- **ISO**: ${iso8601}`,
+    '- **Usage hints**:',
+    `  - **today_3pm**: ${todayAt3pm}`,
+    `  - **tomorrow_10am**: ${tomorrowAt10am}`,
+    `  - **next_week**: ${nextWeek}`,
+    '',
+    '### Date and Time Handling',
+    '- **Events**: Use dates in `YYYY-MM-DD HH:MM:SS` format (e.g., "2025-01-15 14:30:00")',
+    '- **Tickets**: All availability dates must be in `YYYY-MM-DD HH:MM:SS` format',
+    '- **Sale price dates**: Use `YYYY-MM-DD` format',
+    '- When creating events, ensure dates are specified in the site\'s timezone',
+    '',
+    '### Available Tools',
+    '- **tec-calendar-read-entities**: Read, list, or search posts with filters (events/venues/organizers/tickets)',
+    '- **tec-calendar-create-update-entities**: Create or update posts with proper date formatting',
+    '- **tec-calendar-delete-entities**: Trash or permanently delete posts',
+    '',
+    '### Important Notes',
+    '- **Free tickets**: Omit `price` entirely (do not set it to 0)',
+    '- **Unlimited tickets**: Set `manage_stock` to false',
+    '- **Response format**: Return concise JSON objects with IDs and essential fields',
+    '',
+    '### Post Types',
+    '- **tribe_events**: Events',
+    '- **tribe_venue**: Event venues',
+    '- **tribe_organizer**: Event organizers',
+    '- **tec_tc_ticket**: Event tickets (Commerce)',
+    '- **tribe_rsvp_tickets**: RSVP tickets',
+  ].join('\n');
 }
 
 // Extend window interface for WordPress API settings
@@ -150,8 +218,8 @@ function buildEndpointForTool(toolName: string, params: any): string {
       return `${base}/${id}${force}`;
     
     case 'tec-calendar-current-datetime':
-      // This doesn't need an endpoint - handled locally
-      return '';
+      // Deprecated: this tool is no longer handled
+      throw new Error('Unknown tool: tec-calendar-current-datetime');
     
     default:
       throw new Error(`Unknown tool: ${toolName}`);
@@ -179,7 +247,7 @@ function createTecMcpServer(): Server {
   console.log('[TEC_MCP] Creating server with low-level API...');
   
   const server = new Server(
-    { name: 'plugin-the-events-calendar', version: '1.0.0' },
+    { name: 'plugin-the-events-calendar', version: VERSION },
     { capabilities: { tools: {} } }
   );
 
@@ -224,30 +292,7 @@ function createTecMcpServer(): Server {
     }
     
     try {
-      // Handle current-datetime locally
-      if (toolName === 'tec-calendar-current-datetime') {
-        console.log('[TEC_MCP] Handling current-datetime locally');
-        const now = new Date();
-        const timezone = args.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone;
-        
-        return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify({
-              current_date: now.toISOString().split('T')[0],
-              current_time: now.toTimeString().split(' ')[0],
-              current_datetime: now.toISOString(),
-              timezone,
-              timestamp: Math.floor(now.getTime() / 1000),
-              formatted: {
-                date: now.toLocaleDateString(),
-                time: now.toLocaleTimeString(),
-                full: now.toLocaleString()
-              }
-            }, null, 2)
-          }]
-        };
-      }
+      // No local handling for deprecated current-datetime tool
       
       // Build the endpoint URL
       const endpoint = buildEndpointForTool(toolName, args);
@@ -262,7 +307,7 @@ function createTecMcpServer(): Server {
       
       // Determine HTTP method
       let method = 'GET';
-      let body = undefined;
+      let body: string | undefined = undefined;
       
       switch (toolName) {
         case 'tec-calendar-create-update-entities':
@@ -316,7 +361,7 @@ function createTecMcpServer(): Server {
         method,
         headers,
         credentials: 'same-origin',
-        bodyLength: body ? body.length : 0
+        bodyLength: typeof body === 'string' ? body.length : 0
       });
       
       const response = await fetch(finalUrl, {
@@ -393,8 +438,8 @@ async function initializeTecMcpServer(): Promise<void> {
     
     const config: AngieServerConfig = {
       name: 'plugin-the-events-calendar',
-      version: '1.0.0',
-      description: 'The Events Calendar tools for managing events, venues, organizers, and tickets',
+      version: VERSION,
+      description: buildInstructions(),
       server,
     };
     

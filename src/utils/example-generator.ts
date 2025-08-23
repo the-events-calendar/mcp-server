@@ -175,7 +175,7 @@ function generateCompactReadExamples(): string[] {
     '',
     '### Date Filtering',
     '',
-    '**5. Get upcoming events** *(after calling tec-calendar-current-datetime)*',
+    '**5. Get upcoming events**',
     '```json',
     JSON.stringify({
       postType: 'event',
@@ -376,7 +376,7 @@ function generateReadExamples(_postTypes: PostType[]): string[] {
   // === DATE FILTERING (EVENTS) ===
   examples.push(
     '// === DATE FILTERING (EVENTS) ===',
-    '// Note: Always call tec-calendar-current-datetime first for date calculations',
+    '// Note: Provide appropriate date filters based on your needs',
     '',
     '// Get events in December 2024',
     JSON.stringify({
@@ -715,7 +715,7 @@ const TOOL_DESCRIPTION_TEMPLATES: Record<string, (postTypes: PostType[]) => stri
   'tec-calendar-create-update-entities': (postTypes) => {
     const lines: string[] = [
       '',
-      '**IMPORTANT**: Before creating events with dates/times, ALWAYS call the `tec-calendar-current-datetime` tool first to get the current date, time, and timezone context.',
+      '**IMPORTANT**: Ensure your event dates and times use the expected formats and timezone context.',
       '',
       '### Date Formats Supported',
       '',
@@ -727,9 +727,8 @@ const TOOL_DESCRIPTION_TEMPLATES: Record<string, (postTypes: PostType[]) => stri
       '',
       '### Workflow for Events with Dates',
       '',
-      '1. Call `tec-calendar-current-datetime` tool',
-      '2. Calculate appropriate dates based on response',
-      '3. Create/update event with calculated dates',
+      '1. Calculate appropriate dates for your event',
+      '2. Create/update event with calculated dates',
       '',
       '### Create Examples',
       ''
@@ -812,7 +811,7 @@ const TOOL_DESCRIPTION_TEMPLATES: Record<string, (postTypes: PostType[]) => stri
       '',
       '- Always use default trash unless permanent deletion is required',
       '- Consider checking post details before deletion',
-      '- For events, verify dates with `tec-calendar-current-datetime` first',
+      '- For events, verify dates and timezone context first',
       '',
       '### Examples',
       ''
@@ -938,8 +937,6 @@ export function generateFieldDescription(schema: z.ZodObject<any>): string {
 export function generateFullReadDocumentation(): string {
   return [
     'Read, list, or search calendar posts.',
-    '',
-    '⚠️ IMPORTANT: When filtering events by date, ALWAYS call the tec-calendar-current-datetime tool FIRST.',
     '',
     ...generateReadExamples(['event', 'venue', 'organizer', 'ticket'] as PostType[])
   ].join('\n');

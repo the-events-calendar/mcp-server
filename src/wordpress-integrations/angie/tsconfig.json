@@ -6,6 +6,7 @@
     "skipLibCheck": true
   },
   "include": [
-    "*.ts"
+    "*.ts",
+    "*.d.ts"
   ]
 }

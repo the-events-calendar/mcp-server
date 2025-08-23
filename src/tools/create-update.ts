@@ -305,7 +305,7 @@ export const CreateUpdateJsonSchema = {
     },
     data: {
       type: 'object' as const,
-       description: 'The post data. Required fields depend on postType: Event (title, start_date, end_date), Venue (title or venue, address, city, country), Organizer (title or organizer), Ticket (title, event_id or event). Note: For Venue and Organizer, you can use "title" which will be converted to the appropriate field. For Tickets, all date fields must be in Y-m-d H:i:s format (e.g., "2024-12-25 15:30:00"). Sales dates default to 1 week before event (start) and event start date (end) if not specified. By default, ticket end_date will be capped to the event start date unless allow_end_after_event: true is provided. ⚠️ For Events, call tec-calendar-current-datetime tool FIRST before setting any date/time fields to ensure correct relative dates.',
+      description: 'The post data. Required fields depend on postType: Event (title, start_date, end_date), Venue (title or venue, address, city, country), Organizer (title or organizer), Ticket (title, event_id or event). Note: For Venue and Organizer, you can use "title" which will be converted to the appropriate field. For Tickets, all date fields must be in Y-m-d H:i:s format (e.g., "2024-12-25 15:30:00"). Sales dates default to 1 week before event (start) and event start date (end) if not specified. By default, ticket end_date will be capped to the event start date unless allow_end_after_event: true is provided.',
       additionalProperties: true
     }
   },

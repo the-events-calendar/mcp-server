@@ -8,7 +8,7 @@ The MCP server provides three main tools:
 - `tec-calendar-create-update-entities` - Create new posts or update existing ones
 - `tec-calendar-read-entities` - Read, list, or search posts
 - `tec-calendar-delete-entities` - Delete posts (trash or permanent)
-- `tec-calendar-current-datetime` - Get current date and time information
+
 
 All tools support four post types:
 - `event` - Calendar events
@@ -249,55 +249,7 @@ This versatile tool can read single posts, list multiple posts, or search posts.
 }
 ```
 
-### 3. tec-calendar-current-datetime
-
-Get current date and time information for both local and WordPress server timezones. This tool is essential for creating events with proper relative dates.
-
-#### Get Current DateTime
-
-```json
-{
-  "tool": "tec-calendar-current-datetime"
-}
-```
-
-**Response**:
-```json
-{
-  "local": {
-    "datetime": "2024-12-19 14:30:45",
-    "timestamp": 1734620445,
-    "timezone": "America/New_York",
-    "timezone_offset": "-05:00",
-    "date": "2024-12-19",
-    "time": "14:30:45",
-    "iso8601": "2024-12-19T19:30:45.000Z",
-    "utc_datetime": "2024-12-19 19:30:45",
-    "utc_offset_seconds": 18000
-  },
-  "server": {
-    "datetime": "2024-12-19 19:30:45",
-    "timestamp": 1734620445,
-    "timezone": "UTC",
-    "timezone_offset": "+00:00",
-    "date": "2024-12-19",
-    "time": "19:30:45",
-    "iso8601": "2024-12-19T19:30:45.000Z",
-    "utc_datetime": "2024-12-19 19:30:45",
-    "utc_offset_seconds": 0
-  },
-  "usage_hints": {
-    "date_format": "YYYY-MM-DD HH:MM:SS",
-    "example_event_dates": {
-      "today_3pm": "2024-12-19 15:00:00",
-      "tomorrow_10am": "2024-12-20 10:00:00",
-      "next_week": "2024-12-26"
-    }
-  }
-}
-```
-
-### 4. tec-calendar-delete-entities
+### 3. tec-calendar-delete-entities
 
 Delete posts either to trash (soft delete) or permanently.
 
@@ -525,13 +477,7 @@ Common errors and solutions:
 Here's a complete example of creating an event with a new venue:
 
 ```json
-// 1. First, get the current date/time for proper scheduling
-{
-  "tool": "tec-calendar-current-datetime"
-}
-// Returns current date/time info for calculating event dates
-
-// 2. Create the venue
+// 1. Create the venue
 {
   "postType": "venue",
   "data": {
@@ -545,7 +491,7 @@ Here's a complete example of creating an event with a new venue:
 }
 // Returns: { "id": 150, ... }
 
-// 3. Then create the event using the venue ID
+// 2. Then create the event using the venue ID
 {
   "postType": "event",
   "data": {
@@ -559,7 +505,7 @@ Here's a complete example of creating an event with a new venue:
 }
 // Returns: { "id": 325, ... }
 
-// 4. Verify the event was created
+// 3. Verify the event was created
 {
   "postType": "event",
   "id": 325
