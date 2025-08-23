@@ -83,7 +83,8 @@ function buildInstructions(): string {
     '- **Events**: Use dates in `YYYY-MM-DD HH:MM:SS` format (e.g., "2025-01-15 14:30:00")',
     '- **Tickets**: All availability dates must be in `YYYY-MM-DD HH:MM:SS` format',
     '- **Sale price dates**: Use `YYYY-MM-DD` format',
-    '- When creating events, ensure dates are specified in the site\'s timezone',
+    '- Prefer not sending a `timezone` field unless explicitly needed. Do not guess timezones.',
+    '- When a timezone is required, use the site\'s timezone context; otherwise omit.',
     '',
     '### Available Tools',
     '- **tec-calendar-read-entities**: Read, list, or search posts with filters (events/venues/organizers/tickets)',
@@ -375,6 +376,10 @@ function createTecMcpServer(): Server {
       switch (toolName) {
         case 'tec-calendar-create-update-entities':
           method = args.id ? 'PUT' : 'POST';
+          // Default status to publish unless specified
+          if (args && args.data && typeof args.data === 'object' && (args.data as any).status === undefined) {
+            (args.data as any).status = 'publish';
+          }
           body = JSON.stringify(args.data || {});
           break;
         case 'tec-calendar-delete-entities':

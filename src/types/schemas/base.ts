@@ -38,7 +38,8 @@ export const BasePostRequestSchema = z.object({
   title: z.string().describe('The title of the post').optional(),
   slug: z.string().describe('URL-friendly version of the title').optional(),
   status: z.enum(['publish', 'draft', 'pending', 'private', 'trash'])
-    .describe('Publication status of the post').optional(),
+    .default('publish')
+    .describe('Publication status of the post (defaults to "publish" when omitted).'),
   content: z.string().optional().describe('The content of the post'),
   excerpt: z.string().optional().describe('The excerpt/description of the post'),
   author: z.number().int().positive().optional().describe('ID of the post author'),

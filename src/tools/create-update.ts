@@ -274,6 +274,10 @@ export async function createUpdatePost(
 
     // Perform create or update
     logger.info(`${id ? 'Updating' : 'Creating'} ${postType}${id ? ` with ID ${id}` : ''}`);
+    // Default publish status unless provided
+    if (validatedData && typeof validatedData === 'object' && (validatedData as any).status === undefined) {
+      (validatedData as any).status = 'publish';
+    }
     let result = id
       ? await apiClient.updatePost(postType as PostType, id, validatedData)
       : await apiClient.createPost(postType as PostType, validatedData);
