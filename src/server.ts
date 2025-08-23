@@ -6,15 +6,26 @@ import { getToolHandlers, getToolDefinitions } from './tools/index.js';
 import { getLogger } from './utils/logger.js';
 import { getLocalTimeInfo, getDateOffsets } from './utils/time.js';
 
-function buildInstructions(): string {
+function buildInstructions(baseUrl?: string): string {
   const timeInfo = getLocalTimeInfo();
   const dateOffsets = getDateOffsets();
-  
-  return [
+
+  const lines: string[] = [
     '### The Events Calendar MCP Server Instructions',
     '',
     '**Purpose**: Interact with WordPress posts for Events, Venues, Organizers, and Tickets using the provided tools.',
     '',
+  ];
+
+  if (baseUrl) {
+    lines.push(
+      '### Target Site',
+      `- Site URL: ${baseUrl}.`,
+      ''
+    );
+  }
+
+  lines.push(
     '### Time Context (precomputed to avoid extra calls)',
     `- **Local time**: ${timeInfo.datetime} (${timeInfo.timezone}, UTC offset ${timeInfo.timezone_offset})`,
     `- **ISO**: ${timeInfo.iso8601}`,
@@ -46,13 +57,16 @@ function buildInstructions(): string {
     '- **tribe_organizer**: Event organizers',
     '- **tec_tc_ticket**: Event tickets (Commerce)',
     '- **tribe_rsvp_tickets**: RSVP tickets',
-  ].join('\n');
+  );
+
+  return lines.join('\n');
 }
 
 export interface ServerConfig {
   name: string;
   version: string;
   apiClient: ApiClient;
+  baseUrl?: string;
 }
 
 /**
@@ -65,7 +79,7 @@ export function createServer(config: ServerConfig): McpServer {
     name: config.name,
     version: config.version,
   }, {
-    instructions: buildInstructions(),
+    instructions: buildInstructions(config.baseUrl || config.apiClient.getBaseUrl?.()),
     capabilities: {
       tools: {}
     }

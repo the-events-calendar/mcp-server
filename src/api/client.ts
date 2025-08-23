@@ -46,6 +46,13 @@ export class ApiClient {
   }
 
   /**
+   * Expose the configured base URL for instructions/logging.
+   */
+  public getBaseUrl(): string {
+    return this.config.baseUrl;
+  }
+
+  /**
    * Make an authenticated request to the WordPress REST API
    */
   private async request<T>(

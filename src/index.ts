@@ -184,6 +184,7 @@ async function main() {
     name: serverName,
     version: serverVersion,
     apiClient,
+    baseUrl: wpUrl,
   });
 
   // Create and connect transport
