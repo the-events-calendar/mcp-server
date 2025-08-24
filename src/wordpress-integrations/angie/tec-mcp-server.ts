@@ -93,7 +93,7 @@ function buildInstructions(): string {
     '',
     '### Important Notes',
     '- **Free tickets**: Omit `price` entirely (do not set it to 0)',
-    '- **Unlimited tickets**: Set `manage_stock` to false',
+    '- **Unlimited tickets**: Set `stock_mode` to unlimited',
     '- **Response format**: Return concise JSON objects with IDs and essential fields',
     '',
     '### Post Types',
