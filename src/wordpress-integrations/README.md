@@ -121,9 +121,7 @@ The generated PHP file includes all MCP tools:
    - Permanently removes posts by ID
    - Works with all supported post types
 
-4. **tec-calendar-current-datetime** - Get current date/time information
-   - Returns server time, timezone, and formatted dates
-   - Essential for creating events with relative dates
+ 
 
 Each tool definition includes:
 
@@ -149,7 +147,7 @@ To add support for a new WordPress AI service:
 - **Direct Inclusion**: The generated PHP file can be directly included or required in WordPress
 - **Auto-generated Warning**: The PHP file includes a header warning not to edit manually
 - **Tool Naming**: All tool names follow the `tec-calendar-*` pattern for consistency
-- **Date Handling**: The current-datetime tool should be called before creating events with relative dates
+ 
 
 ## Troubleshooting
 

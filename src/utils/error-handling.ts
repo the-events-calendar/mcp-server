@@ -38,7 +38,7 @@ export function formatError(error: unknown): { type: 'text'; text: string } {
   if (isApiError(error)) {
     return {
       type: 'text',
-      text: `Error ${error.statusCode}: ${error.message}${error.code ? ` (${error.code})` : ''}`
+      text: `Error ${error.statusCode}: ${error.message}${error.code ? ` (${error.code})` : ''}${error.details ? ` - ${JSON.stringify(error.details)}` : ''}`
     };
   }
 

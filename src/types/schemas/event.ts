@@ -84,8 +84,8 @@ export const EventSchema = BasePostSchema.extend({
       slug: 'summer-music-festival',
       status: 'publish',
       type: 'tribe_events',
-      start_date: '2024-07-15T18:00:00',
-      end_date: '2024-07-15T23:00:00',
+      start_date: '2024-07-15 18:00:00',
+      end_date: '2024-07-15 23:00:00',
       all_day: false,
       timezone: 'America/Los_Angeles',
     },
@@ -216,21 +216,12 @@ export const EventRequestSchema = BasePostRequestSchema.extend({
     .optional()
     .describe('The terms assigned to the entity in the tribe_events_cat taxonomy'),
 
-  // Event date/time fields (following API pattern: YYYY-MM-DD HH:MM:SS)
-  start_date: z.string()
-    .regex(/^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}$/, 'Date must be in YYYY-MM-DD HH:MM:SS format')
-    .describe('The start date of the event'),
-  start_date_utc: z.string()
-    .regex(/^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}$/, 'Date must be in YYYY-MM-DD HH:MM:SS format')
-    .optional()
-    .describe('The start date of the event in UTC'),
-  end_date: z.string()
-    .regex(/^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}$/, 'Date must be in YYYY-MM-DD HH:MM:SS format')
-    .describe('The end date of the event'),
-  end_date_utc: z.string()
-    .regex(/^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}$/, 'Date must be in YYYY-MM-DD HH:MM:SS format')
-    .optional()
-    .describe('The end date of the event in UTC'),
+  // Event date/time fields - MCP accepts flexible input formats but will normalize
+  // them to the API-preferred `YYYY-MM-DD HH:MM:SS` format before sending.
+  start_date: z.string().describe('The start date of the event - accepts flexible formats (preferred: YYYY-MM-DD HH:MM:SS).'),
+  start_date_utc: z.string().optional().describe('The start date of the event in UTC - accepts flexible formats.'),
+  end_date: z.string().describe('The end date of the event - accepts flexible formats (preferred: YYYY-MM-DD HH:MM:SS).'),
+  end_date_utc: z.string().optional().describe('The end date of the event in UTC - accepts flexible formats.'),
 
   // Event properties
   timezone: z.string().optional().describe('The timezone of the event'),

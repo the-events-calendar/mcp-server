@@ -122,7 +122,7 @@ When using or testing the MCP tools:
 1. **Refer to TOOLS_GUIDE.md** for comprehensive examples and patterns
 2. **Date formats are strict**: Events require "YYYY-MM-DD HH:MM:SS" format
 3. **All tools use JSON Schema** for input validation (not Zod schemas directly)
-4. **Tool names use tec-calendar-* pattern**: tec-calendar-create-update-entities, tec-calendar-read-entities, tec-calendar-delete-entities, tec-calendar-current-datetime
+4. **Tool names use tec-calendar-* pattern**: tec-calendar-create-update-entities, tec-calendar-read-entities, tec-calendar-delete-entities
 
 Common tool usage patterns:
 - Always check if venues/organizers exist before referencing them in events

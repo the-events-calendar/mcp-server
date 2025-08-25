@@ -8,6 +8,7 @@
 /// <reference lib="dom" />
 
 import { AngieMcpSdk } from '@elementor/angie-sdk';
+import * as chrono from 'chrono-node';
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { 
   CallToolRequestSchema, 
@@ -19,6 +20,7 @@ import {
 
 // Import tool definitions
 import toolsData from './tools-data.json' with { type: 'json' };
+import { VERSION } from '../../version.js';
 
 // Type for our tool definitions
 interface ToolDefinition {
@@ -32,6 +34,127 @@ interface ToolDefinition {
     idempotentHint?: boolean;
     openWorldHint?: boolean;
   };
+}
+
+// Build default MCP instructions (browser-safe: no server imports needed)
+function buildInstructions(): string {
+  const now = new Date();
+  const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const offsetMinutes = -now.getTimezoneOffset();
+  const offsetHours = Math.floor(Math.abs(offsetMinutes) / 60);
+  const offsetMins = Math.abs(offsetMinutes) % 60;
+  const offsetSign = offsetMinutes >= 0 ? '+' : '-';
+  const timezoneOffset = `${offsetSign}${String(offsetHours).padStart(2, '0')}:${String(offsetMins).padStart(2, '0')}`;
+
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  const hours = String(now.getHours()).padStart(2, '0');
+  const minutes = String(now.getMinutes()).padStart(2, '0');
+  const seconds = String(now.getSeconds()).padStart(2, '0');
+
+  const datetime = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+  const iso8601 = now.toISOString();
+  const iso8601Space = iso8601.replace('T', ' ').replace('Z', '');
+
+  const today = `${year}-${month}-${day}`;
+  const tomorrowDate = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+  const nextWeekDate = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+  const tomorrow = `${tomorrowDate.getFullYear()}-${String(tomorrowDate.getMonth() + 1).padStart(2, '0')}-${String(tomorrowDate.getDate()).padStart(2, '0')}`;
+  const nextWeek = `${nextWeekDate.getFullYear()}-${String(nextWeekDate.getMonth() + 1).padStart(2, '0')}-${String(nextWeekDate.getDate()).padStart(2, '0')}`;
+
+  const todayAt3pm = `${today} 15:00:00`;
+  const tomorrowAt10am = `${tomorrow} 10:00:00`;
+
+  return [
+    '### The Events Calendar MCP Server Instructions',
+    '',
+    '**Purpose**: Interact with WordPress posts for Events, Venues, Organizers, and Tickets using the provided tools.',
+    '',
+    '### Time Context (precomputed to avoid extra calls)',
+    `- **Local time**: ${datetime} (${timezone}, UTC offset ${timezoneOffset})`,
+    `- **ISO (UTC)**: ${iso8601Space}`,
+    '- **Usage hints**:',
+    `  - **today_3pm**: ${todayAt3pm}`,
+    `  - **tomorrow_10am**: ${tomorrowAt10am}`,
+    `  - **next_week**: ${nextWeek}`,
+    '',
+    '### Date and Time Handling',
+    '- **Events**: Use dates in `YYYY-MM-DD HH:MM:SS` format (e.g., "2025-01-15 14:30:00")',
+    '- **Tickets**: All availability dates must be in `YYYY-MM-DD HH:MM:SS` format',
+    '- **Sale price dates**: Use `YYYY-MM-DD` format',
+    '- Prefer not sending a `timezone` field unless explicitly needed. Do not guess timezones.',
+    '- When a timezone is required, use the site\'s timezone context; otherwise omit.',
+    '',
+    '### Available Tools',
+    '- **tec-calendar-read-entities**: Read, list, or search posts with filters (events/venues/organizers/tickets)',
+    '- **tec-calendar-create-update-entities**: Create or update posts with proper date formatting',
+    '- **tec-calendar-delete-entities**: Trash or permanently delete posts',
+    '',
+    '### Important Notes',
+    '- **Free tickets**: Omit `price` entirely (do not set it to 0)',
+    '- **Unlimited tickets**: Set `stock_mode` to unlimited',
+    '- **Response format**: Return concise JSON objects with IDs and essential fields',
+    '',
+    '### Post Types',
+    '- **tribe_events**: Events',
+    '- **tribe_venue**: Event venues',
+    '- **tribe_organizer**: Event organizers',
+    '- **tec_tc_ticket**: Event tickets (Commerce)',
+    '- **tribe_rsvp_tickets**: RSVP tickets',
+  ].join('\n');
+}
+
+// ---- Date utilities (browser-side) ----
+function pad2(n: number): string { return String(n).padStart(2, '0'); }
+function formatDate(date: Date): string {
+  return `${date.getFullYear()}-${pad2(date.getMonth() + 1)}-${pad2(date.getDate())}`;
+}
+function formatDateTime(date: Date): string {
+  return `${formatDate(date)} ${pad2(date.getHours())}:${pad2(date.getMinutes())}:${pad2(date.getSeconds())}`;
+}
+function parseFlexibleDate(input: string): Date | null {
+  try {
+    const s = String(input).trim();
+    const d = chrono.casual.parseDate(s, new Date(), { forwardDate: true });
+    if (d && Number.isFinite(d.getTime())) return d;
+  } catch {}
+  try {
+    const results = chrono.parse(String(input));
+    if (results && results.length > 0) {
+      const d = results[0].date();
+      if (Number.isFinite(d.getTime())) return d;
+    }
+  } catch {}
+  const iso = new Date(String(input).replace(' ', 'T'));
+  if (Number.isFinite(iso.getTime())) return iso;
+  const plain = new Date(String(input));
+  if (Number.isFinite(plain.getTime())) return plain;
+  return null;
+}
+function normalizeDateFields(data: Record<string, any>) {
+  if (!data || typeof data !== 'object') return { invalids: [] as { field: string; value: string }[] };
+  const invalids: { field: string; value: string }[] = [];
+  const dateTimeFields = ['start_date', 'end_date', 'start_date_utc', 'end_date_utc'];
+  const dateOnlyFields = ['sale_price_start_date', 'sale_price_end_date'];
+  const prefRegex = /^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}$/;
+  const dateOnlyRegex = /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/;
+
+  for (const field of dateTimeFields) {
+    if (typeof data[field] !== 'string') continue;
+    const raw = String(data[field]).trim();
+    const parsed = parseFlexibleDate(raw);
+    if (parsed) { data[field] = formatDateTime(parsed); continue; }
+    if (!prefRegex.test(raw)) invalids.push({ field, value: raw });
+  }
+  for (const field of dateOnlyFields) {
+    if (typeof data[field] !== 'string') continue;
+    const raw = String(data[field]).trim();
+    const parsed = parseFlexibleDate(raw);
+    if (parsed) { data[field] = formatDate(parsed); continue; }
+    if (!dateOnlyRegex.test(raw)) invalids.push({ field, value: raw });
+  }
+  return { invalids };
 }
 
 // Extend window interface for WordPress API settings
@@ -150,8 +273,8 @@ function buildEndpointForTool(toolName: string, params: any): string {
       return `${base}/${id}${force}`;
     
     case 'tec-calendar-current-datetime':
-      // This doesn't need an endpoint - handled locally
-      return '';
+      // Deprecated: this tool is no longer handled
+      throw new Error('Unknown tool: tec-calendar-current-datetime');
     
     default:
       throw new Error(`Unknown tool: ${toolName}`);
@@ -179,7 +302,7 @@ function createTecMcpServer(): Server {
   console.log('[TEC_MCP] Creating server with low-level API...');
   
   const server = new Server(
-    { name: 'plugin-the-events-calendar', version: '1.0.0' },
+    { name: 'plugin-the-events-calendar', version: VERSION },
     { capabilities: { tools: {} } }
   );
 
@@ -224,31 +347,17 @@ function createTecMcpServer(): Server {
     }
     
     try {
-      // Handle current-datetime locally
-      if (toolName === 'tec-calendar-current-datetime') {
-        console.log('[TEC_MCP] Handling current-datetime locally');
-        const now = new Date();
-        const timezone = args.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone;
-        
-        return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify({
-              current_date: now.toISOString().split('T')[0],
-              current_time: now.toTimeString().split(' ')[0],
-              current_datetime: now.toISOString(),
-              timezone,
-              timestamp: Math.floor(now.getTime() / 1000),
-              formatted: {
-                date: now.toLocaleDateString(),
-                time: now.toLocaleTimeString(),
-                full: now.toLocaleString()
-              }
-            }, null, 2)
-          }]
-        };
-      }
+      // No local handling for deprecated current-datetime tool
       
+      // Normalize flexible dates for create/update before building the endpoint
+      if (toolName === 'tec-calendar-create-update-entities' && args && args.data && typeof args.data === 'object') {
+        const { invalids } = normalizeDateFields(args.data);
+        if (invalids.length > 0) {
+          const details = JSON.stringify({ invalid_fields: invalids });
+          throw new Error(`Invalid date format. Prefer 'YYYY-MM-DD HH:MM:SS'. Details: ${details}`);
+        }
+      }
+
       // Build the endpoint URL
       const endpoint = buildEndpointForTool(toolName, args);
       const url = `${root}${endpoint}`;
@@ -262,11 +371,15 @@ function createTecMcpServer(): Server {
       
       // Determine HTTP method
       let method = 'GET';
-      let body = undefined;
+      let body: string | undefined = undefined;
       
       switch (toolName) {
         case 'tec-calendar-create-update-entities':
           method = args.id ? 'PUT' : 'POST';
+          // Default status to publish unless specified
+          if (args && args.data && typeof args.data === 'object' && (args.data as any).status === undefined) {
+            (args.data as any).status = 'publish';
+          }
           body = JSON.stringify(args.data || {});
           break;
         case 'tec-calendar-delete-entities':
@@ -316,7 +429,7 @@ function createTecMcpServer(): Server {
         method,
         headers,
         credentials: 'same-origin',
-        bodyLength: body ? body.length : 0
+        bodyLength: typeof body === 'string' ? body.length : 0
       });
       
       const response = await fetch(finalUrl, {
@@ -393,8 +506,8 @@ async function initializeTecMcpServer(): Promise<void> {
     
     const config: AngieServerConfig = {
       name: 'plugin-the-events-calendar',
-      version: '1.0.0',
-      description: 'The Events Calendar tools for managing events, venues, organizers, and tickets',
+      version: VERSION,
+      description: buildInstructions(),
       server,
     };
     

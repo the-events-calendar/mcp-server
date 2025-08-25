@@ -224,6 +224,49 @@ export async function createUpdatePost(
     const dataSchema = getRequestSchemaForPostType(postType as PostType);
     logger.silly('Using request schema for validation:', postType);
 
+    // Normalize any flexible date formats into the API-preferred format.
+    // We accept flexible inputs (e.g., "next monday", "+2 days", ISO with T, etc.)
+    // but transform them into `YYYY-MM-DD HH:MM:SS` before validation/send.
+    const { formatDateTime, parseFlexibleDate } = await import('../utils/time.js');
+
+    function normalizeField(fieldName: string) {
+      if (!transformedData[fieldName] || typeof transformedData[fieldName] !== 'string') return;
+      const raw = String(transformedData[fieldName]).trim();
+      // Try to parse flexible date.
+      const parsed = parseFlexibleDate(raw);
+      if (parsed) {
+        transformedData[fieldName] = formatDateTime(parsed);
+        return;
+      }
+      // If parsing failed but the string already matches the preferred pattern,
+      // leave it as-is. Otherwise, we'll allow validation to fail and return
+      // a descriptive error to the client.
+      const prefRegex = /^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}$/;
+      if (prefRegex.test(raw)) {
+        transformedData[fieldName] = raw;
+        return;
+      }
+      // Attempt ISO parse (with T) as a last resort.
+      const isoAttempt = new Date(raw.replace(' ', 'T'));
+      if (Number.isFinite(isoAttempt.getTime())) {
+        transformedData[fieldName] = formatDateTime(isoAttempt);
+        return;
+      }
+      // Mark invalid format for clearer error handling later.
+      transformedData[`_invalid_${fieldName}`] = raw;
+    }
+
+    ['start_date', 'end_date', 'start_date_utc', 'end_date_utc', 'sale_price_start_date', 'sale_price_end_date', 'start_date', 'end_date'].forEach(normalizeField);
+
+    // If any invalid date markers exist, return a clean error to the client.
+    const invalidDateFields = Object.keys(transformedData)
+      .filter(k => k.startsWith('_invalid_'))
+      .map(k => ({ field: k.replace('_invalid_', ''), value: transformedData[k] }));
+    if (invalidDateFields.length > 0) {
+      const message = `One or more date fields are invalid. Please use a valid date or the preferred format YYYY-MM-DD HH:MM:SS.`;
+      throw new (await import('../utils/error-handling.js')).ApiError(message, 400, 'invalid_date_format', { invalid_fields: invalidDateFields });
+    }
+
     // Validate the data against the schema
     logger.debug('About to validate data:', transformedData);
     const validatedData = dataSchema.parse(transformedData);
@@ -231,6 +274,10 @@ export async function createUpdatePost(
 
     // Perform create or update
     logger.info(`${id ? 'Updating' : 'Creating'} ${postType}${id ? ` with ID ${id}` : ''}`);
+    // Default publish status unless provided
+    if (validatedData && typeof validatedData === 'object' && (validatedData as any).status === undefined) {
+      (validatedData as any).status = 'publish';
+    }
     let result = id
       ? await apiClient.updatePost(postType as PostType, id, validatedData)
       : await apiClient.createPost(postType as PostType, validatedData);
@@ -305,7 +352,7 @@ export const CreateUpdateJsonSchema = {
     },
     data: {
       type: 'object' as const,
-       description: 'The post data. Required fields depend on postType: Event (title, start_date, end_date), Venue (title or venue, address, city, country), Organizer (title or organizer), Ticket (title, event_id or event). Note: For Venue and Organizer, you can use "title" which will be converted to the appropriate field. For Tickets, all date fields must be in Y-m-d H:i:s format (e.g., "2024-12-25 15:30:00"). Sales dates default to 1 week before event (start) and event start date (end) if not specified. By default, ticket end_date will be capped to the event start date unless allow_end_after_event: true is provided. ⚠️ For Events, call tec-calendar-current-datetime tool FIRST before setting any date/time fields to ensure correct relative dates.',
+      description: 'The post data. Required fields depend on postType: Event (title, start_date, end_date), Venue (title or venue, address, city, country), Organizer (title or organizer), Ticket (title, event_id or event). Note: For Venue and Organizer, you can use "title" which will be converted to the appropriate field. For Tickets, all date fields must be in Y-m-d H:i:s format (e.g., "2024-12-25 15:30:00"). Sales dates default to 1 week before event (start) and event start date (end) if not specified. By default, ticket end_date will be capped to the event start date unless allow_end_after_event: true is provided.',
       additionalProperties: true
     }
   },

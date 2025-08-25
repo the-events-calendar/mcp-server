@@ -1,5 +1,5 @@
 import { PostType, PostTypeMap, FilterTypeMap, WPError } from '../types/index.js';
-import { ApiError } from '../utils/error-handling.js';
+import { ApiError, isApiError } from '../utils/error-handling.js';
 import { buildEndpoint } from './endpoints.js';
 import { fetch as undiciFetch, Agent } from 'undici';
 import { getLogger } from '../utils/logger.js';
@@ -43,6 +43,13 @@ export class ApiClient {
         }
       });
     }
+  }
+
+  /**
+   * Expose the configured base URL for instructions/logging.
+   */
+  public getBaseUrl(): string {
+    return this.config.baseUrl;
   }
 
   /**
@@ -227,27 +234,95 @@ export class ApiClient {
   }
 
   /**
-   * Get site information
+   * Get site information and verify REST API availability.
    */
   async getSiteInfo(): Promise<any> {
+    // First, hit the REST API root to verify it's reachable and get basic info
     try {
-      // Try to get site settings (requires admin permissions)
-      return await this.request<any>('/wp/v2/settings');
-    } catch (error) {
-      // Fallback to basic site info from root endpoint
+      const rootInfo = await this.request<any>('/wp-json/');
+
+      // Check authentication with an endpoint that requires auth
+      let authValid = false;
+      let authStatusCode: number | undefined;
+      const failedChecks: Array<{ step: string; endpoint: string; statusCode?: number; message?: string }> = [];
       try {
-        const rootInfo = await this.request<any>('/wp/v2/');
-        return {
-          name: rootInfo.name,
-          description: rootInfo.description,
-          url: rootInfo.url,
-          gmt_offset: rootInfo.gmt_offset,
-          timezone_string: rootInfo.timezone_string
-        };
-      } catch (fallbackError) {
-        // Return null if both attempts fail
-        return null;
+        await this.request<any>('/wp-json/wp/v2/users/me');
+        authValid = true;
+      } catch (authErr) {
+        if (isApiError(authErr)) {
+          authStatusCode = authErr.statusCode;
+        }
+        failedChecks.push({
+          step: 'auth',
+          endpoint: '/wp/v2/users/me',
+          statusCode: authStatusCode,
+          message: (authErr as Error)?.message,
+        });
       }
+
+      // Optionally enrich with site settings if available (requires auth). We still try even if authValid=false to capture specific status.
+      try {
+        const settings = await this.request<any>('/wp-json/wp/v2/settings');
+        authValid = true;
+        return {
+          // Prefer settings.title when present, otherwise fall back to root name
+          title: settings?.title ?? rootInfo?.name,
+          name: rootInfo?.name ?? settings?.title,
+          description: rootInfo?.description,
+          url: rootInfo?.url,
+          home: rootInfo?.home,
+          gmt_offset: settings?.gmt_offset ?? rootInfo?.gmt_offset,
+          timezone_string: settings?.timezone_string ?? rootInfo?.timezone_string,
+          authError: !authValid,
+          authValid,
+          restReachable: true,
+          settingsAccessible: true,
+          failedChecks: failedChecks.length ? failedChecks : undefined,
+        };
+      } catch (settingsError) {
+        // If settings are not accessible, still consider auth valid if users/me succeeded.
+        const settingsStatus = isApiError(settingsError) ? settingsError.statusCode : undefined;
+        if (settingsStatus) {
+          this.logger.info(`Settings endpoint not accessible (status ${settingsStatus}). Proceeding with limited permissions.`);
+        }
+        failedChecks.push({
+          step: 'settings',
+          endpoint: '/wp/v2/settings',
+          statusCode: settingsStatus,
+          message: (settingsError as Error)?.message,
+        });
+        return {
+          title: rootInfo?.name,
+          name: rootInfo?.name,
+          description: rootInfo?.description,
+          url: rootInfo?.url,
+          home: rootInfo?.home,
+          gmt_offset: rootInfo?.gmt_offset,
+          timezone_string: rootInfo?.timezone_string,
+          authError: !authValid,
+          authStatusCode: authStatusCode,
+          authValid,
+          restReachable: true,
+          settingsAccessible: false,
+          settingsStatusCode: settingsStatus,
+          failedChecks: failedChecks.length ? failedChecks : undefined,
+        };
+      }
+    } catch (rootError) {
+      // Could not reach REST API root; treat as not operational
+      const isAuth = isApiError(rootError) && (rootError.statusCode === 401 || rootError.statusCode === 403);
+      return {
+        authError: isAuth,
+        authStatusCode: isApiError(rootError) ? rootError.statusCode : undefined,
+        authValid: isAuth ? false : undefined,
+        restReachable: false,
+        failedChecks: [{
+          step: 'root',
+          endpoint: '/wp-json/',
+          statusCode: isApiError(rootError) ? rootError.statusCode : undefined,
+          message: (rootError as Error)?.message,
+        }],
+      };
     }
   }
 }
