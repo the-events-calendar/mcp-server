@@ -17,7 +17,7 @@ An MCP (Model Context Protocol) server that provides unified CRUD operations for
 
 ## Requirements
 
-- Node.js >= v18.0.0
+- Node.js >= v20.0.0
 - WordPress site with The Events Calendar plugin
 - WordPress Application Password for authenticationd
 
