@@ -156,7 +156,7 @@ export async function createUpdatePost(
         logger.info('Removed sale_price field set to 0 - WordPress will default to null');
       }
 
-      // Normalize inventory: prioritize syncing stock/capacity first, then manage_stock
+      // Normalize inventory: prioritize syncing stock/capacity first
       const hasStockNumber = typeof transformedData.stock === 'number' && !Number.isNaN(transformedData.stock);
       const hasCapacityNumber = typeof transformedData.capacity === 'number' && !Number.isNaN(transformedData.capacity);
 
@@ -172,18 +172,6 @@ export async function createUpdatePost(
         logger.info(`Stock not provided; defaulting stock to capacity: ${transformedData.stock}`);
       }
 
-      // If manage_stock is explicitly set to false, set stock_mode to unlimited for unlimited tickets
-      // This must be checked BEFORE the stock/capacity enforcement logic
-      if (transformedData.manage_stock === false) {
-        transformedData.stock_mode = 'unlimited';
-        delete transformedData.manage_stock; // Remove manage_stock as it's not part of the API
-        logger.info('manage_stock set to false; setting stock_mode to unlimited for unlimited tickets');
-        logger.debug('After setting unlimited, transformedData:', transformedData);
-        // Skip the rest of the stock/capacity logic for unlimited tickets
-        // Set a flag to indicate this is an unlimited ticket
-        transformedData._isUnlimited = true;
-      }
-
       // Re-evaluate after normalization
       const normalizedHasStock = typeof transformedData.stock === 'number' && !Number.isNaN(transformedData.stock);
       const normalizedHasCapacity = typeof transformedData.capacity === 'number' && !Number.isNaN(transformedData.capacity);
@@ -195,22 +183,6 @@ export async function createUpdatePost(
         if (stockNum > capacityNum) {
           transformedData.capacity = stockNum;
           logger.info(`Stock (${stockNum}) greater than capacity (${capacityNum}); auto-expanding capacity to ${stockNum}`);
-        }
-      }
-
-      // If manage_stock is explicitly set to false, set stock_mode to unlimited for unlimited tickets
-      // This must be checked BEFORE the stock/capacity enforcement logic
-      if (transformedData.manage_stock === false) {
-        transformedData.stock_mode = 'unlimited';
-        delete transformedData.manage_stock; // Remove manage_stock as it's not part of the API
-        logger.info('manage_stock set to false; setting stock_mode to unlimited for unlimited tickets');
-        logger.debug('After setting unlimited, transformedData:', transformedData);
-      }
-      // If either stock or capacity is set, enforce manage_stock = true (but only if not already set to unlimited)
-      else if (!transformedData._isUnlimited && (normalizedHasStock || normalizedHasCapacity)) {
-        if (transformedData.manage_stock !== true) {
-          transformedData.manage_stock = true;
-          logger.info('Stock or capacity provided; setting manage_stock to true');
         }
       }
 
@@ -392,9 +364,8 @@ Example: Regular $50 ticket on sale for $35 from Dec 1-15:
 }
 \`\`\`
 
-**NOTE**: Ticket availability dates (start_date, end_date) must be provided in Y-m-d H:i:s format. Sale price dates (sale_price_start_date, sale_price_end_date) must be provided in YYYY-MM-DD format. Natural language dates like "now", "tomorrow", "+1 day" are NOT supported for tickets.
-
-**UNLIMITED TICKETS**: To create unlimited tickets, set manage_stock to false. When manage_stock is false, stock_mode will automatically be set to "unlimited" for unlimited availability.`,
+**NOTE**: Ticket availability dates (start_date, end_date) must be provided in Y-m-d H:i:s format. Sale price dates (sale_price_start_date, sale_price_end_date) must be provided in YYYY-MM-DD format.
+**UNLIMITED TICKETS**: To create unlimited tickets, set stock_mode to "unlimited".`,
     ['event', 'venue', 'organizer', 'ticket'] as PostType[]
   ),
   inputSchema: CreateUpdateInputSchema,

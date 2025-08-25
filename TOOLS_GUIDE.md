@@ -90,7 +90,6 @@ This tool creates new posts or updates existing ones. If you provide an `id`, it
     "event_id": 123,
     "price": 49.99,
     "stock": 100,
-    "manage_stock": true,
     "status": "publish"
   }
 }
@@ -117,7 +116,6 @@ This tool creates new posts or updates existing ones. If you provide an `id`, it
     "sale_price_end_date": "2025-02-28",
     "description": "Premium VIP package",
     "stock": 30,
-    "manage_stock": true,
     "show_description": true,
     "start_date": "2025-01-15 10:00:00",
     "end_date": "2025-03-15 23:59:59",
@@ -135,7 +133,7 @@ This tool creates new posts or updates existing ones. If you provide an `id`, it
     "title": "General Admission",
     "event_id": 123,
     "price": 25.00,
-    "manage_stock": false,
+    "stock_mode": "unlimited",
     "description": "Unlimited general admission tickets",
     "start_date": "2025-01-15 10:00:00",
     "end_date": "2025-03-15 23:59:59",
@@ -143,8 +141,6 @@ This tool creates new posts or updates existing ones. If you provide an `id`, it
   }
 }
 ```
-
-**Note**: When `manage_stock` is set to `false`, the system automatically sets `stock_mode` to "unlimited" for unlimited availability.
 
 #### Updating an Existing Post
 
@@ -429,8 +425,7 @@ These filters are available for all post types at the top level:
 - `title` (required) - Ticket type name
 - `event_id` or `event` (required) - ID of the associated event
 - `price` - Ticket price (number or string)
-- `stock` - Total number of tickets available (use -1 for unlimited when `manage_stock` is false)
-- `manage_stock` - Enable inventory tracking (boolean, set to false for unlimited tickets)
+- `stock` - Total number of tickets available (use -1 for unlimited)
 - `capacity` - Maximum capacity for this ticket type
 - `start_date` - When ticket sales start (soft requirement, defaults to 1 week before event) - Controls ticket visibility
 - `end_date` - When ticket sales end (soft requirement, defaults to event start date) - Controls ticket availability
@@ -441,7 +436,7 @@ These filters are available for all post types at the top level:
 - `sku` - Stock keeping unit for inventory tracking
 - `description` - Ticket description
 - `provider` - Ticketing provider (defaults to "Tickets Commerce")
-- `stock_mode` - Stock management mode ("own", "capped", "global", "unlimited") - automatically set when `manage_stock` is false
+- `stock_mode` - Stock management mode ("own", "capped", "global", "unlimited")
 - `status` - Publication status
 
 ## Error Handling
@@ -598,7 +593,7 @@ You can also mix existing IDs with new data to create:
 
 ### Unlimited Tickets
 
-To create unlimited tickets, set `manage_stock: false`. The system will automatically:
+To create unlimited tickets:
 - Set `stock_mode` to "unlimited"
 - Set `stock` to -1
 - Disable inventory tracking
