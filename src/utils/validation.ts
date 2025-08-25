@@ -123,8 +123,6 @@ export const TicketDataSchema = BasePostUpdateSchema.extend({
     .describe('When ticket sales start (preferred: YYYY-MM-DD HH:MM:SS). Flexible inputs accepted; MCP normalizes. Defaults to 1 week before event if not provided. Tickets not visible before this date.'),
   end_date: TicketDateSchema.optional()
     .describe('When ticket sales end (preferred: YYYY-MM-DD HH:MM:SS). Flexible inputs accepted; MCP normalizes. Defaults to event start date if not provided. Tickets not available after this date.'),
-  manage_stock: z.boolean().optional()
-    .describe('Enable inventory tracking. Set to false for unlimited tickets (will automatically set stock_mode to "unlimited").'),
   stock_mode: z.enum(['own', 'capped', 'global', 'unlimited']).optional()
     .describe('Stock management mode. Use "unlimited" for unlimited tickets.'),
   show_description: z.boolean().optional()

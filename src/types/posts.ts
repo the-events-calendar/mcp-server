@@ -123,7 +123,6 @@ export interface Ticket extends BasePost {
   rsvp?: boolean;
   start_date?: string;
   end_date?: string;
-  manage_stock?: boolean;
   show_description?: boolean;
   sale_price?: string | number;
   sale_price_start_date?: string;

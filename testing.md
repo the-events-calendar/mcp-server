@@ -494,7 +494,6 @@
    ```
    - Verify `stock_mode` is set to "unlimited"
    - Verify `stock` is set to -1
-   - Verify `manage_stock` is false
 
 3. **Unlimited Ticket Edge Cases**:
    - Test creating unlimited ticket without specifying stock/capacity
@@ -504,7 +503,6 @@
 **7b. Unlimited Ticket Validation Testing:**
 
 1. **Schema Validation**:
-   - Verify `manage_stock: false` triggers automatic `stock_mode: "unlimited"` setting
    - Test that stock/capacity enforcement logic is skipped for unlimited tickets
    - Verify `manage_stock` field is removed from API request (not part of WordPress API)
 
